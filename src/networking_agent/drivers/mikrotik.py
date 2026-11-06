@@ -17,12 +17,17 @@ class MikrotikRouterOSDriver(NetworkOSDriver):
 
     def get_health_commands(self) -> List[str]:
         return [
-            "/interface print stats",
             "/system resource print",
+            "/interface print stats",
+            "/interface ethernet print detail",
+            "/ip dns print",
             "/interface print terse",
-            "/routing ospf neighbor print",
             "/ip route print count-only",
         ]
+
+    def get_gateway_interfaces(self) -> List[str]:
+        """Identifies WAN or primary uplink interfaces on MikroTik to prevent accidental remote cutoff."""
+        return ["ether1", "sfp1", "sfp-sfpplus1", "lte1", "pppoe-out1", "wan", "uplink"]
 
     def get_running_config_command(self) -> str:
         """In RouterOS, /export verbose=no exports the active human-readable configuration."""

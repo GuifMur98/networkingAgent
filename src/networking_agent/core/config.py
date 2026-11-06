@@ -34,6 +34,12 @@ class AgentSettings(BaseSettings):
             "fxp0",
             "em0",
             "Loopback0",
+            "ether1",
+            "wan",
+            "uplink",
+            "dialer",
+            "dialer1",
+            "pppoe-out1",
         ],
         description="Interfaces forbidden from being disabled or modified autonomously",
     )

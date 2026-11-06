@@ -61,3 +61,34 @@ def test_blast_radius_guard_allows_safe_interfaces():
     )
     # Should not raise
     guard.verify_intent(intent)
+
+
+@pytest.mark.parametrize("disruptive_action", ["disable_interface", "restart_interface"])
+def test_blast_radius_blocks_wan_and_uplink_disruption(disruptive_action):
+    guard = BlastRadiusGuard()
+
+    # Attempting to bounce or disable ether1 (default WAN)
+    intent = NetworkIntent(
+        diagnosis="Flapping link on ether1 WAN",
+        severity="HIGH",
+        requires_config_change=True,
+        action=disruptive_action,  # type: ignore
+        target_interface="ether1",
+    )
+    with pytest.raises(BlastRadiusViolationError, match="CRITICAL SAFETY VIOLATION.*WAN / Uplink"):
+        guard.verify_intent(intent, wan_interfaces=["ether1"])
+
+
+def test_blast_radius_permits_informative_diagnosis_on_wan():
+    guard = BlastRadiusGuard()
+
+    # Informative diagnosis of link flap on WAN (action='none')
+    intent = NetworkIntent(
+        diagnosis="Layer 1 flapping detected on ether1 WAN. Recommend cable check.",
+        severity="MEDIUM",
+        requires_config_change=False,
+        action="none",
+        target_interface="ether1",
+    )
+    # Should not raise
+    guard.verify_intent(intent, wan_interfaces=["ether1"])

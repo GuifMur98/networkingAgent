@@ -2,6 +2,7 @@
 
 from typing import Optional
 
+from rich.markup import escape
 from rich.panel import Panel
 from rich.table import Table
 
@@ -48,13 +49,18 @@ class NetworkAssistantAgent:
         )
 
         analysis_payload = telemetry.raw_text
+        driver = get_os_driver(device)
+        wan_interfaces = driver.get_gateway_interfaces()
+
         if mode == "PROACTIVE":
             logger.info("[*] Running proactive diagnostic interrogation on device...")
             try:
-                driver = get_os_driver(device)
                 health_data = driver.run_health_check()
                 telemetry_str = "\n".join([f"=== {cmd} ===\n{out}" for cmd, out in health_data.items()])
                 analysis_payload = (
+                    f"DEVICE ARCHITECTURE CONTEXT:\n"
+                    f"Host: {device.host} | OS: {device.device_type}\n"
+                    f"Protected WAN / Gateway Uplink Interfaces: {', '.join(wan_interfaces)}\n\n"
                     f"OPERATIONAL SYMPTOM REPORTED BY OPERATOR:\n{telemetry.raw_text}\n\n"
                     f"LIVE DEVICE DIAGNOSTIC TELEMETRY:\n{telemetry_str}"
                 )
@@ -85,6 +91,16 @@ class NetworkAssistantAgent:
 
         # 2. Check if configuration change is needed
         if not intent.requires_config_change or intent.action == "none":
+            findings_panel = Panel(
+                f"[bold green]✔ EVALUACIÓN DIAGNÓSTICA TÉCNICA COMPLETADA[/bold green]\n\n"
+                f"[bold cyan]Diagnóstico de Causa Raíz:[/bold cyan]\n"
+                f"{intent.diagnosis}\n\n"
+                f"[bold yellow]Estado de Configuración:[/bold yellow] No se requieren cambios en el equipo.\n"
+                f"[dim]Severidad: {intent.severity} | Acción: {intent.action} | Equipo: {device.host}[/dim]",
+                title="📋 INFORME OPERACIONAL DEL ASISTENTE DE RED",
+                border_style="green",
+            )
+            console.print(findings_panel)
             logger.info("[green]No configuration changes required. Incident logged.[/green]")
             audit_logger.record_event(
                 event_type="NO_OP",
@@ -98,8 +114,22 @@ class NetworkAssistantAgent:
 
         # 3. Security Guardrails Verification (Blast Radius & Command Validation)
         try:
-            self.blast_guard.verify_intent(intent)
+            self.blast_guard.verify_intent(intent, wan_interfaces=wan_interfaces)
         except BlastRadiusViolationError as e:
+            shield_panel = Panel(
+                f"[bold red]🛑 ACCIÓN BLOQUEADA POR GUARDARRAÍL DE SEGURIDAD (BLAST RADIUS)[/bold red]\n\n"
+                f"[yellow]El cerebro de IA propuso una modificación de riesgo:[/yellow]\n"
+                f"  • Acción solicitada: [bold red]{intent.action}[/bold red]\n"
+                f"  • Interfaz Objetivo: [bold yellow]{escape(intent.target_interface or 'N/A')}[/bold yellow]\n\n"
+                f"[bold cyan]Motivo de Protección:[/bold cyan]\n"
+                f"{escape(str(e))}\n\n"
+                f"[green]Recomendación de Seguridad:[/green]\n"
+                f"Las interfaces WAN / Enlace Ascendente están blindadas contra reinicios remotos.\n"
+                f"Para lentitud o caídas en la WAN, verifique el cableado/óptica física o contacte al ISP.",
+                title="🛡️ SEGURIDAD ACTIVA: PROTECCIÓN DE INFRAESTRUCTURA CRÍTICA",
+                border_style="bold red",
+            )
+            console.print(shield_panel)
             audit_logger.record_event(
                 event_type="SECURITY_REJECTED",
                 device_host=device.host,
@@ -111,7 +141,6 @@ class NetworkAssistantAgent:
             return False
 
         # 4. Driver translation to candidate CLI
-        driver = get_os_driver(device)
         candidate_cli = driver.build_candidate_commands(intent)
 
         if not candidate_cli:
@@ -133,12 +162,12 @@ class NetworkAssistantAgent:
             return False
 
         # 5. Human-in-the-Loop (HitL) Approval Gate
-        cli_preview = "\n".join([f"  + {c}" for c in candidate_cli])
+        cli_preview = "\n".join([f"  + {escape(c)}" for c in candidate_cli])
         approval_panel = Panel(
             f"[bold red]WARNING: Configuration modification proposed on [white]{device.host}[/white][/bold red]\n\n"
             f"[bold yellow]Commands to be injected:[/bold yellow]\n{cli_preview}\n\n"
             f"[cyan]Action:[/cyan] {intent.action} | "
-            f"[cyan]Target:[/cyan] {intent.target_interface or intent.bgp_neighbor_ip}",
+            f"[cyan]Target:[/cyan] {escape(intent.target_interface or intent.bgp_neighbor_ip or 'N/A')}",
             title="HUMAN-IN-THE-LOOP APPROVAL REQUIRED",
             border_style="red",
         )

@@ -101,3 +101,36 @@ def test_agent_proactive_symptom_investigation(mocker, tmp_path):
     sent_prompt = mock_brain.analyze_event.call_args[0][0]
     assert "OPERATIONAL SYMPTOM REPORTED BY OPERATOR" in sent_prompt
     assert "LIVE DEVICE DIAGNOSTIC TELEMETRY" in sent_prompt
+    assert "Protected WAN / Gateway Uplink Interfaces" in sent_prompt
+
+
+def test_agent_blocks_wan_restart_attempt(mocker):
+    # Simulated scenario where AI erroneously attempts to bounce ether1 (WAN)
+    mock_brain = mocker.MagicMock()
+    mock_brain.analyze_event.return_value = NetworkIntent(
+        diagnosis="High link flapping on ether1 (44 link-downs). Restarting interface.",
+        severity="MEDIUM",
+        requires_config_change=True,
+        action="restart_interface",
+        target_interface="ether1",
+    )
+    mocker.patch("networking_agent.engine.agent.get_ai_brain", return_value=mock_brain)
+
+    mock_driver = mocker.MagicMock()
+    mock_driver.get_gateway_interfaces.return_value = ["ether1", "wan", "uplink"]
+    mock_driver.run_health_check.return_value = {"/interface print stats": "link-downs=44"}
+    mocker.patch("networking_agent.engine.agent.get_os_driver", return_value=mock_driver)
+
+    agent = NetworkAssistantAgent(ai_provider="ollama", auto_approve=True)
+    dev = DeviceInventory(host="192.168.99.1", device_type="mikrotik_routeros")
+    event = TelemetryEvent(
+        raw_text="siento lento el internet y cuesta mucho abrir paginas",
+        source_host=dev.host,
+    )
+
+    result = agent.process_telemetry(device=dev, telemetry=event, mode="PROACTIVE")
+    # Must be intercepted by Blast Radius guard and blocked!
+    assert result is False
+    # Ensure commands were never built or executed on the device
+    assert not mock_driver.execute_commands.called
+

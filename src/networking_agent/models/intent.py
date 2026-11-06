@@ -24,9 +24,9 @@ class NetworkIntent(BaseModel):
 
     diagnosis: str = Field(
         ...,
-        description="Concise technical root-cause explanation.",
+        description="Concise technical root-cause explanation and recommendations.",
         min_length=5,
-        max_length=500,
+        max_length=2000,
     )
     severity: Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"] = Field(..., description="Incident severity level.")
     requires_config_change: bool = Field(

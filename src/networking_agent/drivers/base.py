@@ -33,6 +33,10 @@ class NetworkOSDriver(ABC):
         """Returns read-only diagnostic commands used for pre and post health verification."""
         pass
 
+    def get_gateway_interfaces(self) -> List[str]:
+        """Identifies interfaces carrying default routes or WAN uplinks to protect them from accidental cutoff."""
+        return ["wan", "uplink", "internet", "gateway", "dialer"]
+
     def get_running_config_command(self) -> str:
         """Command to retrieve the full active configuration."""
         return "show running-config"
