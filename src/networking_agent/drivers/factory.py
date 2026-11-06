@@ -7,6 +7,7 @@ from networking_agent.drivers.cisco_ios import CiscoIOSDriver
 from networking_agent.drivers.cisco_nxos import CiscoNXOSDriver
 from networking_agent.drivers.cisco_xr import CiscoIOSXRDriver
 from networking_agent.drivers.juniper import JuniperJunosDriver
+from networking_agent.drivers.mikrotik import MikrotikRouterOSDriver
 from networking_agent.models.device import DeviceInventory
 
 DRIVER_REGISTRY: Dict[str, Type[NetworkOSDriver]] = {
@@ -15,6 +16,7 @@ DRIVER_REGISTRY: Dict[str, Type[NetworkOSDriver]] = {
     "cisco_nxos": CiscoNXOSDriver,
     "cisco_xr": CiscoIOSXRDriver,
     "juniper_junos": JuniperJunosDriver,
+    "mikrotik_routeros": MikrotikRouterOSDriver,
 }
 
 

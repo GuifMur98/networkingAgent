@@ -17,8 +17,9 @@ class AgentSettings(BaseSettings):
     )
 
     # AI Brain Provider Defaults
-    ai_provider: str = Field(default="ollama", description="Default AI provider: ollama, openai, anthropic")
+    ai_provider: str = Field(default="ollama", description="Default AI provider: ollama, gemini, openai, anthropic")
     ai_model: Optional[str] = Field(default=None, description="Specific model name override")
+    gemini_api_key: Optional[str] = Field(default=None, description="Google Gemini API key")
     openai_api_key: Optional[str] = Field(default=None, description="OpenAI API key")
     anthropic_api_key: Optional[str] = Field(default=None, description="Anthropic API key")
     ollama_host: str = Field(default="http://localhost:11434", description="Ollama API base URL")

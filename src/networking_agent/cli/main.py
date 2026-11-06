@@ -28,7 +28,7 @@ def cli_entrypoint() -> None:
     )
     parser.add_argument(
         "--provider",
-        choices=["ollama", "openai", "anthropic"],
+        choices=["ollama", "gemini", "openai", "anthropic"],
         default=None,
         help="Proveedor de IA a utilizar",
     )
@@ -36,7 +36,7 @@ def cli_entrypoint() -> None:
         "--model",
         type=str,
         default=None,
-        help="Nombre específico del modelo (ej. netexpert:latest, gpt-4o, claude-3-5-sonnet-latest)",
+        help="Nombre específico del modelo (ej. netexpert:latest, gemini-3.8-flash, gpt-4o, claude-3-5-sonnet-latest)",
     )
     parser.add_argument(
         "--device-host",
@@ -48,7 +48,7 @@ def cli_entrypoint() -> None:
         "--device-type",
         type=str,
         default=None,
-        help="Plataforma de red (cisco_nxos, cisco_ios, cisco_xr, juniper_junos)",
+        help="Plataforma de red (cisco_nxos, cisco_ios, cisco_xr, juniper_junos, mikrotik_routeros)",
     )
     parser.add_argument(
         "--auto-approve",

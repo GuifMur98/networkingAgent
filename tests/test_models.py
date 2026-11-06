@@ -7,16 +7,30 @@ from networking_agent.models.device import DeviceInventory
 from networking_agent.models.intent import NetworkIntent
 
 
-def test_valid_network_intent():
+@pytest.mark.parametrize(
+    "valid_interface",
+    [
+        "GigabitEthernet1/0/1",
+        "Ethernet1/1",
+        "ge-0/0/0",
+        "ether1",
+        "ether24",
+        "sfp-sfpplus1",
+        "wlan1",
+        "bridge1",
+        "vlan10",
+        "bonding1",
+    ],
+)
+def test_network_intent_accepts_valid_interfaces(valid_interface):
     intent = NetworkIntent(
-        diagnosis="BGP session down due to interface flapping.",
-        severity="CRITICAL",
+        diagnosis="Valid interface test",
+        severity="LOW",
         requires_config_change=True,
-        action="reset_bgp_neighbor",
-        bgp_neighbor_ip="192.168.1.1",
+        action="disable_interface",
+        target_interface=valid_interface,
     )
-    assert intent.action == "reset_bgp_neighbor"
-    assert intent.bgp_neighbor_ip == "192.168.1.1"
+    assert intent.target_interface == valid_interface
 
 
 @pytest.mark.parametrize(

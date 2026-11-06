@@ -15,6 +15,7 @@ class DeviceInventory(BaseModel):
         "cisco_nxos",
         "cisco_xr",
         "juniper_junos",
+        "mikrotik_routeros",
         "arista_eos",
     ] = Field(..., description="Netmiko / Scrapli device platform identifier")
     username: str = Field(default="admin", description="SSH username")

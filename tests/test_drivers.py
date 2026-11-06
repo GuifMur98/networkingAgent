@@ -3,6 +3,7 @@
 from networking_agent.drivers.cisco_ios import CiscoIOSDriver
 from networking_agent.drivers.cisco_nxos import CiscoNXOSDriver
 from networking_agent.drivers.juniper import JuniperJunosDriver
+from networking_agent.drivers.mikrotik import MikrotikRouterOSDriver
 from networking_agent.models.device import DeviceInventory
 from networking_agent.models.intent import NetworkIntent
 
@@ -59,3 +60,43 @@ def test_juniper_junos_driver_generates_commit_confirmed():
         "set interfaces ge-0/0/0 disable",
         "commit confirmed 3",
     ]
+
+
+def test_mikrotik_routeros_driver_generates_correct_cli():
+    dev = DeviceInventory(host="192.168.88.1", device_type="mikrotik_routeros")
+    driver = MikrotikRouterOSDriver(dev)
+
+    # Test interface disable
+    intent_disable = NetworkIntent(
+        diagnosis="Interface looping",
+        severity="HIGH",
+        requires_config_change=True,
+        action="disable_interface",
+        target_interface="ether2",
+    )
+    assert driver.build_candidate_commands(intent_disable) == ['/interface set [find name="ether2"] disabled=yes']
+
+    # Test MTU set
+    intent_mtu = NetworkIntent(
+        diagnosis="MTU fragmentation",
+        severity="MEDIUM",
+        requires_config_change=True,
+        action="set_interface_mtu",
+        target_interface="ether1",
+        mtu_value=9000,
+    )
+    assert driver.build_candidate_commands(intent_mtu) == ['/interface set [find name="ether1"] mtu=9000']
+
+    # Test BGP neighbor reset
+    intent_bgp = NetworkIntent(
+        diagnosis="BGP neighbor hung",
+        severity="CRITICAL",
+        requires_config_change=True,
+        action="reset_bgp_neighbor",
+        bgp_neighbor_ip="10.255.0.1",
+    )
+    assert driver.build_candidate_commands(intent_bgp) == [
+        '/routing bgp connection disable [find remote.address="10.255.0.1"]',
+        '/routing bgp connection enable [find remote.address="10.255.0.1"]',
+    ]
+    assert driver.get_running_config_command() == "/export verbose=no"

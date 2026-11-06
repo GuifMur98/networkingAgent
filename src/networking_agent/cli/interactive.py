@@ -50,6 +50,7 @@ def select_ai_brain_interactively(
     # 1. Selection of AI Provider
     providers = [
         ("ollama", "Ollama (Inferencia 100% Local y Privada en tu máquina)"),
+        ("gemini", "Google Gemini (Gemini 3.8 Flash / Argon vía Cloud API)"),
         ("openai", "OpenAI (GPT-4o / GPT-4o-mini vía Cloud API)"),
         ("anthropic", "Anthropic (Claude 3.5 Sonnet vía Cloud API)"),
     ]
@@ -64,8 +65,8 @@ def select_ai_brain_interactively(
     console.print(provider_table)
 
     prov_choice = Prompt.ask(
-        "Selecciona el proveedor de IA [1-3]",
-        choices=["1", "2", "3"],
+        "Selecciona el proveedor de IA [1-4]",
+        choices=["1", "2", "3", "4"],
         default="1"
         if not default_provider
         else str(
@@ -116,7 +117,29 @@ def select_ai_brain_interactively(
             console.print("[yellow]No se detectaron modelos activos en Ollama o el servicio no respondió.[/yellow]")
             selected_model = Prompt.ask("Ingresa el nombre del modelo de Ollama a utilizar", default="llama3.1")
 
-    # 3. Model selection for OpenAI
+    # 3. Model selection for Google Gemini
+    elif selected_provider == "gemini":
+        if not (os.environ.get("GEMINI_API_KEY") or settings.gemini_api_key):
+            api_key = Prompt.ask("Ingresa tu GEMINI_API_KEY", password=True)
+            os.environ["GEMINI_API_KEY"] = api_key
+
+        console.print("\n[bold]Modelos de Google Gemini disponibles:[/bold]")
+        gemini_models = [
+            "gemini-3.8-flash",
+            "gemini-4-argon",
+            "gemini-3.5-flash-lite",
+            "Personalizado",
+        ]
+        for idx, m in enumerate(gemini_models, 1):
+            star = " 🌟 (Recomendado: Rápido y Equilibrado)" if m == "gemini-3.8-flash" else ""
+            console.print(f"  [yellow]{idx}[/yellow]. {m}{star}")
+        m_idx = Prompt.ask("Selecciona modelo", choices=["1", "2", "3", "4"], default="1")
+        if m_idx == "4":
+            selected_model = Prompt.ask("Ingresa el identificador del modelo (ej. gemini-3.8-flash)")
+        else:
+            selected_model = gemini_models[int(m_idx) - 1]
+
+    # 4. Model selection for OpenAI
     elif selected_provider == "openai":
         # Check API key
         if not (os.environ.get("OPENAI_API_KEY") or settings.openai_api_key):
@@ -183,11 +206,12 @@ def configure_device_interactively(
         ("cisco_ios", "Cisco IOS clásico o IOS-XE (Catalyst, ISR, ASR)"),
         ("cisco_xr", "Cisco IOS-XR Carrier-Grade con commit confirmed"),
         ("juniper_junos", "Juniper Junos OS con commit confirmed"),
+        ("mikrotik_routeros", "MikroTik RouterOS (v6/v7) con export y backups"),
     ]
 
     plat_table = Table(show_header=True, header_style="bold magenta")
     plat_table.add_column("Opción", style="bold yellow", width=8, justify="center")
-    plat_table.add_column("Plataforma", style="bold", width=16)
+    plat_table.add_column("Plataforma", style="bold", width=18)
     plat_table.add_column("Descripción")
 
     for idx, (p_id, p_desc) in enumerate(platforms, 1):
@@ -195,8 +219,8 @@ def configure_device_interactively(
     console.print(plat_table)
 
     plat_choice = Prompt.ask(
-        "Selecciona el Sistema Operativo del equipo [1-4]",
-        choices=["1", "2", "3", "4"],
+        "Selecciona el Sistema Operativo del equipo [1-5]",
+        choices=["1", "2", "3", "4", "5"],
         default="1"
         if not default_type
         else str(

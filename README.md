@@ -1,12 +1,12 @@
 # NetworkingAgent Enterprise
 
 [![Python 3.14](https://img.shields.io/badge/python-3.14-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-35%20passed-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-48%20passed-brightgreen.svg)]()
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Architecture: Clean](https://img.shields.io/badge/architecture-clean%20hexagonal-orange.svg)]()
 
 > **Enterprise Autonomous & Closed-Loop AI Network Engineering Assistant**  
-> Translates untrusted network telemetry into vendor-neutral remediation intents, verifies security blast radius, performs real pre/post-change snapshots, and executes safe configuration changes with Human-in-the-Loop approval and automated rollback.
+> Translates untrusted network telemetry into vendor-neutral remediation intents, verifies security blast radius, performs real pre/post-change snapshots, and executes safe configuration changes with Human-in-the-Loop approval and automated rollback. Supports Cisco (IOS/NX-OS/XR), Juniper Junos, and MikroTik RouterOS.
 
 ---
 
@@ -19,12 +19,14 @@ flowchart TD
     A[Telemetry / Syslog Event] --> B[LLM Brain Provider]
     subgraph Brains [Capa de Inferencia Neutral]
         B -->|Local / Privado| B1[Ollama Brain]
-        B -->|Cloud OpenAI| B2[OpenAI Brain]
-        B -->|Cloud Anthropic| B3[Anthropic Brain]
+        B -->|Google Cloud| B2[Gemini Brain]
+        B -->|Cloud OpenAI| B3[OpenAI Brain]
+        B -->|Cloud Anthropic| B4[Anthropic Brain]
     end
     B1 --> C[Structured Output: NetworkIntent]
     B2 --> C
     B3 --> C
+    B4 --> C
     
     subgraph Security [Capa de Seguridad & Guardrails]
         C --> D{Blast Radius Guard}
