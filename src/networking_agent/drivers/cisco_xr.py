@@ -15,10 +15,29 @@ class CiscoIOSXRDriver(NetworkOSDriver):
 
     def get_health_commands(self) -> List[str]:
         return [
+            "show ipv4 interface brief",
+            "show processes cpu | include CPU",
+            "show interfaces summary",
+            "show route summary",
             "show ospf neighbor",
             "show bgp summary",
-            "show interfaces brief",
         ]
+
+    def get_gateway_interfaces(self) -> List[str]:
+        return [
+            "mgmteth0/rp0/cpu0/0",
+            "mgmteth0/0/cpu0/0",
+            "mgmt0",
+            "loopback0",
+            "bundle-ether1",
+            "wan",
+            "uplink",
+            "internet",
+            "gateway",
+        ]
+
+    def get_rollback_description(self) -> str:
+        return "Cisco IOS-XR atomic 'rollback configuration last 1'"
 
     def build_candidate_commands(self, intent: NetworkIntent) -> List[str]:
         cmds = []

@@ -37,6 +37,47 @@ class NetworkOSDriver(ABC):
         """Identifies interfaces carrying default routes or WAN uplinks to protect them from accidental cutoff."""
         return ["wan", "uplink", "internet", "gateway", "dialer"]
 
+    def get_rollback_description(self) -> str:
+        """Describes the vendor-specific rollback safety mechanism available for this platform."""
+        return "Local configuration snapshot restore"
+
+    def discover_active_management_interfaces(self, health_data: Optional[Dict[str, str]] = None) -> List[str]:
+        """Dynamically identifies the interface carrying the SSH management IP or default route.
+
+        Inspects live outputs from health check commands across any vendor (Cisco, Juniper, MikroTik)
+        to discover which interface owns self.device.host, preventing loss of management.
+        """
+        discovered = list(self.get_gateway_interfaces())
+        host_target = self.device.host.strip().lower()
+
+        if health_data:
+            import re
+
+            for _, output in health_data.items():
+                for line in output.splitlines():
+                    # Check if line mentions the target IP
+                    if host_target in line.lower():
+                        # RouterOS: e.g. '0 R name="ether1" ...' or 'address=192.168.99.1/24 interface=ether1'
+                        if 'interface=' in line:
+                            m = re.search(r'interface=([^\s]+)', line)
+                            if m:
+                                discovered.append(m.group(1).lower())
+                        elif 'name="' in line:
+                            m = re.search(r'name="([^"]+)"', line)
+                            if m:
+                                discovered.append(m.group(1).lower())
+                        else:
+                            # Cisco/Juniper: first token is usually interface name
+                            # e.g. 'GigabitEthernet0/0/0   192.168.99.1   YES NVRAM  up  up'
+                            # e.g. 'ge-0/0/0.0   up   up   inet 192.168.99.1/24'
+                            tokens = line.split()
+                            if tokens:
+                                candidate = tokens[0].rstrip(":,;").split(".")[0].strip()
+                                if len(candidate) >= 3 and not candidate.startswith("%"):
+                                    discovered.append(candidate.lower())
+
+        return list(dict.fromkeys([d.lower() for d in discovered if d]))
+
     def get_running_config_command(self) -> str:
         """Command to retrieve the full active configuration."""
         return "show running-config"

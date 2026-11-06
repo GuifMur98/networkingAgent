@@ -4,6 +4,7 @@ from typing import Optional
 
 from rich.markup import escape
 from rich.panel import Panel
+from rich.prompt import Prompt
 from rich.table import Table
 
 from networking_agent.brains.factory import get_ai_brain
@@ -50,17 +51,18 @@ class NetworkAssistantAgent:
 
         analysis_payload = telemetry.raw_text
         driver = get_os_driver(device)
-        wan_interfaces = driver.get_gateway_interfaces()
+        health_data = {}
 
         if mode == "PROACTIVE":
             logger.info("[*] Running proactive diagnostic interrogation on device...")
             try:
                 health_data = driver.run_health_check()
                 telemetry_str = "\n".join([f"=== {cmd} ===\n{out}" for cmd, out in health_data.items()])
+                wan_interfaces = driver.discover_active_management_interfaces(health_data)
                 analysis_payload = (
                     f"DEVICE ARCHITECTURE CONTEXT:\n"
                     f"Host: {device.host} | OS: {device.device_type}\n"
-                    f"Protected WAN / Gateway Uplink Interfaces: {', '.join(wan_interfaces)}\n\n"
+                    f"Protected WAN / Gateway / Management Interfaces: {', '.join(wan_interfaces)}\n\n"
                     f"OPERATIONAL SYMPTOM REPORTED BY OPERATOR:\n{telemetry.raw_text}\n\n"
                     f"LIVE DEVICE DIAGNOSTIC TELEMETRY:\n{telemetry_str}"
                 )
@@ -69,6 +71,9 @@ class NetworkAssistantAgent:
                     f"[yellow]Could not fetch live device diagnostics ({e}); "
                     "proceeding with reported symptom description.[/yellow]"
                 )
+                wan_interfaces = driver.discover_active_management_interfaces()
+        else:
+            wan_interfaces = driver.discover_active_management_interfaces()
 
         # 1. AI Diagnosis -> Neutral Intent
         intent: NetworkIntent = self.brain.analyze_event(analysis_payload)
@@ -162,29 +167,50 @@ class NetworkAssistantAgent:
             return False
 
         # 5. Human-in-the-Loop (HitL) Approval Gate
-        cli_preview = "\n".join([f"  + {escape(c)}" for c in candidate_cli])
+        rollback_info = driver.get_rollback_description()
+        target_display = escape(intent.target_interface or intent.bgp_neighbor_ip or 'N/A')
+        sev_color = 'red' if intent.severity == 'CRITICAL' else 'yellow'
+        cli_preview = "\n".join([f"  [bold green]+[/bold green] [white]{escape(c)}[/white]" for c in candidate_cli])
         approval_panel = Panel(
-            f"[bold red]WARNING: Configuration modification proposed on [white]{device.host}[/white][/bold red]\n\n"
-            f"[bold yellow]Commands to be injected:[/bold yellow]\n{cli_preview}\n\n"
-            f"[cyan]Action:[/cyan] {intent.action} | "
-            f"[cyan]Target:[/cyan] {escape(intent.target_interface or intent.bgp_neighbor_ip or 'N/A')}",
-            title="HUMAN-IN-THE-LOOP APPROVAL REQUIRED",
-            border_style="red",
+            f"[bold red]⚠️  SOLICITUD DE AUTORIZACIÓN OBLIGATORIA (HUMAN-IN-THE-LOOP)[/bold red]\n\n"
+            f"[bold]Dispositivo Destino:[/bold] [cyan]{device.host}[/cyan] ({device.device_type})  |  "
+            f"[bold]Operador:[/bold] [cyan]{device.username}[/cyan]\n"
+            f"[bold]Acción Propuesta:[/bold] [yellow]{intent.action}[/yellow]  |  "
+            f"[bold]Objetivo:[/bold] [yellow]{target_display}[/yellow]\n"
+            f"[bold]Severidad:[/bold] [{sev_color}]{intent.severity}[/]\n\n"
+            f"[bold cyan]Diagnóstico Técnico Justificativo:[/bold cyan]\n"
+            f"{intent.diagnosis}\n\n"
+            f"[bold yellow]Comandos exactos a inyectar en el equipo:[/bold yellow]\n{cli_preview}\n\n"
+            f"[bold green]Garantía de Resiliencia y Rollback:[/bold green]\n"
+            f"• Se tomará un snapshot de configuración previa antes de inyectar cambios.\n"
+            f"• Mecanismo de reversión disponible: [italic]{rollback_info}[/italic]",
+            title="🛡️ PUERTA DE CONTROL Y APROBACIÓN HUMANA",
+            border_style="bold red",
         )
         console.print(approval_panel)
 
         approved = False
         if self.auto_approve:
-            logger.warning("[bold yellow]Auto-approve is enabled. Proceeding without prompt.[/bold yellow]")
+            logger.warning("[bold red]ATENCIÓN: Modo auto-approve activo. Omitiendo confirmación humana.[/bold red]")
             approved = True
         else:
             try:
-                user_choice = input("Do you authorize injecting these changes? (y/N): ").strip().lower()
-                approved = user_choice == "y" or user_choice == "yes" or user_choice == "s"
+                user_choice = Prompt.ask(
+                    "\n[bold yellow]¿Autorizas la inyección de esta configuración en el equipo? [s/N][/bold yellow]",
+                    default="n",
+                ).strip().lower()
+                approved = user_choice in ["s", "si", "y", "yes", "confirmar"]
             except (EOFError, KeyboardInterrupt):
                 approved = False
 
         if not approved:
+            cancel_panel = Panel(
+                f"[yellow]Operación CANCELADA por el operador.[/yellow]\n"
+                f"El equipo [bold]{device.host}[/bold] NO ha sido modificado y permanece 100% en su estado original.",
+                title="⛔ OPERACIÓN RECHAZADA - DISPOSITIVO INTACTO",
+                border_style="yellow",
+            )
+            console.print(cancel_panel)
             logger.info("[bold yellow][X] Operation rejected by operator. Device was NOT modified.[/bold yellow]")
             audit_logger.record_event(
                 event_type="OPERATOR_REJECTED",

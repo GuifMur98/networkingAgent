@@ -28,20 +28,39 @@ class AgentSettings(BaseSettings):
     enforce_guardrails: bool = Field(default=True, description="Strict enforcement of blast radius and sanitization")
     protected_interfaces: List[str] = Field(
         default_factory=lambda: [
+            # Cisco IOS / IOS-XE
             "Management0",
             "mgmt0",
             "GigabitEthernet0/0",
+            "GigabitEthernet0/0/0",
+            "FastEthernet0/0",
+            "Loopback0",
+            "Dialer0",
+            "Dialer1",
+            "Tunnel0",
+            # Cisco IOS-XR
+            "MgmtEth0/RP0/CPU0/0",
+            "MgmtEth0/0/CPU0/0",
+            # Juniper Junos
             "fxp0",
             "em0",
-            "Loopback0",
+            "me0",
+            "vme",
+            "lo0",
+            # MikroTik RouterOS
             "ether1",
+            "sfp1",
+            "sfp-sfpplus1",
+            "lte1",
+            "pppoe-out1",
+            "bridge",
+            # Generic Uplink / WAN terms
             "wan",
             "uplink",
-            "dialer",
-            "dialer1",
-            "pppoe-out1",
+            "gateway",
+            "internet",
         ],
-        description="Interfaces forbidden from being disabled or modified autonomously",
+        description="Interfaces forbidden from being disabled or modified autonomously across all vendors",
     )
     max_mtu: int = Field(default=9216, description="Maximum allowed MTU value")
     min_mtu: int = Field(default=68, description="Minimum allowed MTU value")

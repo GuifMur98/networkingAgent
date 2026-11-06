@@ -1,5 +1,7 @@
 """Unit tests for the Closed-Loop Orchestration Engine."""
 
+import pytest
+
 from networking_agent.engine.agent import NetworkAssistantAgent
 from networking_agent.models.device import DeviceInventory
 from networking_agent.models.intent import NetworkIntent
@@ -101,7 +103,7 @@ def test_agent_proactive_symptom_investigation(mocker, tmp_path):
     sent_prompt = mock_brain.analyze_event.call_args[0][0]
     assert "OPERATIONAL SYMPTOM REPORTED BY OPERATOR" in sent_prompt
     assert "LIVE DEVICE DIAGNOSTIC TELEMETRY" in sent_prompt
-    assert "Protected WAN / Gateway Uplink Interfaces" in sent_prompt
+    assert "Protected WAN / Gateway / Management Interfaces" in sent_prompt
 
 
 def test_agent_blocks_wan_restart_attempt(mocker):
@@ -133,4 +135,61 @@ def test_agent_blocks_wan_restart_attempt(mocker):
     assert result is False
     # Ensure commands were never built or executed on the device
     assert not mock_driver.execute_commands.called
+
+
+@pytest.mark.parametrize(
+    "vendor,device_type,mgmt_iface",
+    [
+        ("Cisco IOS", "cisco_ios", "GigabitEthernet0/0/0"),
+        ("Cisco NX-OS", "cisco_nxos", "mgmt0"),
+        ("Juniper Junos", "juniper_junos", "fxp0"),
+    ],
+)
+def test_agent_blocks_multi_vendor_management_loss(mocker, vendor, device_type, mgmt_iface):
+    # Tests that across Cisco, Juniper, etc., any attempt to bounce management interfaces is blocked
+    mock_brain = mocker.MagicMock()
+    mock_brain.analyze_event.return_value = NetworkIntent(
+        diagnosis=f"Flapping detected on {mgmt_iface}. Restarting.",
+        severity="CRITICAL",
+        requires_config_change=True,
+        action="restart_interface",
+        target_interface=mgmt_iface,
+    )
+    mocker.patch("networking_agent.engine.agent.get_ai_brain", return_value=mock_brain)
+
+    agent = NetworkAssistantAgent(ai_provider="ollama", auto_approve=True)
+    dev = DeviceInventory(host="10.10.10.1", device_type=device_type)
+    event = TelemetryEvent(raw_text=f"Interface flap on {mgmt_iface}", source_host=dev.host)
+
+    result = agent.process_telemetry(device=dev, telemetry=event)
+    assert result is False
+
+
+def test_agent_hitl_operator_rejection_protects_device(mocker):
+    mock_brain = mocker.MagicMock()
+    mock_brain.analyze_event.return_value = NetworkIntent(
+        diagnosis="Safe MTU change on access port",
+        severity="LOW",
+        requires_config_change=True,
+        action="set_interface_mtu",
+        target_interface="Ethernet1/10",
+        mtu_value=9000,
+    )
+    mocker.patch("networking_agent.engine.agent.get_ai_brain", return_value=mock_brain)
+
+    mock_driver = mocker.MagicMock()
+    mock_driver.build_candidate_commands.return_value = ["interface Ethernet1/10", "mtu 9000"]
+    mocker.patch("networking_agent.engine.agent.get_os_driver", return_value=mock_driver)
+
+    # Operator explicitly types 'n' to reject
+    mocker.patch("rich.prompt.Prompt.ask", return_value="n")
+
+    agent = NetworkAssistantAgent(ai_provider="ollama", auto_approve=False)
+    dev = DeviceInventory(host="10.10.20.11", device_type="cisco_nxos")
+    event = TelemetryEvent(raw_text="MTU discrepancy", source_host=dev.host)
+
+    result = agent.process_telemetry(device=dev, telemetry=event)
+    assert result is False
+    assert not mock_driver.execute_commands.called
+
 

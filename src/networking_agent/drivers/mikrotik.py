@@ -27,7 +27,22 @@ class MikrotikRouterOSDriver(NetworkOSDriver):
 
     def get_gateway_interfaces(self) -> List[str]:
         """Identifies WAN or primary uplink interfaces on MikroTik to prevent accidental remote cutoff."""
-        return ["ether1", "sfp1", "sfp-sfpplus1", "lte1", "pppoe-out1", "wan", "uplink"]
+        return [
+            "ether1",
+            "sfp1",
+            "sfp-sfpplus1",
+            "lte1",
+            "pppoe-out1",
+            "wan",
+            "uplink",
+            "internet",
+            "gateway",
+            "bridge",
+            "lo",
+        ]
+
+    def get_rollback_description(self) -> str:
+        return f"MikroTik system backup snapshot ('{MIKROTIK_BACKUP_NAME}.backup') and export file"
 
     def get_running_config_command(self) -> str:
         """In RouterOS, /export verbose=no exports the active human-readable configuration."""

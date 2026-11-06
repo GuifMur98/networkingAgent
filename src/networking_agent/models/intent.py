@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field, field_validator
 INTERFACE_REGEX = re.compile(
     r"^(?:(?:GigabitEthernet|TenGigabitEthernet|TwentyFiveGigE|FortyGigabitEthernet|HundredGigE|"
     r"Ethernet|FastEthernet|Port-channel|Bundle-Ether|Vlan|Loopback|mgmt|Management)[0-9\/\.:]+|"
-    r"(?:ge|xe|et|lo|ae|irb)\-[0-9\/\.:]+|"
+    r"(?:ge|xe|et|lo|ae|irb|fxp|em|me|vme)[\-\.0-9\/\:]+|"
     r"eth[0-9]+|"
     r"(?:ether|sfp|sfpplus|wlan|bridge|bonding|vlan)[0-9\-\.:]+|"
     r"sfp\-sfpplus[0-9]+)$",

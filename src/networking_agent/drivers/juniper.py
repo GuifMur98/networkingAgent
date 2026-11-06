@@ -15,10 +15,32 @@ class JuniperJunosDriver(NetworkOSDriver):
 
     def get_health_commands(self) -> List[str]:
         return [
+            "show interfaces terse",
+            "show chassis routing-engine",
+            "show interfaces extensive | match \"Errors|Drops|Duplex\"",
+            "show route summary",
+            "show system uptime",
             "show ospf neighbor",
             "show bgp summary",
-            "show interfaces terse",
         ]
+
+    def get_gateway_interfaces(self) -> List[str]:
+        return [
+            "fxp0",
+            "em0",
+            "me0",
+            "vme",
+            "lo0",
+            "ge-0/0/0",
+            "xe-0/0/0",
+            "wan",
+            "uplink",
+            "internet",
+            "gateway",
+        ]
+
+    def get_rollback_description(self) -> str:
+        return "Junos commit confirmed with automatic 3-minute rollback timer"
 
     def build_candidate_commands(self, intent: NetworkIntent) -> List[str]:
         if intent.action == "disable_interface" and intent.target_interface:

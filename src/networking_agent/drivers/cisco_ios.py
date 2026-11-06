@@ -16,11 +16,34 @@ class CiscoIOSDriver(NetworkOSDriver):
     def get_health_commands(self) -> List[str]:
         return [
             "show ip interface brief",
+            "show processes cpu | include CPU utilization",
             "show interfaces status",
             "show interfaces counters errors",
+            "show ip route summary",
             "show ip ospf neighbor",
             "show interfaces status err-disabled",
         ]
+
+    def get_gateway_interfaces(self) -> List[str]:
+        return [
+            "gigabitethernet0/0/0",
+            "gigabitethernet0/0",
+            "gigabitethernet0",
+            "fastethernet0/0",
+            "management0",
+            "mgmt0",
+            "loopback0",
+            "dialer0",
+            "dialer1",
+            "tunnel0",
+            "wan",
+            "uplink",
+            "internet",
+            "gateway",
+        ]
+
+    def get_rollback_description(self) -> str:
+        return "Cisco IOS configure replace rollback via local flash checkpoint"
 
     def build_candidate_commands(self, intent: NetworkIntent) -> List[str]:
         if intent.action == "disable_interface" and intent.target_interface:

@@ -18,11 +18,29 @@ class CiscoNXOSDriver(NetworkOSDriver):
     def get_health_commands(self) -> List[str]:
         return [
             "show interface status",
+            "show system resources",
+            "show ip interface brief",
             "show interface counters errors",
+            "show ip route summary",
             "show bgp l2vpn evpn summary",
             "show ip ospf neighbors",
             "show interface status err-disabled",
         ]
+
+    def get_gateway_interfaces(self) -> List[str]:
+        return [
+            "mgmt0",
+            "management0",
+            "loopback0",
+            "port-channel1",
+            "wan",
+            "uplink",
+            "internet",
+            "gateway",
+        ]
+
+    def get_rollback_description(self) -> str:
+        return f"Atomic NX-OS checkpoint rollback ('{CHECKPOINT_NAME}')"
 
     def build_candidate_commands(self, intent: NetworkIntent) -> List[str]:
         cmds = ["configure session AI_AGENT_FIX"]
