@@ -39,31 +39,31 @@
 
 ```mermaid
 flowchart TD
-    A[Síntoma del Operador o Syslog] --> B[AI Brain Factory]
-    subgraph Brains [Capa de Inferencia Neutral]
-        B -->|Local / On-Premise| B1[Ollama Brain]
-        B -->|Google Cloud| B2[Google Gemini Brain]
-        B -->|Cloud APIs| B3[OpenAI / Anthropic]
+    A["Síntoma del Operador o Syslog"] --> B["AI Brain Factory"]
+    subgraph Brains ["Capa de Inferencia Neutral"]
+        B -->|Local / On-Premise| B1["Ollama Brain"]
+        B -->|Google Cloud| B2["Google Gemini Brain"]
+        B -->|Cloud APIs| B3["OpenAI / Anthropic"]
     end
-    B1 --> C[Structured Output: NetworkIntent]
+    B1 --> C["Structured Output: NetworkIntent"]
     B2 --> C
     B3 --> C
 
-    subgraph Security [Capa de Seguridad & Guardrails]
-        C --> D{Blast Radius Guard}
-        D -->|WAN / Uplink / Mgmt Port| D1[🛑 BLOQUEO ACTIVO: Acceso Prohibido]
-        D -->|Safe Target| E{Command Validator}
-        E -->|CLI Injection / Prohibited| E1[🛑 BLOQUEO ACTIVO: Injection Detected]
-        E -->|Sanitized CLI| F[🛡️ Compuerta Human-in-the-Loop]
+    subgraph Security ["Capa de Seguridad & Guardrails"]
+        C --> D{"Blast Radius Guard"}
+        D -->|WAN / Uplink / Mgmt Port| D1["🛑 BLOQUEO ACTIVO: Acceso Prohibido"]
+        D -->|Safe Target| E{"Command Validator"}
+        E -->|CLI Injection / Prohibited| E1["🛑 BLOQUEO ACTIVO: Injection Detected"]
+        E -->|Sanitized CLI| F["🛡️ Compuerta Human-in-the-Loop"]
     end
 
-    subgraph Execution [Capa de Ejecución en Bucle Cerrado]
-        F -->|Operador Rechaza| G1[Abortar & Auditar]
-        F -->|Operador Autoriza| G2[📸 Pre-Check Snapshot & Checkpoint]
-        G2 --> H[⚡ Inyección Transaccional (SSH Pooling)]
-        H --> I[🔍 Post-Check de Verificación de Telemetría]
-        I -->|Saludable / Resuelto| J[✅ Commit Definitivo & Auditoría Exitosa]
-        I -->|Fallo / Anomalía| K[🔄 Rollback Automático Inmediato]
+    subgraph Execution ["Capa de Ejecución en Bucle Cerrado"]
+        F -->|Operador Rechaza| G1["Abortar & Auditar"]
+        F -->|Operador Autoriza| G2["📸 Pre-Check Snapshot & Checkpoint"]
+        G2 --> H["⚡ Inyección Transaccional (SSH Pooling)"]
+        H --> I["🔍 Post-Check de Verificación de Telemetría"]
+        I -->|Saludable / Resuelto| J["✅ Commit Definitivo & Auditoría Exitosa"]
+        I -->|Fallo / Anomalía| K["🔄 Rollback Automático Inmediato"]
     end
 ```
 

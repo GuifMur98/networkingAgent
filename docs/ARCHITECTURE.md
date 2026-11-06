@@ -16,31 +16,31 @@ El principio rector del sistema es **separar el razonamiento cognitivo de la eje
 
 ```mermaid
 flowchart TD
-    subgraph CognitiveLayer [1. Capa Cognitiva: Inferencia Neutral]
-        T[Telemetría / Syslog / Síntoma] --> B[AI Brain Factory]
-        B --> B1[Ollama / Local LLM]
-        B --> B2[Google Gemini 2.5]
-        B --> B3[OpenAI / Anthropic]
-        B1 --> I[Pydantic Structured Output: NetworkIntent]
+    subgraph CognitiveLayer ["1. Capa Cognitiva: Inferencia Neutral"]
+        T["Telemetría / Syslog / Síntoma"] --> B["AI Brain Factory"]
+        B --> B1["Ollama / Local LLM"]
+        B --> B2["Google Gemini 2.5"]
+        B --> B3["OpenAI / Anthropic"]
+        B1 --> I["Pydantic Structured Output: NetworkIntent"]
         B2 --> I
         B3 --> I
     end
 
-    subgraph GuardrailLayer [2. Capa de Guardarraíles y Seguridad]
-        I --> G1{Blast Radius Guard}
-        G1 -->|WAN / Mgmt / Link Protegido| BL1[BLOQUEO ACTIVO: Acceso Prohibido]
-        G1 -->|Acceso Válido| G2{Command Validator}
-        G2 -->|Inyección / Comandos Prohibidos| BL2[BLOQUEO ACTIVO: Injection Detected]
-        G2 -->|Comandos Seguros| H[Puerta Human-in-the-Loop]
+    subgraph GuardrailLayer ["2. Capa de Guardarraíles y Seguridad"]
+        I --> G1{"Blast Radius Guard"}
+        G1 -->|WAN / Mgmt / Link Protegido| BL1["BLOQUEO ACTIVO: Acceso Prohibido"]
+        G1 -->|Acceso Válido| G2{"Command Validator"}
+        G2 -->|Inyección / Comandos Prohibidos| BL2["BLOQUEO ACTIVO: Injection Detected"]
+        G2 -->|Comandos Seguros| H["Puerta Human-in-the-Loop"]
     end
 
-    subgraph ClosedLoopLayer [3. Capa de Ejecución Closed-Loop]
-        H -->|Rechazo Operador| AB[Abortar & Auditar]
-        H -->|Aprobación Operador| SNAP[Snapshot & Checkpoint Pre-Cambio]
-        SNAP --> EXEC[Ejecución Transaccional SSH Pooling]
-        EXEC --> POST[Post-Check & Verificación de Telemetría]
-        POST -->|Éxito / Problema Resuelto| OK[Auditoría Exitosa & Cierre]
-        POST -->|Fallo / Anomalía| RB[Rollback Inmediato a Snapshot Previo]
+    subgraph ClosedLoopLayer ["3. Capa de Ejecución Closed-Loop"]
+        H -->|Rechazo Operador| AB["Abortar & Auditar"]
+        H -->|Aprobación Operador| SNAP["Snapshot & Checkpoint Pre-Cambio"]
+        SNAP --> EXEC["Ejecución Transaccional SSH Pooling"]
+        EXEC --> POST["Post-Check & Verificación de Telemetría"]
+        POST -->|Éxito / Problema Resuelto| OK["Auditoría Exitosa & Cierre"]
+        POST -->|Fallo / Anomalía| RB["Rollback Inmediato a Snapshot Previo"]
     end
 ```
 
@@ -104,20 +104,20 @@ flowchart TD
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Operador as 👤 Ingeniero de Red
-    participant CLI as 🖥️ CLI Interactivo
-    participant Agent as 🤖 NetworkAssistantAgent
-    participant Brain as 🧠 Cerebro de IA (Ollama/Gemini)
-    participant Guard as 🛡️ BlastRadius & Validator
-    participant Driver as 🔌 NetworkOSDriver (SSH Pooling)
-    participant Device as 🖧 Router / Switch Físico
+    actor Operador as "👤 Ingeniero de Red"
+    participant CLI as "🖥️ CLI Interactivo"
+    participant Agent as "🤖 NetworkAssistantAgent"
+    participant Brain as "🧠 Cerebro de IA (Ollama/Gemini)"
+    participant Guard as "🛡️ BlastRadius & Validator"
+    participant Driver as "🔌 NetworkOSDriver (SSH Pooling)"
+    participant Device as "🖧 Router / Switch Físico"
 
     Operador->>CLI: Ingresa síntoma u opera evento de telemetría
-    CLI->>Agent: process_telemetry(device, telemetry, mode="PROACTIVE")
+    CLI->>Agent: process_telemetry [modo PROACTIVE]
     
     rect rgb(240, 248, 255)
         Note over Agent,Driver: Diagnóstico en Vivo (Reutilizando SSH)
-        Agent->>Driver: get_connection() -> SSH Socket activo
+        Agent->>Driver: get_connection - Sesión SSH activa
         Driver->>Device: Ejecuta health_check (CPU, interfaces, errores)
         Device-->>Driver: Retorna estadísticas operativas
         Driver-->>Agent: health_data + discovery de interfaces WAN
@@ -139,19 +139,19 @@ sequenceDiagram
             Agent->>Driver: build_candidate_commands(intent)
             Driver-->>Agent: candidate_cli nativo
             Agent->>CLI: Muestra Solicitud de Aprobación HitL con Diff CLI
-            CLI->>Operador: ¿Autoriza ejecución? (s/n)
+            CLI->>Operador: ¿Autoriza ejecución? [s/n]
             
             alt Operador Rechaza
-                Operador-->>CLI: Rechazado ('n')
+                Operador-->>CLI: Rechazado (n)
                 CLI->>Agent: approved = False
                 Agent->>CLI: Dispositivo intacto & Registra OPERATOR_REJECTED
             else Operador Autoriza
-                Operador-->>CLI: Autorizado ('s')
+                Operador-->>CLI: Autorizado (s)
                 CLI->>Agent: approved = True
                 
                 rect rgb(255, 250, 240)
                     Note over Agent,Device: Snapshot & Ejecución Transaccional
-                    Agent->>Driver: backup_running_config()
+                    Agent->>Driver: backup_running_config
                     Driver->>Device: Descarga snapshot / genera checkpoint local
                     Agent->>Driver: execute_commands(candidate_cli)
                     Driver->>Device: Inyecta configuración transaccional
@@ -159,18 +159,18 @@ sequenceDiagram
 
                 rect rgb(240, 255, 240)
                     Note over Agent,Device: Post-Verificación & Rollback
-                    Agent->>Driver: run_health_check()
+                    Agent->>Driver: run_health_check
                     Driver->>Device: Re-interroga estado operativo posterior
                     Agent->>Agent: evaluate_changes(pre_health, post_health)
                     
                     alt Verificación Exitosa
                         Agent->>CLI: [OK] Remediación verificada con éxito
-                        Agent->>Agent: AuditLogger -> REMEDIATION_SUCCESS
+                        Agent->>Agent: AuditLogger: REMEDIATION_SUCCESS
                     else Verificación Fallida
                         Agent->>Driver: rollback(backup_path)
                         Driver->>Device: Restaura configuración original previa
                         Agent->>CLI: [FALLO] Rollback automático ejecutado
-                        Agent->>Agent: AuditLogger -> REMEDIATION_ROLLBACK
+                        Agent->>Agent: AuditLogger: REMEDIATION_ROLLBACK
                     end
                 end
             end
@@ -178,4 +178,5 @@ sequenceDiagram
     end
 
     Note over Agent,Driver: Cierre Seguro de Sesión
-    Agent->>Driver: driver.disconnect() -> Cierra socket SSH
+    Agent->>Driver: driver.disconnect: Cierra socket SSH
+```
