@@ -80,6 +80,22 @@ def test_network_intent_rejects_invalid_bgp_ip(invalid_ip):
         )
 
 
+@pytest.mark.parametrize("empty_val", ["", "   ", "none", "null", "N/A", "None", None])
+def test_network_intent_coerces_empty_fields_to_none(empty_val):
+    intent = NetworkIntent(
+        diagnosis="Normal condition detected, no action needed.",
+        severity="LOW",
+        requires_config_change=False,
+        action="none",
+        target_interface=empty_val,
+        mtu_value=0 if empty_val in ["", None] else empty_val,
+        bgp_neighbor_ip=empty_val,
+    )
+    assert intent.target_interface is None
+    assert intent.mtu_value is None
+    assert intent.bgp_neighbor_ip is None
+
+
 def test_device_inventory_masks_password():
     dev = DeviceInventory(
         host="10.1.1.1",

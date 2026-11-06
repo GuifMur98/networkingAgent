@@ -2,7 +2,7 @@
 
 import re
 from ipaddress import ip_address
-from typing import Literal, Optional
+from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -57,29 +57,62 @@ class NetworkIntent(BaseModel):
         description="Valid IPv4 or IPv6 address of the BGP neighbor.",
     )
 
-    @field_validator("target_interface")
+    @field_validator("target_interface", mode="before")
     @classmethod
-    def validate_interface_name(cls, v: Optional[str]) -> Optional[str]:
+    def validate_interface_name(cls, v: Any) -> Optional[str]:
         if v is None:
             return None
+        if not isinstance(v, str):
+            v = str(v)
         v_clean = v.strip()
-        # Strictly forbid newlines, null bytes, command injection markers
-        if any(bad in v_clean for bad in ["\n", "\r", ";", "&", "|", "`", "$", " ", "\t"]):
+        if not v_clean or v_clean.lower() in ["none", "null", "n/a", "undefined"]:
+            return None
+        # Strictly forbid newlines, null bytes, command injection markers in the raw input
+        if any(bad in v for bad in ["\n", "\r", ";", "&", "|", "`", "$"]):
             raise ValueError(f"Illegal character detected in interface name: '{v}'")
+        if " " in v_clean or "\t" in v_clean:
+            raise ValueError(f"Illegal whitespace detected in interface name: '{v}'")
         if not INTERFACE_REGEX.match(v_clean):
             raise ValueError(f"Interface name '{v}' does not match standard network interface syntax.")
         return v_clean
 
-    @field_validator("bgp_neighbor_ip")
+    @field_validator("mtu_value", mode="before")
     @classmethod
-    def validate_neighbor_ip(cls, v: Optional[str]) -> Optional[str]:
+    def validate_mtu_value(cls, v: Any) -> Optional[int]:
         if v is None:
             return None
-        # Disallow newlines, whitespace, or command injection characters
-        if any(bad in v for bad in ["\n", "\r", ";", "&", "|", "`", "$", " ", "\t"]):
+        if isinstance(v, str):
+            v_clean = v.strip().lower()
+            if not v_clean or v_clean in ["none", "null", "n/a", "0", "undefined"]:
+                return None
+            try:
+                num = int(v_clean)
+                if num == 0:
+                    return None
+                return num
+            except ValueError:
+                pass
+        elif isinstance(v, int) and v == 0:
+            return None
+        return v
+
+    @field_validator("bgp_neighbor_ip", mode="before")
+    @classmethod
+    def validate_neighbor_ip(cls, v: Any) -> Optional[str]:
+        if v is None:
+            return None
+        if not isinstance(v, str):
+            v = str(v)
+        v_clean = v.strip()
+        if not v_clean or v_clean.lower() in ["none", "null", "n/a", "undefined"]:
+            return None
+        # Disallow newlines, semicolons, shell metacharacters in raw input
+        if any(bad in v for bad in ["\n", "\r", ";", "&", "|", "`", "$"]):
             raise ValueError(f"Illegal character detected in BGP IP: '{v}'")
+        if " " in v_clean or "\t" in v_clean:
+            raise ValueError(f"Illegal whitespace detected in BGP IP: '{v}'")
         try:
-            ip_obj = ip_address(v)
+            ip_obj = ip_address(v_clean)
             return str(ip_obj)
         except ValueError as e:
             raise ValueError(f"Invalid BGP neighbor IP address: '{v}'") from e
