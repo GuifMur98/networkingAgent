@@ -26,6 +26,9 @@ class DiagnosticWorkspace(Static):
             self.symptom = symptom
             self.mode = mode
 
+    class ReturnHomeRequested(Message):
+        """Emitted when the operator wants to return to the Home/Inicio view."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.current_device: Optional[DeviceInventory] = None
@@ -33,6 +36,11 @@ class DiagnosticWorkspace(Static):
 
     def compose(self) -> ComposeResult:
         with Vertical(id="diagnostic-container"):
+            # Navigation Header with Back button
+            with Horizontal(id="diagnostic-nav-bar"):
+                yield Label("🔍 ASISTENTE DE DIAGNÓSTICO Y REMEDIACIÓN", id="diagnostic-title")
+                yield Button("⬅️ Volver al Menú Principal", id="btn-back-to-home", variant="default")
+
             # Selected Device Card
             yield Static(id="target-device-card")
 
@@ -103,6 +111,10 @@ class DiagnosticWorkspace(Static):
                 self.selected_mode = "REACTIVE"
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "btn-back-to-home":
+            self.post_message(self.ReturnHomeRequested())
+            return
+
         text_area = self.query_one("#symptom-input", TextArea)
 
         # Handle quick chips

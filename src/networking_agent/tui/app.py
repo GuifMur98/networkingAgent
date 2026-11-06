@@ -21,8 +21,10 @@ from networking_agent.tui.modals.device_modal import DeviceModal
 from networking_agent.tui.modals.hitl_modal import HitLModal
 from networking_agent.tui.modals.vault_modal import VaultModal
 from networking_agent.tui.widgets.audit_table import AuditTableWidget
+from networking_agent.tui.widgets.device_inventory_view import DeviceInventoryView
 from networking_agent.tui.widgets.device_sidebar import DeviceSidebar
 from networking_agent.tui.widgets.diagnostic_view import DiagnosticWorkspace
+from networking_agent.tui.widgets.home_view import HomeDashboard
 from networking_agent.tui.widgets.status_bar import TopStatusBar
 
 
@@ -111,10 +113,11 @@ class NetworkingAgentTUIApp(App):
     CSS_PATH = "styles.tcss"
 
     BINDINGS = [
-        Binding("q", "quit", "Salir", show=True),
-        Binding("d", "add_device", "Añadir Equipo", show=True),
-        Binding("s", "open_settings", "Ajustes IA", show=True),
-        Binding("r", "refresh_all", "Recargar", show=True),
+        Binding("h", "go_home", "🏠 Inicio", show=True),
+        Binding("q", "quit", "🚪 Salir", show=True),
+        Binding("d", "add_device", "➕ Añadir Equipo", show=True),
+        Binding("s", "open_settings", "🧠 Ajustes IA", show=True),
+        Binding("r", "refresh_all", "🔄 Recargar", show=True),
     ]
 
     def __init__(self, *args, **kwargs):
@@ -135,11 +138,17 @@ class NetworkingAgentTUIApp(App):
             id="top-bar",
         )
 
-        with TabbedContent(id="main-tabs"):
-            with TabPane("🔍 Asistente y Diagnóstico", id="pane-diagnostic"):
+        with TabbedContent(id="main-tabs", initial="pane-home"):
+            with TabPane("🏠 Inicio (Menú Principal)", id="pane-home"):
+                yield HomeDashboard(id="home-widget")
+
+            with TabPane("🔍 Diagnóstico y Remediación", id="pane-diagnostic"):
                 with Horizontal(id="main-split"):
                     yield DeviceSidebar(id="device-sidebar")
                     yield DiagnosticWorkspace(id="diagnostic-workspace")
+
+            with TabPane("🖥️ Catálogo de Dispositivos", id="pane-inventory"):
+                yield DeviceInventoryView(id="inventory-widget")
 
             with TabPane("📋 Registro de Auditoría", id="pane-audit"):
                 yield AuditTableWidget(id="audit-widget")
@@ -150,6 +159,43 @@ class NetworkingAgentTUIApp(App):
         """Trigger initial device sync."""
         sidebar = self.query_one(DeviceSidebar)
         sidebar.reload_devices()
+
+    def action_go_home(self) -> None:
+        """Switch navigation back to the Home Dashboard."""
+        tabs = self.query_one("#main-tabs", TabbedContent)
+        tabs.active = "pane-home"
+        try:
+            home = self.query_one(HomeDashboard)
+            home.update_status_card()
+        except Exception:
+            pass
+
+    def on_home_dashboard_navigate_to_tab(self, event: HomeDashboard.NavigateToTab) -> None:
+        tabs = self.query_one("#main-tabs", TabbedContent)
+        tabs.active = event.tab_id
+
+    def on_home_dashboard_open_settings_requested(self, event: HomeDashboard.OpenSettingsRequested) -> None:
+        self.action_open_settings()
+
+    def on_diagnostic_workspace_return_home_requested(
+        self, event: DiagnosticWorkspace.ReturnHomeRequested
+    ) -> None:
+        self.action_go_home()
+
+    def on_device_inventory_view_return_home_requested(
+        self, event: DeviceInventoryView.ReturnHomeRequested
+    ) -> None:
+        self.action_go_home()
+
+    def on_device_inventory_view_add_device_requested(
+        self, event: DeviceInventoryView.AddDeviceRequested
+    ) -> None:
+        self.action_add_device()
+
+    def on_audit_table_widget_return_home_requested(
+        self, event: AuditTableWidget.ReturnHomeRequested
+    ) -> None:
+        self.action_go_home()
 
     def on_device_sidebar_device_selected(self, event: DeviceSidebar.DeviceSelected) -> None:
         """Route selected device to workspace."""
@@ -165,6 +211,11 @@ class NetworkingAgentTUIApp(App):
             if device:
                 sidebar = self.query_one(DeviceSidebar)
                 sidebar.reload_devices()
+                try:
+                    inv_view = self.query_one(DeviceInventoryView)
+                    inv_view.reload_devices()
+                except Exception:
+                    pass
                 status_bar = self.query_one(TopStatusBar)
                 status_bar.update_device_count(len(db.list_devices()))
 
@@ -177,6 +228,11 @@ class NetworkingAgentTUIApp(App):
                 status_bar = self.query_one(TopStatusBar)
                 status_bar.update_brain(f"{result['provider']}:{result['model']}")
                 status_bar.update_hitl_mode(result.get("auto_approve") == "true")
+                try:
+                    home = self.query_one(HomeDashboard)
+                    home.update_status_card()
+                except Exception:
+                    pass
 
         self.push_screen(VaultModal(), callback=on_settings_saved)
 
@@ -184,6 +240,11 @@ class NetworkingAgentTUIApp(App):
         """Reload inventory and audit log."""
         sidebar = self.query_one(DeviceSidebar)
         sidebar.reload_devices()
+        try:
+            inv_view = self.query_one(DeviceInventoryView)
+            inv_view.reload_devices()
+        except Exception:
+            pass
         audit_widget = self.query_one(AuditTableWidget)
         audit_widget.reload_audit_data()
         status_bar = self.query_one(TopStatusBar)

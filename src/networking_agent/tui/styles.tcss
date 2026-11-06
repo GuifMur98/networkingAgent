@@ -1,15 +1,15 @@
 /* NetworkingAgent Modern Enterprise TCSS */
 
 Screen {
-    background: #0f141c;
-    color: #e0e6ed;
+    background: #0d1117;
+    color: #e6edf3;
 }
 
 /* Header & Top Bar */
 #top-bar {
     dock: top;
     height: 3;
-    background: #182230;
+    background: #161b22;
     color: #ffffff;
     border-bottom: heavy #00e5ff;
     padding: 0 1;
@@ -22,46 +22,137 @@ Screen {
     content-align: left middle;
 }
 
-#top-status {
+#top-badges {
     width: 65%;
     content-align: right middle;
-    color: #8fa3b8;
 }
 
 .status-badge {
     padding: 0 1;
     margin: 0 1;
-    background: #253346;
+    background: #21262d;
     border: none;
     text-style: bold;
 }
 
 .badge-brain {
-    color: #d175ff;
+    color: #d2a8ff;
 }
 
 .badge-device {
-    color: #00e5ff;
+    color: #58a6ff;
 }
 
 .badge-hitl {
-    color: #ffd600;
+    color: #f2cc60;
 }
 
-/* Main Container Split */
-#main-container {
-    height: 1fr;
-    layout: horizontal;
+/* Home / Welcome View */
+#home-container {
+    height: 100%;
+    padding: 1 2;
+    overflow-y: auto;
+}
+
+#home-status-card {
+    margin-bottom: 1;
+}
+
+#home-action-grid {
+    grid-size: 2 2;
+    grid-gutter: 1 2;
+    height: 14;
+    margin-top: 1;
+}
+
+.home-nav-card {
+    height: 6;
+    width: 100%;
+    text-style: bold;
+    text-align: center;
+    border: tall #30363d;
+    padding: 1;
+}
+
+.card-primary {
+    background: #1f3a2b;
+    color: #3fb950;
+    border: tall #2ea043;
+}
+
+.card-primary:hover {
+    background: #238636;
+    color: #ffffff;
+}
+
+.card-secondary {
+    background: #1c2b3e;
+    color: #58a6ff;
+    border: tall #388bfd;
+}
+
+.card-secondary:hover {
+    background: #1f6feb;
+    color: #ffffff;
+}
+
+.card-settings {
+    background: #2b1f3a;
+    color: #bc8cff;
+    border: tall #8957e5;
+}
+
+.card-settings:hover {
+    background: #6e40c9;
+    color: #ffffff;
+}
+
+.card-audit {
+    background: #332819;
+    color: #d29922;
+    border: tall #bb8009;
+}
+
+.card-audit:hover {
+    background: #9e6a03;
+    color: #ffffff;
+}
+
+/* Top Navigation Bars in Views */
+#diagnostic-nav-bar, #inventory-top-bar, #audit-top-bar {
+    height: 3;
+    background: #161b22;
+    border-bottom: round #30363d;
+    padding: 0 1;
+    margin-bottom: 1;
+    align-vertical: middle;
+}
+
+#diagnostic-title, #inventory-title, #lbl-audit-header {
+    width: 70%;
+    text-style: bold;
+    color: #00e5ff;
+}
+
+#btn-back-to-home, #btn-back-from-inventory, #btn-back-from-audit {
+    width: 30%;
+    background: #21262d;
+    color: #f0f6fc;
+    border: tall #30363d;
+}
+
+#btn-back-to-home:hover, #btn-back-from-inventory:hover, #btn-back-from-audit:hover {
+    background: #30363d;
+    color: #00e5ff;
 }
 
 /* Sidebar */
-#sidebar-container {
-    width: 34;
-    dock: left;
+#device-sidebar {
+    width: 32;
     height: 100%;
-    background: #141c27;
-    border-right: vkey #233144;
-    padding: 1 1;
+    background: #161b22;
+    border-right: vkey #30363d;
+    padding: 1;
 }
 
 #sidebar-title {
@@ -81,18 +172,18 @@ Screen {
     height: 3;
     padding: 0 1;
     margin-bottom: 1;
-    background: #1b2636;
-    border-left: wide #4a6382;
+    background: #21262d;
+    border-left: wide #484f58;
 }
 
 .device-item:hover {
-    background: #25364e;
-    border-left: wide #00e5ff;
+    background: #30363d;
+    border-left: wide #58a6ff;
 }
 
 .device-item.-selected {
-    background: #20354e;
-    border-left: wide #00e676;
+    background: #1f3a2b;
+    border-left: wide #3fb950;
     color: #ffffff;
     text-style: bold;
 }
@@ -100,28 +191,34 @@ Screen {
 #btn-add-device {
     width: 100%;
     margin-top: 1;
-    background: #00b0ff;
-    color: #000000;
+    background: #238636;
+    color: #ffffff;
     text-style: bold;
 }
 
-/* Workspace Tabs */
-#workspace-tabs {
+/* Diagnostic View */
+#diagnostic-workspace {
     height: 100%;
-    padding: 1 2;
+    padding: 1;
 }
 
-/* Diagnostic View */
+#diagnostic-container {
+    height: 100%;
+    overflow-y: auto;
+}
+
 .section-panel {
-    background: #16202c;
-    border: round #293a50;
-    padding: 1 2;
+    background: #161b22;
+    border: round #30363d;
+    padding: 0 1;
     margin-bottom: 1;
+    height: 3;
+    align-vertical: middle;
 }
 
 #target-device-card {
-    height: 4;
-    background: #1a2533;
+    height: 3;
+    background: #161b22;
     border-left: heavy #00e5ff;
     padding: 0 1;
     margin-bottom: 1;
@@ -135,21 +232,21 @@ Screen {
 
 .chip-btn {
     margin-right: 1;
-    background: #253549;
-    color: #8fa3b8;
+    background: #21262d;
+    color: #8b949e;
     border: none;
     height: 3;
 }
 
 .chip-btn:hover {
-    background: #344a66;
+    background: #30363d;
     color: #ffffff;
 }
 
 #symptom-input {
-    height: 5;
-    background: #111722;
-    border: tall #2b3d54;
+    height: 4;
+    background: #0d1117;
+    border: tall #30363d;
     color: #ffffff;
     margin-bottom: 1;
 }
@@ -160,23 +257,22 @@ Screen {
 
 #btn-run-remediation {
     width: 100%;
-    background: #00c853;
-    color: #000000;
+    background: #238636;
+    color: #ffffff;
     text-style: bold;
     height: 3;
     margin-bottom: 1;
 }
 
 #btn-run-remediation:hover {
-    background: #00e676;
+    background: #2ea043;
 }
 
-/* Findings & Log Area */
 #diagnosis-result {
     height: auto;
     max-height: 12;
-    background: #121820;
-    border: round #27374c;
+    background: #161b22;
+    border: round #30363d;
     padding: 1;
     margin-bottom: 1;
 }
@@ -184,30 +280,34 @@ Screen {
 #log-terminal {
     height: 1fr;
     min-height: 8;
-    background: #0a0d14;
-    border: round #1e2a3a;
-    color: #c9d5e3;
+    background: #010409;
+    border: round #30363d;
+    color: #c9d1d9;
     padding: 1;
 }
 
-/* Audit Table */
-#audit-table {
-    height: 1fr;
-    background: #101620;
-    border: round #27374c;
+/* Inventory & Audit Actions */
+.inventory-actions, .audit-actions {
+    layout: horizontal;
+    height: 3;
+    margin-top: 1;
+}
+
+.inventory-actions Button, .audit-actions Button {
+    margin-right: 1;
 }
 
 /* Modals */
 .modal-screen {
     align: center middle;
-    background: rgba(10, 14, 20, 0.85);
+    background: rgba(1, 4, 9, 0.85);
 }
 
 .modal-dialog {
     width: 76;
     height: auto;
     max-height: 90%;
-    background: #182230;
+    background: #161b22;
     border: double #00e5ff;
     padding: 1 2;
 }
@@ -220,11 +320,11 @@ Screen {
 }
 
 .modal-hitl-dialog {
-    width: 82;
+    width: 84;
     height: auto;
     max-height: 90%;
-    background: #1e1926;
-    border: double #ff1744;
+    background: #1e1520;
+    border: double #f85149;
     padding: 1 2;
 }
 
@@ -235,18 +335,14 @@ Screen {
     align-horizontal: right;
 }
 
-.modal-btn {
-    margin-left: 1;
-}
-
 .modal-btn-primary {
-    background: #00c853;
-    color: #000000;
+    background: #238636;
+    color: #ffffff;
     text-style: bold;
 }
 
 .modal-btn-danger {
-    background: #d50000;
+    background: #da3633;
     color: #ffffff;
     text-style: bold;
 }

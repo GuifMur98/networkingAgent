@@ -89,12 +89,14 @@ NetworkingAgent soporta una arquitectura dual desacoplada:
    ```
    - **60 FPS & Multihilo:** Las conexiones SSH de Netmiko y las llamadas a la IA corren en hilos de trabajo independientes (`@work(thread=True)`), manteniendo la interfaz 100% fluida.
    - **Atajos de teclado:**
+     - `h`: Volver al Dashboard de Inicio / Menú Principal en cualquier momento.
      - `q`: Salir del asistente.
      - `d`: Registrar nuevo equipo (abre modal con validación y cifrado).
-     - `s`: Configurar proveedor y modelo de IA (Ollama / Gemini).
+     - `s`: Configurar proveedor y modelo de IA (Ollama / Gemini / OpenAI / Claude).
      - `r`: Recargar lista de equipos y tabla de auditoría.
      - `y` / `n`: Autorizar o Rechazar remediación en la ventana modal HitL.
      - `Tab` / `Shift+Tab`: Mover el foco entre controles.
+   - **Navegación Visual:** Cuenta con botones explícitos `[⬅️ Volver al Menú Principal]` en la parte superior de cada vista de trabajo (Diagnóstico, Inventario de Equipos, Registro de Auditoría).
 
 2. **Asistente Interactivo Clásico de Consola (Rich Wizard):**
    ```bash
@@ -103,6 +105,8 @@ NetworkingAgent soporta una arquitectura dual desacoplada:
    uv run python main.py -c
    ```
    Ideal para entornos con terminales mínimos o sin soporte completo de eventos de ratón.
+   - Presenta un banner ASCII con el panel de estado operativo y un menú centralizado `[1-5]`.
+   - En cualquier momento y submenú, el operador puede ingresar `[0]` para cancelar y regresar inmediatamente al Menú Principal sin tener que reiniciar la aplicación.
 
 3. **Ejecución Automatizada en Modo Lote (CI/CD / Scripts):**
    ```bash

@@ -43,7 +43,8 @@ def discover_ollama_models(host: Optional[str] = None) -> List[Dict[str, Any]]:
 def select_ai_brain_interactively(
     default_provider: Optional[str] = None,
     default_model: Optional[str] = None,
-) -> Tuple[str, str]:
+    allow_back: bool = False,
+) -> Tuple[Optional[str], Optional[str]]:
     """Prompts the user interactively to select the AI Brain provider and model."""
     print_step_header(
         step=1,
@@ -70,6 +71,8 @@ def select_ai_brain_interactively(
 
     for idx, (p_id, p_desc) in enumerate(providers, 1):
         provider_table.add_row(str(idx), p_id, p_desc)
+    if allow_back:
+        provider_table.add_row("0", "Volver", "⬅️ Volver al Menú Principal")
     console.print(provider_table)
 
     initial_choice = default_provider or saved_provider or "1"
@@ -79,11 +82,22 @@ def select_ai_brain_interactively(
             default_idx = str(idx)
             break
 
+    choices = ["1", "2", "3", "4"]
+    if allow_back:
+        choices.append("0")
+
+    prompt_label = (
+        "Selecciona el proveedor de IA [1-4]"
+        if not allow_back
+        else "Selecciona el proveedor de IA [1-4] o '0' para volver"
+    )
     prov_choice = prompt_choice(
-        "Selecciona el proveedor de IA [1-4]",
-        choices=["1", "2", "3", "4"],
+        prompt_label,
+        choices=choices,
         default=default_idx,
     )
+    if prov_choice == "0":
+        return None, None
     selected_provider = providers[int(prov_choice) - 1][0]
 
     # 2. Model selection for Ollama
@@ -233,7 +247,8 @@ def select_ai_brain_interactively(
 def configure_device_interactively(
     default_host: Optional[str] = None,
     default_type: Optional[str] = None,
-) -> DeviceInventory:
+    allow_back: bool = False,
+) -> Optional[DeviceInventory]:
     """Prompts the user interactively to configure target device credentials or choose from SQLite vault."""
     print_step_header(
         step=2,
@@ -261,16 +276,25 @@ def configure_device_interactively(
                 dev_row["device_type"],
                 dev_row["username"],
             )
+        if allow_back:
+            saved_table.add_row("0", "Volver", "-", "-", "⬅️ Volver al Menú Principal")
         console.print(saved_table)
 
         choices = [str(i) for i in range(1, len(saved_devices) + 1)]
         choices.append("n")  # New device
+        if allow_back:
+            choices.append("0")
 
+        back_suffix = ", o '0' para volver" if allow_back else ""
+        pick_prompt = f"Selecciona un equipo guardado [1-{len(saved_devices)}], 'n' para nuevo{back_suffix}"
         pick = prompt_choice(
-            f"Selecciona un equipo guardado [1-{len(saved_devices)}] o 'n' para configurar uno nuevo",
+            pick_prompt,
             choices=choices,
             default="1",
         )
+
+        if pick == "0":
+            return None
 
         if pick != "n":
             chosen_dev_id = saved_devices[int(pick) - 1]["id"]
@@ -285,10 +309,17 @@ def configure_device_interactively(
 
     # 2. Configure a New Device
     console.print("\n[bold cyan]Configuración de Nuevo Dispositivo:[/bold cyan]")
+    host_prompt = (
+        "Dirección IP o FQDN del dispositivo"
+        if not allow_back
+        else "Dirección IP o FQDN del dispositivo (o '0' para volver)"
+    )
     host = prompt_non_empty(
-        "Dirección IP o FQDN del dispositivo",
+        host_prompt,
         default=default_host or os.environ.get("NET_HOST", "10.10.20.11"),
     )
+    if allow_back and host == "0":
+        return None
 
     platforms = [
         ("cisco_nxos", "Cisco Nexus (NX-OS) con soporte transaccional y checkpoints"),
@@ -382,7 +413,7 @@ def configure_device_interactively(
     return device
 
 
-def prompt_telemetry_event() -> Tuple[str, str]:
+def prompt_telemetry_event(allow_back: bool = False) -> Tuple[Optional[str], Optional[str]]:
     """Allows selecting between Proactive Symptom Investigation or Reactive Syslog Alerting."""
     print_step_header(
         step=3,
@@ -399,8 +430,15 @@ def prompt_telemetry_event() -> Tuple[str, str]:
         "  [bold yellow]2[/bold yellow]. [bold blue]Modo Reactivo / Análisis de Syslog[/bold blue] "
         "(Eventos críticos capturados en log del switch o router)"
     )
+    if allow_back:
+        console.print("  [bold yellow]0[/bold yellow]. [dim]⬅️ Volver al Menú Principal[/dim]")
 
-    mode_choice = prompt_choice("Selecciona el modo [1-2]", choices=["1", "2"], default="1")
+    choices = ["1", "2", "0"] if allow_back else ["1", "2"]
+    prompt_msg = "Selecciona el modo [1-2]" if not allow_back else "Selecciona el modo [1-2] o '0' para volver"
+    mode_choice = prompt_choice(prompt_msg, choices=choices, default="1")
+
+    if mode_choice == "0":
+        return None, None
 
     if mode_choice == "1":
         proactive_scenarios = [
@@ -487,3 +525,173 @@ def prompt_telemetry_event() -> Tuple[str, str]:
             custom_log = prompt_non_empty("Pega o escribe el log de telemetría")
             return custom_log, "REACTIVE"
         return reactive_scenarios[chosen_idx][1], "REACTIVE"
+
+
+def display_main_menu() -> str:
+    """Renders the main menu with ASCII banner, operational status, and navigation options."""
+    from networking_agent.cli.ui_theme import print_main_banner
+    print_main_banner()
+
+    saved_provider = db.get_setting("ai_provider") or settings.ai_provider or "ollama"
+    saved_model = db.get_setting("ai_model") or settings.ai_model or "qwen2.5-coder:7b"
+    devices = db.list_devices()
+    auto_approve = db.get_setting("auto_approve") == "true" or settings.auto_approve
+    if not auto_approve:
+        hitl_status = "[bold yellow]🛡️ HitL Activo (Confirmación Requerida)[/bold yellow]"
+    else:
+        hitl_status = "[bold red]⚠️ Auto-Approve ACTIVO[/bold red]"
+
+    status_table = Table(show_header=False, box=None, padding=(0, 2))
+    status_table.add_column("Key", style="bold cyan")
+    status_table.add_column("Value", style="bold white")
+    status_table.add_row("🧠 Cerebro de IA:", f"{saved_provider.upper()} ({saved_model})")
+    status_table.add_row("🖥️ Equipos Registrados:", f"{len(devices)} dispositivos en base de datos SQLite")
+    status_table.add_row("🛡️ Control Humano:", hitl_status)
+
+    from rich.panel import Panel
+    console.print(Panel(status_table, title="📊 ESTADO OPERACIONAL DEL ASISTENTE", border_style="cyan"))
+
+    menu_table = Table(
+        title="🏠 MENÚ PRINCIPAL - SELECCIONA UNA OPERACIÓN",
+        show_header=True,
+        header_style="bold magenta",
+    )
+    menu_table.add_column("Opción", style="bold yellow", width=8, justify="center")
+    menu_table.add_column("Operación", style="bold")
+    menu_table.add_column("Descripción")
+
+    menu_table.add_row(
+        "1",
+        "🚀 Iniciar Diagnóstico y Remediación",
+        "Sondeo en vivo o análisis de Syslog con IA, guardarraíles y rollback",
+    )
+    menu_table.add_row(
+        "2",
+        "🖥️ Gestionar Inventario de Equipos",
+        "Ver routers/switches, dar de alta nuevo equipo SSH o eliminar perfiles",
+    )
+    menu_table.add_row(
+        "3",
+        "🧠 Configuración de IA y Bóveda",
+        "Cambiar proveedor (Ollama/Gemini), modelo, llaves de API o modo Auto-Approve",
+    )
+    menu_table.add_row(
+        "4",
+        "📋 Registro de Auditoría Criptográfica",
+        "Visualizar bitácora inmutable (audit.jsonl) de cambios verificados y rollbacks",
+    )
+    menu_table.add_row("5", "🚪 Salir", "Cerrar la sesión del asistente")
+
+    console.print(menu_table)
+    return prompt_choice("Selecciona una opción [1-5]", choices=["1", "2", "3", "4", "5"], default="1")
+
+
+def manage_devices_interactively() -> None:
+    """Lists enrolled devices and offers actions: add, delete, return."""
+    while True:
+        devices = db.list_devices()
+        table = Table(title="🖥️ CATÁLOGO DE DISPOSITIVOS DE RED REGISTRADOS", show_header=True, header_style="bold cyan")
+        table.add_column("#", style="bold yellow", width=4, justify="center")
+        table.add_column("Nombre / Alias", style="bold")
+        table.add_column("Host / IP", style="cyan")
+        table.add_column("Plataforma", style="green")
+        table.add_column("Puerto", style="dim", width=8)
+        table.add_column("Usuario", style="white")
+
+        for idx, dev in enumerate(devices, 1):
+            table.add_row(
+                str(idx),
+                dev.get("name", ""),
+                dev.get("host", ""),
+                dev.get("device_type", ""),
+                str(dev.get("port", 22)),
+                dev.get("username", ""),
+            )
+        console.print("\n")
+        console.print(table)
+
+        console.print("\n[bold]Acciones disponibles:[/bold]")
+        console.print("  [yellow]1[/yellow]. ➕ Registrar un nuevo dispositivo")
+        console.print("  [yellow]2[/yellow]. 🗑️ Eliminar un dispositivo existente")
+        console.print("  [yellow]0[/yellow]. ⬅️ Volver al Menú Principal")
+
+        choice = prompt_choice("Selecciona una acción [0-2]", choices=["0", "1", "2"], default="0")
+        if choice == "0":
+            break
+        elif choice == "1":
+            configure_device_interactively(allow_back=True)
+        elif choice == "2":
+            if not devices:
+                console.print("[yellow]No hay dispositivos registrados para eliminar.[/yellow]")
+                continue
+            del_pick = prompt_choice(
+                f"Selecciona el número de dispositivo a eliminar [1-{len(devices)}] o 'c' para cancelar",
+                choices=[str(i) for i in range(1, len(devices) + 1)] + ["c"],
+                default="c",
+            )
+            if del_pick != "c":
+                dev_to_del = devices[int(del_pick) - 1]
+                confirm_msg = f"¿Estás seguro de eliminar '{dev_to_del['name']}' ({dev_to_del['host']})?"
+                if prompt_confirm(confirm_msg, default=False):
+                    db.delete_device(dev_to_del["id"])
+                    console.print(f"[green]✓ Dispositivo {dev_to_del['host']} eliminado con éxito.[/green]")
+
+
+def view_audit_trail_interactively() -> None:
+    """Displays formatted table of recent audit events from logs/audit.jsonl."""
+    import json
+
+    from rich.prompt import Prompt
+
+    audit_file = Path(settings.audit_log_path)
+    if not audit_file.exists():
+        console.print("\n[yellow]No existe archivo de auditoría aún (logs/audit.jsonl no generado).[/yellow]")
+        Prompt.ask("\nPresiona [bold]Enter[/bold] para volver al Menú Principal")
+        return
+
+    records = []
+    try:
+        with open(audit_file, "r", encoding="utf-8") as f:
+            for line in f:
+                if line.strip():
+                    try:
+                        records.append(json.loads(line))
+                    except Exception:
+                        pass
+    except Exception as e:
+        console.print(f"\n[red]Error leyendo auditoría: {e}[/red]")
+        Prompt.ask("\nPresiona [bold]Enter[/bold] para volver al Menú Principal")
+        return
+
+    table = Table(
+        title="📋 REGISTRO CRIPTOGRÁFICO DE AUDITORÍA (Últimos 15 Eventos)",
+        show_header=True,
+        header_style="bold magenta",
+    )
+    table.add_column("Timestamp", style="dim", width=19)
+    table.add_column("Tipo de Evento", style="bold")
+    table.add_column("Equipo", style="cyan")
+    table.add_column("Acción", style="yellow")
+    table.add_column("Aprobado", justify="center")
+    table.add_column("Verificación", justify="center")
+
+    for rec in reversed(records[-15:]):
+        ts = (rec.get("timestamp") or "")[:19]
+        etype = rec.get("event_type") or "UNKNOWN"
+        host = rec.get("device_host") or ""
+        action = rec.get("action") or ""
+        appr = "[green]SÍ[/green]" if rec.get("approved") else "[red]NO[/red]"
+        verif = rec.get("verification_status") or "N/A"
+        if verif == "PASSED":
+            verif_styled = "[bold green]PASSED[/bold green]"
+        elif verif == "FAILED":
+            verif_styled = "[bold red]FAILED[/bold red]"
+        else:
+            verif_styled = "[dim]N/A[/dim]"
+
+        table.add_row(ts, etype, host, action, appr, verif_styled)
+
+    console.print("\n")
+    console.print(table)
+    console.print(f"\n[dim]Total de registros auditados en bitácora inmutable: {len(records)}[/dim]")
+    Prompt.ask("\nPresiona [bold]Enter[/bold] para volver al Menú Principal")

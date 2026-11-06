@@ -10,8 +10,10 @@ from networking_agent.tui.modals.device_modal import DeviceModal
 from networking_agent.tui.modals.hitl_modal import HitLModal
 from networking_agent.tui.modals.vault_modal import VaultModal
 from networking_agent.tui.widgets.audit_table import AuditTableWidget
+from networking_agent.tui.widgets.banner_widget import BannerWidget
 from networking_agent.tui.widgets.device_sidebar import DeviceSidebar
 from networking_agent.tui.widgets.diagnostic_view import DiagnosticWorkspace
+from networking_agent.tui.widgets.home_view import HomeDashboard
 from networking_agent.tui.widgets.status_bar import TopStatusBar
 
 
@@ -202,4 +204,35 @@ async def test_tui_vault_modal_submission():
 
         assert len(settings_result) == 1
         assert settings_result[0]["model"] == "qwen2.5-coder:14b"
+
+
+@pytest.mark.anyio
+async def test_tui_home_dashboard_navigation_and_banner():
+    """Verify that the home dashboard renders the ASCII banner and navigates to tabs and back."""
+    app = NetworkingAgentTUIApp()
+    async with app.run_test() as pilot:
+        # Home dashboard and banner must be present
+        home = pilot.app.query_one(HomeDashboard)
+        assert home is not None
+        assert home.query_one(BannerWidget) is not None
+
+        # Click on diagnostic card
+        btn_diag = home.query_one("#btn-nav-diagnostic")
+        btn_diag.press()
+        await pilot.pause()
+
+        # Active tab must now be diagnostic
+        from textual.widgets import TabbedContent
+        tabs = pilot.app.query_one(TabbedContent)
+        assert tabs.active == "pane-diagnostic"
+
+        # Click back button inside diagnostic view
+        workspace = pilot.app.query_one(DiagnosticWorkspace)
+        btn_back = workspace.query_one("#btn-back-to-home")
+        btn_back.press()
+        await pilot.pause()
+
+        # Active tab must return to home
+        assert tabs.active == "pane-home"
+
 

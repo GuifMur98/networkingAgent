@@ -126,13 +126,13 @@ networkingAgent/
 │       ├── tui/                # Interfaz Gráfica de Terminal (Textual TUI)
 │       │   ├── app.py          # Aplicación reactiva multihilo
 │       │   ├── styles.tcss     # Estilos modernos Cyberpunk/Nord
-│       │   ├── widgets/        # Barra de estado, sidebar, workspace y tabla de auditoría
+│       │   ├── widgets/        # Banner ASCII, dashboard de inicio, workspace, inventario y auditoría
 │       │   └── modals/         # Modales de aprobación HitL, equipos y bóveda de IA
 │       └── cli/                # Interfaz clásica por consola
 │           ├── main.py         # Controlador de flujo y continuidad
-│           ├── interactive.py  # Menús ricos y autodescubrimiento
+│           ├── interactive.py  # Menús ricos, banner ASCII y autodescubrimiento
 │           └── prompts.py      # Validadores interactivos de repregunta
-└── tests/                      # Suite de 113 pruebas unitarias automatizadas
+└── tests/                      # Suite de 114 pruebas unitarias automatizadas
     ├── test_brains.py
     ├── test_crypto.py
     ├── test_db.py
@@ -232,17 +232,21 @@ Al iniciar, se presenta el panel de control:
                        Enterprise Autonomous Closed-Loop Network Agent                
 ```
 
-### Opciones del Menú:
-- **`[1] Iniciar Diagnóstico y Remediación Asistida`**: Selección de equipo, modo proactivo (síntomas) o reactivo (telemetría), análisis de IA y autorización humana.
-- **`[2] Gestionar Inventario de Dispositivos`**: Registro y prueba de conectividad de routers Cisco, Juniper y MikroTik con contraseñas cifradas.
-- **`[3] Configuración y Claves de API`**: Modificación de proveedores de IA (Ollama, Gemini, OpenAI, Claude), modelos y llaves criptográficas.
-- **`[4] Salir del Sistema`**.
+### Opciones del Menú Principal:
+- **`[1] 🚀 Iniciar Diagnóstico y Remediación Asistida`**: Selección de equipo, modo proactivo (síntomas) o reactivo (telemetría), análisis de IA y autorización humana HitL.
+- **`[2] 🖥️ Gestionar Inventario de Dispositivos`**: Registro, prueba de conectividad SSH y eliminación de routers Cisco, Juniper y MikroTik con credenciales cifradas.
+- **`[3] 🧠 Configurar Proveedor de IA y Bóveda Criptográfica`**: Configuración de proveedores (Ollama, Gemini, OpenAI, Claude), modelos y llaves criptográficas.
+- **`[4] 📋 Historial de Auditoría Criptográfica (audit.jsonl)`**: Visualización formateada de registros de auditoría inmutables.
+- **`[5] 🚪 Salir del Sistema`**.
+- *(En cualquier submenú, ingrese `[0]` para cancelar y regresar al Menú Principal sin reiniciar)*.
+
+En el modo TUI (`--tui`), dispone de la pestaña inicial **`[Inicio]`** con accesos directos, botones explícitos `[⬅️ Volver al Menú Principal]` en cada vista y la tecla rápida `h` para retornar al inicio en cualquier momento.
 
 ---
 
 ## 🧪 Pruebas Automatizadas y Calidad de Código
 
-El repositorio cuenta con **113 pruebas unitarias** pasando al 100%, validando modelos, validadores de inyección, blindaje WAN, criptografía, base de datos SQLite, interfaces TUI y pooling SSH:
+El repositorio cuenta con **114 pruebas unitarias** pasando al 100%, validando modelos, validadores de inyección, blindaje WAN, criptografía, base de datos SQLite, interfaces TUI, navegación y pooling SSH:
 
 ```bash
 # Ejecutar todas las pruebas unitarias
