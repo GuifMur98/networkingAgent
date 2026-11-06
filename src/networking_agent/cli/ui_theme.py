@@ -7,12 +7,27 @@ from rich.text import Text
 
 from networking_agent.core.logging import console
 
+ASCII_BANNER = r"""  _   _      _                      _     _               _                    _   
+ | \ | | ___| |___      _____  _ __| | __(_)_ __   __ _  / \   __ _  ___ _ __ | |_ 
+ |  \| |/ _ \ __\ \ /\ / / _ \| '__| |/ /| | '_ \ / _` |/ _ \ / _` |/ _ \ '_ \| __|
+ | |\  |  __/ |_ \ V  V / (_) | |  |   < | | | | | (_| / ___ \ (_| |  __/ | | | |_ 
+ |_| \_|\___|\__| \_/\_/ \___/|_|  |_|\_\|_|_| |_|\__, /_/   \_\__, |\___|_| |_|\__|
+                                                   |___/        |___/                """
+
+COMPACT_BANNER = r""" _   _      _                      _               _   
+| \ | | ___| |___      _____  _ __| | __  /\   ___| |_ 
+|  \| |/ _ \ __\ \ /\ / / _ \| '__| |/ / /  \ / _ \ __|
+| |\  |  __/ |_ \ V  V / (_) | |  |   < / /\ \  __/ |_ 
+|_| \_|\___|\__| \_/\_/ \___/|_|  |_|\_/_/  \_\___|\__|"""
+
 
 def print_main_banner() -> None:
-    """Displays the stylish main header banner."""
+    """Displays the stylish main header banner with ASCII typography and platform metadata."""
+    logo = ASCII_BANNER if (console.width or 100) >= 90 else COMPACT_BANNER
+
     title_text = Text()
-    title_text.append("🌐  N E T W O R K I N G   A G E N T   E N T E R P R I S E\n", style="bold cyan")
-    title_text.append("Autonomous & Closed-Loop Network Reliability Engineering Platform\n", style="bold white")
+    title_text.append(logo + "\n\n", style="bold cyan")
+    title_text.append("Enterprise Autonomous Closed-Loop Network Agent\n", style="bold white")
     title_text.append("Cisco • Juniper • MikroTik | Ollama • Gemini • OpenAI • Claude", style="dim italic")
 
     panel = Panel(
