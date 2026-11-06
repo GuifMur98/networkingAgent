@@ -1,15 +1,16 @@
-"""Interactive configuration and onboarding wizard for NetworkingAgent."""
+"""Interactive configuration and onboarding wizard for NetworkingAgent with SQLite persistence."""
 
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import SecretStr
-from rich.panel import Panel
 from rich.prompt import Confirm, IntPrompt, Prompt
 from rich.table import Table
 
+from networking_agent.cli.ui_theme import print_step_header
 from networking_agent.core.config import settings
+from networking_agent.core.db import db
 from networking_agent.core.logging import console, logger
 from networking_agent.models.device import DeviceInventory
 
@@ -39,18 +40,20 @@ def select_ai_brain_interactively(
     default_model: Optional[str] = None,
 ) -> Tuple[str, str]:
     """Prompts the user interactively to select the AI Brain provider and model."""
-    console.print(
-        Panel(
-            "[bold cyan]🧠 Configuración Interactiva del Cerebro de Inteligencia Artificial[/bold cyan]\n"
-            "Elige el proveedor de IA y el modelo a utilizar para diagnosticar eventos de red.",
-            border_style="cyan",
-        )
+    print_step_header(
+        step=1,
+        total=3,
+        title="🧠 Selección del Cerebro de Inteligencia Artificial",
+        subtitle="Elige el motor de inferencia encargado de diagnosticar y diseñar la remediación neutral.",
     )
+
+    saved_provider = db.get_setting("ai_provider")
+    saved_model = db.get_setting("ai_model")
 
     # 1. Selection of AI Provider
     providers = [
-        ("ollama", "Ollama (Inferencia 100% Local y Privada en tu máquina)"),
-        ("gemini", "Google Gemini (Gemini 3.8 Flash / Argon vía Cloud API)"),
+        ("ollama", "Ollama (Inferencia 100% Local y Privada en tu propia máquina)"),
+        ("gemini", "Google Gemini (Gemini 3.8 Flash / 4 Argon vía Cloud API)"),
         ("openai", "OpenAI (GPT-4o / GPT-4o-mini vía Cloud API)"),
         ("anthropic", "Anthropic (Claude 3.5 Sonnet vía Cloud API)"),
     ]
@@ -64,16 +67,17 @@ def select_ai_brain_interactively(
         provider_table.add_row(str(idx), p_id, p_desc)
     console.print(provider_table)
 
+    initial_choice = default_provider or saved_provider or "1"
+    default_idx = "1"
+    for idx, (p_id, _) in enumerate(providers, 1):
+        if p_id == initial_choice or str(idx) == initial_choice:
+            default_idx = str(idx)
+            break
+
     prov_choice = Prompt.ask(
         "Selecciona el proveedor de IA [1-4]",
         choices=["1", "2", "3", "4"],
-        default="1"
-        if not default_provider
-        else str(
-            [p[0] for p in providers].index(default_provider) + 1
-            if default_provider in [p[0] for p in providers]
-            else "1"
-        ),
+        default=default_idx,
     )
     selected_provider = providers[int(prov_choice) - 1][0]
 
@@ -87,7 +91,6 @@ def select_ai_brain_interactively(
             model_table.add_column("Nombre del Modelo", style="bold")
             model_table.add_column("Tamaño", style="dim", width=12)
 
-            # Recommend specialized models first (e.g., netexpert)
             for idx, m in enumerate(installed_models, 1):
                 star = " 🌟 (Recomendado para Redes)" if "netexpert" in m["name"].lower() else ""
                 model_table.add_row(str(idx), f"{m['name']}{star}", m["size"])
@@ -97,16 +100,22 @@ def select_ai_brain_interactively(
             choices.append("c")  # Custom
 
             # Determine best default choice
-            default_idx = "1"
-            for idx, m in enumerate(installed_models, 1):
-                if "netexpert" in m["name"].lower():
-                    default_idx = str(idx)
-                    break
+            model_default_idx = "1"
+            if saved_model:
+                for idx, m in enumerate(installed_models, 1):
+                    if m["name"] == saved_model:
+                        model_default_idx = str(idx)
+                        break
+            else:
+                for idx, m in enumerate(installed_models, 1):
+                    if "netexpert" in m["name"].lower():
+                        model_default_idx = str(idx)
+                        break
 
             picked = Prompt.ask(
                 f"Selecciona el modelo a usar [1-{len(installed_models)}] o 'c' para ingresar otro",
                 choices=choices,
-                default=default_idx,
+                default=model_default_idx,
             )
 
             if picked == "c":
@@ -115,13 +124,25 @@ def select_ai_brain_interactively(
                 selected_model = installed_models[int(picked) - 1]["name"]
         else:
             console.print("[yellow]No se detectaron modelos activos en Ollama o el servicio no respondió.[/yellow]")
-            selected_model = Prompt.ask("Ingresa el nombre del modelo de Ollama a utilizar", default="llama3.1")
+            selected_model = Prompt.ask(
+                "Ingresa el nombre del modelo de Ollama a utilizar",
+                default=saved_model or "llama3.1",
+            )
 
     # 3. Model selection for Google Gemini
     elif selected_provider == "gemini":
-        if not (os.environ.get("GEMINI_API_KEY") or settings.gemini_api_key):
-            api_key = Prompt.ask("Ingresa tu GEMINI_API_KEY", password=True)
-            os.environ["GEMINI_API_KEY"] = api_key
+        gemini_key = db.get_setting("gemini_api_key") or os.environ.get("GEMINI_API_KEY")
+        if gemini_key:
+            console.print("[dim]✓ API Key de Gemini recuperada desde almacén seguro SQLite.[/dim]")
+            if Confirm.ask("¿Deseas actualizar la GEMINI_API_KEY almacenada?", default=False):
+                gemini_key = Prompt.ask("Ingresa tu nueva GEMINI_API_KEY", password=True)
+                db.set_setting("gemini_api_key", gemini_key, is_secret=True)
+        else:
+            gemini_key = Prompt.ask("Ingresa tu GEMINI_API_KEY", password=True)
+            if Confirm.ask("¿Deseas almacenar esta API Key de forma cifrada en la base de datos?", default=True):
+                db.set_setting("gemini_api_key", gemini_key, is_secret=True)
+
+        os.environ["GEMINI_API_KEY"] = gemini_key
 
         console.print("\n[bold]Modelos de Google Gemini disponibles:[/bold]")
         gemini_models = [
@@ -141,10 +162,18 @@ def select_ai_brain_interactively(
 
     # 4. Model selection for OpenAI
     elif selected_provider == "openai":
-        # Check API key
-        if not (os.environ.get("OPENAI_API_KEY") or settings.openai_api_key):
-            api_key = Prompt.ask("Ingresa tu OPENAI_API_KEY", password=True)
-            os.environ["OPENAI_API_KEY"] = api_key
+        openai_key = db.get_setting("openai_api_key") or os.environ.get("OPENAI_API_KEY")
+        if openai_key:
+            console.print("[dim]✓ API Key de OpenAI recuperada desde almacén seguro SQLite.[/dim]")
+            if Confirm.ask("¿Deseas actualizar la OPENAI_API_KEY almacenada?", default=False):
+                openai_key = Prompt.ask("Ingresa tu nueva OPENAI_API_KEY", password=True)
+                db.set_setting("openai_api_key", openai_key, is_secret=True)
+        else:
+            openai_key = Prompt.ask("Ingresa tu OPENAI_API_KEY", password=True)
+            if Confirm.ask("¿Deseas almacenar esta API Key de forma cifrada en la base de datos?", default=True):
+                db.set_setting("openai_api_key", openai_key, is_secret=True)
+
+        os.environ["OPENAI_API_KEY"] = openai_key
 
         console.print("\n[bold]Modelos de OpenAI disponibles:[/bold]")
         openai_models = ["gpt-4o", "gpt-4o-mini", "o1-mini", "Personalizado"]
@@ -156,12 +185,20 @@ def select_ai_brain_interactively(
         else:
             selected_model = openai_models[int(m_idx) - 1]
 
-    # 4. Model selection for Anthropic
+    # 5. Model selection for Anthropic
     else:
-        # Check API key
-        if not (os.environ.get("ANTHROPIC_API_KEY") or settings.anthropic_api_key):
-            api_key = Prompt.ask("Ingresa tu ANTHROPIC_API_KEY", password=True)
-            os.environ["ANTHROPIC_API_KEY"] = api_key
+        anthropic_key = db.get_setting("anthropic_api_key") or os.environ.get("ANTHROPIC_API_KEY")
+        if anthropic_key:
+            console.print("[dim]✓ API Key de Anthropic recuperada desde almacén seguro SQLite.[/dim]")
+            if Confirm.ask("¿Deseas actualizar la ANTHROPIC_API_KEY almacenada?", default=False):
+                anthropic_key = Prompt.ask("Ingresa tu nueva ANTHROPIC_API_KEY", password=True)
+                db.set_setting("anthropic_api_key", anthropic_key, is_secret=True)
+        else:
+            anthropic_key = Prompt.ask("Ingresa tu ANTHROPIC_API_KEY", password=True)
+            if Confirm.ask("¿Deseas almacenar esta API Key de forma cifrada en la base de datos?", default=True):
+                db.set_setting("anthropic_api_key", anthropic_key, is_secret=True)
+
+        os.environ["ANTHROPIC_API_KEY"] = anthropic_key
 
         console.print("\n[bold]Modelos de Anthropic disponibles:[/bold]")
         anthropic_models = [
@@ -177,7 +214,14 @@ def select_ai_brain_interactively(
         else:
             selected_model = anthropic_models[int(m_idx) - 1]
 
-    console.print(f"\n[green]✓ Cerebro configurado:[/green] [bold]{selected_provider} / {selected_model}[/bold]\n")
+    # Remember preferred provider and model in database
+    db.set_setting("ai_provider", selected_provider)
+    db.set_setting("ai_model", selected_model)
+
+    console.print(
+        f"\n[bold green]✓ Cerebro configurado y guardado:[/bold green] "
+        f"[bold]{selected_provider.upper()} / {selected_model}[/bold]\n"
+    )
     return selected_provider, selected_model
 
 
@@ -185,22 +229,62 @@ def configure_device_interactively(
     default_host: Optional[str] = None,
     default_type: Optional[str] = None,
 ) -> DeviceInventory:
-    """Prompts the user interactively to configure target device credentials."""
-    console.print(
-        Panel(
-            "[bold cyan]🔌 Configuración de Conexión al Dispositivo de Red[/bold cyan]\n"
-            "Ingresa los parámetros SSH del equipo que será monitoreado y remediado.",
-            border_style="cyan",
-        )
+    """Prompts the user interactively to configure target device credentials or choose from SQLite vault."""
+    print_step_header(
+        step=2,
+        total=3,
+        title="🔌 Configuración de Conexión al Dispositivo de Red",
+        subtitle="Selecciona un equipo guardado en la base de datos o da de alta un nuevo dispositivo SSH.",
     )
 
-    # 1. Device Host
+    # 1. Check if there are saved devices in SQLite
+    saved_devices = db.list_devices()
+    if saved_devices:
+        console.print("[bold green]💾 Equipos guardados en la base de datos SQLite:[/bold green]")
+        saved_table = Table(show_header=True, header_style="bold cyan")
+        saved_table.add_column("Opción", style="bold yellow", width=8, justify="center")
+        saved_table.add_column("Perfil / Nombre", style="bold")
+        saved_table.add_column("Host / IP", style="cyan")
+        saved_table.add_column("Plataforma", style="dim")
+        saved_table.add_column("Usuario", style="white")
+
+        for idx, dev_row in enumerate(saved_devices, 1):
+            saved_table.add_row(
+                str(idx),
+                dev_row["name"],
+                dev_row["host"],
+                dev_row["device_type"],
+                dev_row["username"],
+            )
+        console.print(saved_table)
+
+        choices = [str(i) for i in range(1, len(saved_devices) + 1)]
+        choices.append("n")  # New device
+
+        pick = Prompt.ask(
+            f"Selecciona un equipo guardado [1-{len(saved_devices)}] o 'n' para configurar uno nuevo",
+            choices=choices,
+            default="1",
+        )
+
+        if pick != "n":
+            chosen_dev_id = saved_devices[int(pick) - 1]["id"]
+            loaded_device = db.get_device_by_id(chosen_dev_id)
+            if loaded_device:
+                console.print(
+                    f"\n[green]✓ Equipo cargado desde la base de datos:[/green] "
+                    f"[bold]{loaded_device.host}[/bold] ([cyan]{loaded_device.device_type}[/cyan]) "
+                    f"con usuario [bold]{loaded_device.username}[/bold]\n"
+                )
+                return loaded_device
+
+    # 2. Configure a New Device
+    console.print("\n[bold cyan]Configuración de Nuevo Dispositivo:[/bold cyan]")
     host = Prompt.ask(
         "Dirección IP o FQDN del dispositivo",
         default=default_host or os.environ.get("NET_HOST", "10.10.20.11"),
     )
 
-    # 2. Platform / OS Selection
     platforms = [
         ("cisco_nxos", "Cisco Nexus (NX-OS) con soporte transaccional y checkpoints"),
         ("cisco_ios", "Cisco IOS clásico o IOS-XE (Catalyst, ISR, ASR)"),
@@ -229,21 +313,9 @@ def configure_device_interactively(
     )
     selected_platform = platforms[int(plat_choice) - 1][0]
 
-    # 3. Port
     port = IntPrompt.ask("Puerto SSH", default=22)
-
-    # 4. Username
-    username = Prompt.ask(
-        "Usuario SSH",
-        default=os.environ.get("NET_USER", "admin"),
-    )
-
-    # 5. Authentication Type
-    auth_type = Prompt.ask(
-        "Tipo de autenticación SSH",
-        choices=["password", "key"],
-        default="password",
-    )
+    username = Prompt.ask("Usuario SSH", default=os.environ.get("NET_USER", "admin"))
+    auth_type = Prompt.ask("Tipo de autenticación SSH", choices=["password", "key"], default="password")
 
     password: Optional[SecretStr] = None
     secret: Optional[SecretStr] = None
@@ -254,7 +326,8 @@ def configure_device_interactively(
         existing_pass = os.environ.get("NET_PASS")
         if existing_pass:
             use_existing = Confirm.ask(
-                "¿Deseas usar la contraseña definida en la variable de entorno NET_PASS?", default=True
+                "¿Deseas usar la contraseña definida en la variable de entorno NET_PASS?",
+                default=True,
             )
             if use_existing:
                 password = SecretStr(existing_pass)
@@ -288,6 +361,15 @@ def configure_device_interactively(
         use_keys=use_keys,
     )
 
+    # Offer to save in SQLite vault
+    if Confirm.ask("¿Deseas guardar este equipo en la base de datos local SQLite para futuros usos?", default=True):
+        friendly_name = Prompt.ask(
+            "Nombre o alias para este equipo",
+            default=f"{selected_platform.upper()}-{host}",
+        )
+        db.save_device(device, name=friendly_name)
+        console.print("[dim]✓ Dispositivo guardado de forma cifrada en SQLite.[/dim]")
+
     console.print(
         f"\n[green]✓ Dispositivo configurado:[/green] [bold]{device.host}[/bold] "
         f"([cyan]{device.device_type}[/cyan]) con usuario [bold]{device.username}[/bold]\n"
@@ -297,13 +379,11 @@ def configure_device_interactively(
 
 def prompt_telemetry_event() -> Tuple[str, str]:
     """Allows selecting between Proactive Symptom Investigation or Reactive Syslog Alerting."""
-    console.print(
-        Panel(
-            "[bold cyan]🔍 Selección del Modo Operativo y Telemetría[/bold cyan]\n"
-            "Elige si deseas investigar proactivamente un síntoma de red reportado por usuarios "
-            "o analizar un evento de Syslog reactivo.",
-            border_style="cyan",
-        )
+    print_step_header(
+        step=3,
+        total=3,
+        title="🔍 Selección del Modo de Diagnóstico y Telemetría",
+        subtitle="Elige si deseas investigar proactivamente un síntoma reportado o analizar un Syslog reactivo.",
     )
 
     console.print(
@@ -318,7 +398,6 @@ def prompt_telemetry_event() -> Tuple[str, str]:
     mode_choice = Prompt.ask("Selecciona el modo [1-2]", choices=["1", "2"], default="1")
 
     if mode_choice == "1":
-        # Proactive Scenarios
         proactive_scenarios = [
             (
                 "Pérdida de Paquetes en LAN y Caídas Intermitentes",
@@ -372,7 +451,6 @@ def prompt_telemetry_event() -> Tuple[str, str]:
         return proactive_scenarios[chosen_idx][1], "PROACTIVE"
 
     else:
-        # Reactive Scenarios
         reactive_scenarios = [
             (
                 "OSPF MTU Mismatch",

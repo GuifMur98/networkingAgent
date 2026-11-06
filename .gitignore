@@ -14,9 +14,14 @@ wheels/
 .env.*
 !.env.example
 
-# Runtime backups & logs
+# Runtime backups, database & logs
 backups/
 logs/
+data/
+*.db
+*.sqlite3
+*.sqlite
+*.key
 
 # Tool caches
 .pytest_cache/

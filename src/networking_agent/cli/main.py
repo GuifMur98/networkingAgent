@@ -11,7 +11,7 @@ from networking_agent.cli.interactive import (
     prompt_telemetry_event,
     select_ai_brain_interactively,
 )
-from networking_agent.core.logging import console
+from networking_agent.cli.ui_theme import print_execution_summary, print_main_banner
 from networking_agent.engine.agent import NetworkAssistantAgent
 from networking_agent.models.device import DeviceInventory
 from networking_agent.models.telemetry import TelemetryEvent
@@ -75,7 +75,7 @@ def cli_entrypoint() -> None:
     is_interactive = args.interactive or (args.provider is None and args.device_host is None)
 
     if is_interactive:
-        console.rule("[bold cyan]NetworkingAgent Enterprise - Asistente Interactivo[/bold cyan]")
+        print_main_banner()
         provider, model = select_ai_brain_interactively(
             default_provider=args.provider,
             default_model=args.model,
@@ -89,6 +89,16 @@ def cli_entrypoint() -> None:
             run_mode = args.mode or "REACTIVE"
         else:
             log_text, run_mode = prompt_telemetry_event()
+
+        print_execution_summary(
+            provider=provider,
+            model=model,
+            device_host=device.host,
+            device_type=device.device_type,
+            device_user=device.username,
+            mode=run_mode,
+            symptom_summary=log_text,
+        )
 
         event = TelemetryEvent(raw_text=log_text, source_host=device.host)
         agent = NetworkAssistantAgent(
