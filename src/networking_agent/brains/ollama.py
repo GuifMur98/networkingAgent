@@ -34,5 +34,22 @@ class OllamaBrain(LLMBrain):
             )
             return NetworkIntent.model_validate_json(response.message.content)
         except Exception as e:
-            logger.error(f"[bold red]Ollama Brain analysis failed:[/bold red] {e}")
-            raise AIAnalysisError(f"Ollama inference error: {e}") from e
+            error_msg = str(e)
+            if "not found" in error_msg.lower():
+                try:
+                    from ollama import Client
+
+                    client = Client(host=settings.ollama_host)
+                    models_response = client.list()
+                    available = [m.model for m in models_response.models if hasattr(m, "model")]
+                    if available:
+                        error_msg = (
+                            f"Model '{self.model_name}' is not installed in Ollama.\n"
+                            f"Installed models found on your machine: {available}\n"
+                            f"-> To download it, run: 'ollama pull {self.model_name}'\n"
+                            f"-> Or run with an installed model, e.g.: uv run networking-agent --model {available[0]}"
+                        )
+                except Exception:
+                    pass
+            logger.error(f"[bold red]Ollama Brain analysis failed:[/bold red] {error_msg}")
+            raise AIAnalysisError(f"Ollama inference error: {error_msg}") from e

@@ -1,4 +1,4 @@
-"""CLI Entrypoint for the Networking Agent."""
+"""CLI Entrypoint for the Networking Agent with both Interactive Wizard and Batch modes."""
 
 import argparse
 import os
@@ -6,6 +6,12 @@ import sys
 
 from pydantic import SecretStr
 
+from networking_agent.cli.interactive import (
+    configure_device_interactively,
+    prompt_telemetry_event,
+    select_ai_brain_interactively,
+)
+from networking_agent.core.logging import console
 from networking_agent.engine.agent import NetworkAssistantAgent
 from networking_agent.models.device import DeviceInventory
 from networking_agent.models.telemetry import TelemetryEvent
@@ -15,67 +21,101 @@ def cli_entrypoint() -> None:
     """Parses command-line arguments and runs the agent."""
     parser = argparse.ArgumentParser(description="NetworkingAgent: Enterprise Closed-Loop Network Assistant")
     parser.add_argument(
+        "-i",
+        "--interactive",
+        action="store_true",
+        help="Iniciar en modo asistente interactivo (detecta modelos locales y solicita credenciales)",
+    )
+    parser.add_argument(
         "--provider",
         choices=["ollama", "openai", "anthropic"],
-        default="ollama",
-        help="AI Provider to use (default: ollama)",
+        default=None,
+        help="Proveedor de IA a utilizar",
     )
     parser.add_argument(
         "--model",
         type=str,
         default=None,
-        help="Specific model name (e.g., llama3.1, gpt-4o, claude-3-5-sonnet-latest)",
+        help="Nombre específico del modelo (ej. netexpert:latest, gpt-4o, claude-3-5-sonnet-latest)",
     )
     parser.add_argument(
         "--device-host",
         type=str,
-        default="10.10.20.11",
-        help="Device IP or hostname",
+        default=None,
+        help="IP o hostname del dispositivo de red",
     )
     parser.add_argument(
         "--device-type",
         type=str,
-        default="cisco_nxos",
-        help="Device platform (cisco_ios, cisco_nxos, cisco_xr, juniper_junos)",
+        default=None,
+        help="Plataforma de red (cisco_nxos, cisco_ios, cisco_xr, juniper_junos)",
     )
     parser.add_argument(
         "--auto-approve",
         action="store_true",
-        help="Skip interactive confirmation (use with caution!)",
+        help="Omitir confirmación manual HitL (usar con precaución en laboratorio)",
     )
     parser.add_argument(
         "--log-message",
         type=str,
-        default=(
-            "%OSPF-4-NONEIGHBOR: OSPF process 1, Neighbor 10.0.0.2 on interface Ethernet1/1 "
-            "stuck in EXSTART/EXCHANGE state. Neighbor MTU 9216 is larger than local interface MTU 1500."
-        ),
-        help="Syslog or telemetry event text to analyze",
+        default=None,
+        help="Mensaje de log o evento de telemetría a diagnosticar",
     )
 
     args = parser.parse_args()
 
-    # Build device inventory safely
-    net_pass = os.environ.get("NET_PASS")
-    device = DeviceInventory(
-        host=args.device_host,
-        device_type=args.device_type,  # type: ignore
-        username=os.environ.get("NET_USER", "admin"),
-        password=SecretStr(net_pass) if net_pass else None,
-    )
+    # Determine whether to run interactively:
+    # If -i is passed, or if neither provider nor device-host was supplied via CLI:
+    is_interactive = args.interactive or (args.provider is None and args.device_host is None)
 
-    event = TelemetryEvent(
-        raw_text=args.log_message,
-        source_host=args.device_host,
-    )
+    if is_interactive:
+        console.rule("[bold cyan]NetworkingAgent Enterprise - Asistente Interactivo[/bold cyan]")
+        provider, model = select_ai_brain_interactively(
+            default_provider=args.provider,
+            default_model=args.model,
+        )
+        device = configure_device_interactively(
+            default_host=args.device_host,
+            default_type=args.device_type,
+        )
+        if args.log_message:
+            log_text = args.log_message
+        else:
+            log_text = prompt_telemetry_event()
 
-    agent = NetworkAssistantAgent(
-        ai_provider=args.provider,
-        ai_model=args.model,
-        auto_approve=args.auto_approve,
-    )
+        event = TelemetryEvent(raw_text=log_text, source_host=device.host)
+        agent = NetworkAssistantAgent(
+            ai_provider=provider,
+            ai_model=model,
+            auto_approve=args.auto_approve,
+        )
+    else:
+        # Non-interactive CLI flags mode
+        provider = args.provider or os.environ.get("AI_PROVIDER", "ollama")
+        model = args.model or os.environ.get("AI_MODEL", "llama3.1")
+        host = args.device_host or os.environ.get("NET_HOST", "10.10.20.11")
+        dev_type = args.device_type or os.environ.get("NET_TYPE", "cisco_nxos")
 
-    success = agent.process_telemetry(device=device, telemetry=event, mode="CLI_REACTIVE")
+        net_pass = os.environ.get("NET_PASS")
+        device = DeviceInventory(
+            host=host,
+            device_type=dev_type,  # type: ignore
+            username=os.environ.get("NET_USER", "admin"),
+            password=SecretStr(net_pass) if net_pass else None,
+        )
+
+        log_text = args.log_message or (
+            "%OSPF-4-NONEIGHBOR: OSPF process 1, Neighbor 10.0.0.2 on interface Ethernet1/1 "
+            "stuck in EXSTART/EXCHANGE state. Neighbor MTU 9216 is larger than local interface MTU 1500."
+        )
+        event = TelemetryEvent(raw_text=log_text, source_host=device.host)
+        agent = NetworkAssistantAgent(
+            ai_provider=provider,
+            ai_model=model,
+            auto_approve=args.auto_approve,
+        )
+
+    success = agent.process_telemetry(device=device, telemetry=event, mode="REACTIVE")
     sys.exit(0 if success else 1)
 
 
