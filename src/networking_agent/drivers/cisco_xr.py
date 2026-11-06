@@ -3,8 +3,6 @@
 from pathlib import Path
 from typing import List, Optional
 
-from netmiko import ConnectHandler
-
 from networking_agent.core.logging import logger
 from networking_agent.drivers.base import NetworkOSDriver
 from networking_agent.models.intent import NetworkIntent
@@ -59,10 +57,10 @@ class CiscoIOSXRDriver(NetworkOSDriver):
         """Rolls back the last commit on Cisco IOS-XR."""
         logger.info(f"[*] Rolling back last commit on IOS-XR {self.device.host}...")
         try:
-            with ConnectHandler(**self.device.to_netmiko_dict()) as conn:
-                out = conn.send_command("rollback configuration last 1")
-                logger.info(f"[green]IOS-XR rollback executed:[/green]\n{out}")
-                return True
+            conn = self.get_connection()
+            out = conn.send_command("rollback configuration last 1")
+            logger.info(f"[green]IOS-XR rollback executed:[/green]\n{out}")
+            return True
         except Exception as e:
             logger.error(f"[bold red]IOS-XR rollback failed:[/bold red] {e}")
             return False

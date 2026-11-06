@@ -3,8 +3,6 @@
 from pathlib import Path
 from typing import List, Optional
 
-from netmiko import ConnectHandler
-
 from networking_agent.core.logging import logger
 from networking_agent.drivers.base import NetworkOSDriver
 from networking_agent.models.intent import NetworkIntent
@@ -70,11 +68,10 @@ class CiscoIOSDriver(NetworkOSDriver):
 
         logger.info(f"[*] Attempting rollback on {self.device.host} using {backup_reference.name}...")
         try:
-            # Transfer and execute configure replace or re-apply reverse operations
-            with ConnectHandler(**self.device.to_netmiko_dict()) as conn:
-                output = conn.send_command(f"configure replace flash:{backup_reference.name} force")
-                logger.info(f"[green]Rollback executed:[/green]\n{output}")
-                return True
+            conn = self.get_connection()
+            output = conn.send_command(f"configure replace flash:{backup_reference.name} force")
+            logger.info(f"[green]Rollback executed:[/green]\n{output}")
+            return True
         except Exception as e:
             logger.error(f"[bold red]Rollback failed on {self.device.host}:[/bold red] {e}")
             return False

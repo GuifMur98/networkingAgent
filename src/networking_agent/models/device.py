@@ -1,8 +1,13 @@
 """Device inventory model with secure credential encapsulation."""
 
+import re
 from typing import Any, Dict, Literal, Optional
 
-from pydantic import BaseModel, Field, SecretStr
+from pydantic import BaseModel, Field, SecretStr, field_validator
+
+# Strictly matches valid IPv4, IPv6, or standard FQDN/hostnames
+# Blocks path traversal (../), slashes, null bytes, command injection characters, whitespace
+HOST_REGEX = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9\.\-:_]{0,253}$")
 
 
 class DeviceInventory(BaseModel):
@@ -25,6 +30,20 @@ class DeviceInventory(BaseModel):
     key_file: Optional[str] = Field(default=None, description="Path to private SSH key file")
     use_keys: bool = Field(default=False, description="Whether to use SSH key authentication")
     timeout: int = Field(default=30, description="Connection timeout in seconds")
+
+    @field_validator("host")
+    @classmethod
+    def validate_host_security(cls, v: str) -> str:
+        cleaned = v.strip()
+        if not cleaned:
+            raise ValueError("Device host cannot be empty.")
+        if ".." in cleaned or "/" in cleaned or "\\" in cleaned or "\x00" in cleaned:
+            raise ValueError("Device host contains forbidden path traversal characters.")
+        if any(c in cleaned for c in [";", "&", "|", "`", "$", ">", "<", " ", "\t", "\r", "\n"]):
+            raise ValueError("Device host contains illegal shell injection or whitespace characters.")
+        if not HOST_REGEX.match(cleaned):
+            raise ValueError(f"Device host '{v}' does not match valid IP or hostname syntax.")
+        return cleaned
 
     def to_netmiko_dict(self) -> Dict[str, Any]:
         """Exports a dictionary compatible with Netmiko ConnectHandler."""

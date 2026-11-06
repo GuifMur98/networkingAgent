@@ -3,8 +3,6 @@
 from pathlib import Path
 from typing import List, Optional
 
-from netmiko import ConnectHandler
-
 from networking_agent.core.logging import logger
 from networking_agent.drivers.base import NetworkOSDriver
 from networking_agent.models.intent import NetworkIntent
@@ -79,10 +77,10 @@ class JuniperJunosDriver(NetworkOSDriver):
         """Rolls back the configuration to the previous commit on Junos."""
         logger.info(f"[*] Rolling back Junos configuration on {self.device.host}...")
         try:
-            with ConnectHandler(**self.device.to_netmiko_dict()) as conn:
-                out = conn.send_config_set(["rollback 1", "commit and-quit"])
-                logger.info(f"[green]Junos rollback output:[/green]\n{out}")
-                return True
+            conn = self.get_connection()
+            out = conn.send_config_set(["rollback 1", "commit and-quit"])
+            logger.info(f"[green]Junos rollback output:[/green]\n{out}")
+            return True
         except Exception as e:
             logger.error(f"[bold red]Junos rollback failed:[/bold red] {e}")
             return False

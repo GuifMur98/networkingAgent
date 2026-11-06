@@ -135,3 +135,38 @@ def test_proactive_remediations_across_drivers():
         '/interface set [find name="ether2"] disabled=yes',
         '/interface set [find name="ether2"] disabled=no',
     ]
+
+
+def test_driver_connection_reuse_and_disconnect(mocker):
+    # Mock ConnectHandler
+    mock_conn = mocker.MagicMock()
+    mock_conn.is_alive.return_value = True
+    mock_connect_handler = mocker.patch(
+        "networking_agent.drivers.base.ConnectHandler",
+        return_value=mock_conn,
+    )
+
+    dev = DeviceInventory(host="10.1.1.1", device_type="cisco_ios")
+    driver = CiscoIOSDriver(dev)
+
+    # First call initializes connection
+    conn1 = driver.get_connection()
+    assert conn1 == mock_conn
+    assert mock_connect_handler.call_count == 1
+
+    # Second call reuses existing connection without re-connecting
+    conn2 = driver.get_connection()
+    assert conn2 == mock_conn
+    assert mock_connect_handler.call_count == 1  # Not called again!
+
+    # Disconnect cleans up socket and resets state
+    driver.disconnect()
+    assert mock_conn.disconnect.called
+    assert driver._conn is None
+
+    # Context manager support
+    with driver as d:
+        d_conn = d.get_connection()
+        assert d_conn == mock_conn
+    # Upon exiting context manager, disconnect should have been invoked
+    assert driver._conn is None

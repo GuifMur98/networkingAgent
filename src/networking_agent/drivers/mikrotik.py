@@ -3,8 +3,6 @@
 from pathlib import Path
 from typing import List, Optional
 
-from netmiko import ConnectHandler
-
 from networking_agent.core.logging import logger
 from networking_agent.drivers.base import NetworkOSDriver
 from networking_agent.models.intent import NetworkIntent
@@ -78,9 +76,9 @@ class MikrotikRouterOSDriver(NetworkOSDriver):
         """Downloads full configuration export and generates hardware backup on RouterOS."""
         backup_path = super().backup_running_config()
         try:
-            with ConnectHandler(**self.device.to_netmiko_dict()) as conn:
-                logger.info(f"[*] Creating MikroTik hardware backup '{MIKROTIK_BACKUP_NAME}'...")
-                conn.send_command(f"/system backup save name={MIKROTIK_BACKUP_NAME}")
+            conn = self.get_connection()
+            logger.info(f"[*] Creating MikroTik hardware backup '{MIKROTIK_BACKUP_NAME}'...")
+            conn.send_command(f"/system backup save name={MIKROTIK_BACKUP_NAME}")
         except Exception as e:
             logger.warning(f"[yellow]Could not create RouterOS internal backup file: {e}[/yellow]")
         return backup_path
@@ -89,11 +87,11 @@ class MikrotikRouterOSDriver(NetworkOSDriver):
         """Attempts to restore previous state on MikroTik RouterOS."""
         logger.info(f"[*] Executing rollback on MikroTik RouterOS {self.device.host}...")
         try:
-            with ConnectHandler(**self.device.to_netmiko_dict()) as conn:
-                # In MikroTik, loading a backup reboots or restores the configuration
-                out = conn.send_command(f"/system backup load name={MIKROTIK_BACKUP_NAME}.backup")
-                logger.info(f"[green]MikroTik rollback executed:[/green]\n{out}")
-                return True
+            conn = self.get_connection()
+            # In MikroTik, loading a backup reboots or restores the configuration
+            out = conn.send_command(f"/system backup load name={MIKROTIK_BACKUP_NAME}.backup")
+            logger.info(f"[green]MikroTik rollback executed:[/green]\n{out}")
+            return True
         except Exception as e:
             logger.error(f"[bold red]MikroTik rollback failed:[/bold red] {e}")
             return False

@@ -68,7 +68,7 @@ class NetworkIntent(BaseModel):
         if not v_clean or v_clean.lower() in ["none", "null", "n/a", "undefined"]:
             return None
         # Strictly forbid newlines, null bytes, command injection markers in the raw input
-        if any(bad in v for bad in ["\n", "\r", ";", "&", "|", "`", "$"]):
+        if any(bad in v for bad in ["\n", "\r", ";", "&", "|", "`", "$", "\\", "\x00", ">", "<"]):
             raise ValueError(f"Illegal character detected in interface name: '{v}'")
         if " " in v_clean or "\t" in v_clean:
             raise ValueError(f"Illegal whitespace detected in interface name: '{v}'")
@@ -107,7 +107,7 @@ class NetworkIntent(BaseModel):
         if not v_clean or v_clean.lower() in ["none", "null", "n/a", "undefined"]:
             return None
         # Disallow newlines, semicolons, shell metacharacters in raw input
-        if any(bad in v for bad in ["\n", "\r", ";", "&", "|", "`", "$"]):
+        if any(bad in v for bad in ["\n", "\r", ";", "&", "|", "`", "$", "\\", "\x00", ">", "<"]):
             raise ValueError(f"Illegal character detected in BGP IP: '{v}'")
         if " " in v_clean or "\t" in v_clean:
             raise ValueError(f"Illegal whitespace detected in BGP IP: '{v}'")

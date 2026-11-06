@@ -1,5 +1,7 @@
 """Cryptographic encryption and decryption for sensitive credentials and API keys."""
 
+import os
+import stat
 from pathlib import Path
 from typing import Optional
 
@@ -8,6 +10,15 @@ from cryptography.fernet import Fernet
 from networking_agent.core.logging import logger
 
 KEY_PATH = Path("data/.vault.key")
+
+
+def secure_file_permissions(path: Path) -> None:
+    """Restricts file permissions to owner read/write (0600) on platforms supporting it."""
+    try:
+        if path.exists():
+            os.chmod(path, stat.S_IRUSR | stat.S_IWUSR)
+    except Exception:
+        pass
 
 
 class SecretVault:
@@ -25,9 +36,11 @@ class SecretVault:
                 key = Fernet.generate_key()
                 with open(self.key_path, "wb") as f:
                     f.write(key)
+                secure_file_permissions(self.key_path)
             else:
                 with open(self.key_path, "rb") as f:
                     key = f.read().strip()
+                secure_file_permissions(self.key_path)
             self._fernet = Fernet(key)
         return self._fernet
 

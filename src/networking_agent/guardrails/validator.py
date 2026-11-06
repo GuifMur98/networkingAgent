@@ -6,14 +6,33 @@ from typing import List
 from networking_agent.core.exceptions import CommandInjectionError
 from networking_agent.core.logging import logger
 
-# Disallowed dangerous CLI keywords that should never be executed autonomously
+# Disallowed dangerous CLI keywords and injection vectors that must never be executed autonomously
 FORBIDDEN_COMMAND_PATTERNS = [
-    re.compile(r"\b(format|erase|rmdir|boot|reload)\b", re.IGNORECASE),
-    re.compile(r"\b(delete\s+(?:flash|nvram|bootflash|disk|harddisk|system|all))\b", re.IGNORECASE),
+    # System wipes, restarts, halts, and zeroization across Cisco, Juniper, and MikroTik
+    re.compile(r"\b(format|erase|rmdir|boot|reload|reboot|halt|zeroize)\b", re.IGNORECASE),
+    re.compile(r"\b(delete\s+(?:flash|nvram|bootflash|disk|harddisk|system|all|running-config))\b", re.IGNORECASE),
+    re.compile(r"\b(?:system\s+)?reset-configuration\b", re.IGNORECASE),
+    re.compile(r"\b(?:system\s+)?default-configuration\b", re.IGNORECASE),
+    re.compile(r"\b(request\s+system\s+(?:zeroize|reboot|halt))\b", re.IGNORECASE),
+
+    # Backdoor user creation, credential tampering, and authentication manipulation
     re.compile(r"\b(username|password|secret|radius|tacacs)\b", re.IGNORECASE),
+    re.compile(r"\b(?:user\s+(?:add|set|remove)|login\s+user)\b", re.IGNORECASE),
+
+    # Remote payload download, proxies, network flooding, persistence and underlying shell access
+    re.compile(
+        r"\b(tool\s+(?:fetch|traffic-generator|romon|bandwidth-test)|tftp-server|guestshell|start\s+shell)\b",
+        re.IGNORECASE,
+    ),
+    re.compile(r"\b(ip\s+(?:socks|proxy))\b", re.IGNORECASE),
+    re.compile(r"\b(system\s+(?:script|scheduler|package))\b", re.IGNORECASE),
+
+    # Core routing and crypto destruction
     re.compile(r"\b(no\s+ip\s+routing|no\s+router)\b", re.IGNORECASE),
     re.compile(r"\b(crypto\s+key\s+zeroize)\b", re.IGNORECASE),
-    re.compile(r"[\r\n;`$><]", re.IGNORECASE),  # Newlines, semicolons, shell pipes/redirections
+
+    # Command chaining, redirection, background execution, and shell escaping
+    re.compile(r"[\r\n;`$><&|\\]", re.IGNORECASE),
 ]
 
 

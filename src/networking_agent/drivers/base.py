@@ -22,6 +22,38 @@ class NetworkOSDriver(ABC):
         self.device = device
         self.backup_dir = settings.backup_dir
         self.backup_dir.mkdir(parents=True, exist_ok=True)
+        self._conn: Optional[ConnectHandler] = None
+
+    def get_connection(self) -> ConnectHandler:
+        """Retrieves an active Netmiko connection or establishes a new one if not alive.
+
+        Eliminates repeated SSH handshakes across health checks, backups, and remediation.
+        """
+        if self._conn is None:
+            self._conn = ConnectHandler(**self.device.to_netmiko_dict())
+        else:
+            try:
+                if hasattr(self._conn, "is_alive") and not self._conn.is_alive():
+                    self._conn = ConnectHandler(**self.device.to_netmiko_dict())
+            except Exception:
+                self._conn = ConnectHandler(**self.device.to_netmiko_dict())
+        return self._conn
+
+    def disconnect(self) -> None:
+        """Gracefully disconnects and frees active SSH sessions."""
+        if self._conn is not None:
+            try:
+                self._conn.disconnect()
+            except Exception:
+                pass
+            finally:
+                self._conn = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.disconnect()
 
     @abstractmethod
     def build_candidate_commands(self, intent: NetworkIntent) -> List[str]:
@@ -85,12 +117,18 @@ class NetworkOSDriver(ABC):
     def backup_running_config(self) -> Path:
         """Fetches the complete running-configuration from the device and persists it locally."""
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-        backup_file = self.backup_dir / f"{self.device.host}_{timestamp}.cfg"
+        import re
+
+        safe_host = re.sub(r"[^a-zA-Z0-9_.-]", "_", self.device.host)
+        backup_file = (self.backup_dir / f"{safe_host}_{timestamp}.cfg").resolve()
+
+        if not backup_file.is_relative_to(self.backup_dir.resolve()):
+            raise DeviceConnectionError("Security violation: Path traversal detected in backup path.")
 
         logger.info(f"[*] Taking real snapshot backup of [bold cyan]{self.device.host}[/bold cyan]...")
         try:
-            with ConnectHandler(**self.device.to_netmiko_dict()) as conn:
-                config_output = conn.send_command(self.get_running_config_command())
+            conn = self.get_connection()
+            config_output = conn.send_command(self.get_running_config_command())
 
             with open(backup_file, "w", encoding="utf-8") as f:
                 f.write(config_output)
@@ -109,12 +147,12 @@ class NetworkOSDriver(ABC):
 
         logger.info(f"[*] Connecting to {self.device.host} to execute {len(sanitized_cmds)} commands...")
         try:
-            with ConnectHandler(**self.device.to_netmiko_dict()) as conn:
-                output = conn.send_config_set(sanitized_cmds)
-                # Ensure device persistence if needed
-                if self.device.device_type in ["cisco_ios", "cisco_xe"]:
-                    conn.save_config()
-                return output
+            conn = self.get_connection()
+            output = conn.send_config_set(sanitized_cmds)
+            # Ensure device persistence if needed
+            if self.device.device_type in ["cisco_ios", "cisco_xe"]:
+                conn.save_config()
+            return output
         except Exception as e:
             msg = f"Execution failed on {self.device.host}: {e}"
             logger.error(f"[bold red]{msg}[/bold red]")
@@ -124,10 +162,10 @@ class NetworkOSDriver(ABC):
         """Runs health commands to inspect operational state (for pre/post verification)."""
         results: Dict[str, str] = {}
         try:
-            with ConnectHandler(**self.device.to_netmiko_dict()) as conn:
-                for cmd in self.get_health_commands():
-                    out = conn.send_command(cmd)
-                    results[cmd] = out
+            conn = self.get_connection()
+            for cmd in self.get_health_commands():
+                out = conn.send_command(cmd)
+                results[cmd] = out
             return results
         except Exception as e:
             msg = f"Failed to run health check on {self.device.host}: {e}"

@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import SecretStr
 
-from networking_agent.core.crypto import vault
+from networking_agent.core.crypto import secure_file_permissions, vault
 from networking_agent.models.device import DeviceInventory
 
 DB_PATH = Path("data/networking_agent.db")
@@ -22,8 +22,13 @@ class DatabaseManager:
         self._init_db()
 
     def _get_connection(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(str(self.db_path))
+        conn = sqlite3.connect(str(self.db_path), timeout=10.0)
         conn.row_factory = sqlite3.Row
+        # WAL mode & memory optimizations for high throughput and safety
+        conn.execute("PRAGMA journal_mode = WAL;")
+        conn.execute("PRAGMA synchronous = NORMAL;")
+        conn.execute("PRAGMA temp_store = MEMORY;")
+        conn.execute("PRAGMA foreign_keys = ON;")
         return conn
 
     def _init_db(self) -> None:
@@ -55,6 +60,7 @@ class DatabaseManager:
                 )
             """)
             conn.commit()
+        secure_file_permissions(self.db_path)
 
     # =========================================================================
     # SETTINGS API (API Keys, Defaults, URLs)

@@ -3,8 +3,6 @@
 from pathlib import Path
 from typing import List, Optional
 
-from netmiko import ConnectHandler
-
 from networking_agent.core.logging import logger
 from networking_agent.drivers.base import NetworkOSDriver
 from networking_agent.models.intent import NetworkIntent
@@ -69,9 +67,9 @@ class CiscoNXOSDriver(NetworkOSDriver):
         """Takes a remote hardware checkpoint on NX-OS and also downloads a local copy."""
         backup_path = super().backup_running_config()
         try:
-            with ConnectHandler(**self.device.to_netmiko_dict()) as conn:
-                logger.info(f"[*] Creating NX-OS remote checkpoint '{CHECKPOINT_NAME}'...")
-                conn.send_command(f"checkpoint {CHECKPOINT_NAME}")
+            conn = self.get_connection()
+            logger.info(f"[*] Creating NX-OS remote checkpoint '{CHECKPOINT_NAME}'...")
+            conn.send_command(f"checkpoint {CHECKPOINT_NAME}")
         except Exception as e:
             logger.warning(f"[yellow]Could not create remote checkpoint {CHECKPOINT_NAME}: {e}[/yellow]")
         return backup_path
@@ -80,10 +78,10 @@ class CiscoNXOSDriver(NetworkOSDriver):
         """Restores the configuration using NX-OS checkpoint rollback."""
         logger.info(f"[*] Rolling back NX-OS configuration to checkpoint '{CHECKPOINT_NAME}'...")
         try:
-            with ConnectHandler(**self.device.to_netmiko_dict()) as conn:
-                out = conn.send_command(f"rollback running-config checkpoint {CHECKPOINT_NAME}")
-                logger.info(f"[green]NX-OS rollback output:[/green]\n{out}")
-                return True
+            conn = self.get_connection()
+            out = conn.send_command(f"rollback running-config checkpoint {CHECKPOINT_NAME}")
+            logger.info(f"[green]NX-OS rollback output:[/green]\n{out}")
+            return True
         except Exception as e:
             logger.error(f"[bold red]NX-OS rollback failed:[/bold red] {e}")
             return False
