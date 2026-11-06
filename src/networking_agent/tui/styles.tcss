@@ -1,3 +1,52 @@
+
+/* Tabbed Content & Panes Layout */
+#main-tabs {
+    height: 1fr;
+    width: 100%;
+}
+
+TabbedContent {
+    height: 1fr;
+    width: 100%;
+}
+
+ContentSwitcher {
+    height: 1fr;
+    width: 100%;
+}
+
+TabPane {
+    height: 1fr;
+    width: 100%;
+    padding: 0;
+}
+
+#home-widget {
+    height: 1fr;
+    width: 100%;
+}
+
+#inventory-widget {
+    height: 1fr;
+    width: 100%;
+}
+
+#audit-widget {
+    height: 1fr;
+    width: 100%;
+}
+
+#inventory-container, #audit-container {
+    height: 100%;
+    width: 100%;
+    padding: 1;
+}
+
+#inventory-data-table, #audit-data-table {
+    height: 1fr;
+    min-height: 10;
+}
+
 /* NetworkingAgent Modern Enterprise TCSS */
 
 Screen {

@@ -2,8 +2,10 @@
 
 from rich.panel import Panel
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.containers import Grid, Vertical
 from textual.message import Message
+from textual.widget import Widget
 from textual.widgets import Button, Static
 
 from networking_agent.core.config import settings
@@ -11,8 +13,15 @@ from networking_agent.core.db import db
 from networking_agent.tui.widgets.banner_widget import BannerWidget
 
 
-class HomeDashboard(Static):
+class HomeDashboard(Widget):
     """Main welcome screen with ASCII banner, operational summary, and action cards."""
+
+    BINDINGS = [
+        Binding("1", "nav_diagnostic", "1 Diagnóstico", show=False),
+        Binding("2", "nav_inventory", "2 Inventario", show=False),
+        Binding("3", "nav_vault", "3 Ajustes IA", show=False),
+        Binding("4", "nav_audit", "4 Auditoría", show=False),
+    ]
 
     class NavigateToTab(Message):
         """Emitted when the operator clicks a quick action card to change tabs."""
@@ -70,14 +79,18 @@ class HomeDashboard(Static):
         devices = db.list_devices()
         auto_approve = db.get_setting("auto_approve") == "true" or settings.auto_approve
 
-        hitl_status = "[bold yellow]🛡️ Human-in-the-Loop ACTIVO (Aprobación Requerida)[/]" if not auto_approve else "[bold red]⚠️ Auto-Approve ACTIVO[/]"
+        hitl_status = (
+            "[bold yellow]🛡️ Human-in-the-Loop ACTIVO (Aprobación Requerida)[/]"
+            if not auto_approve
+            else "[bold red]⚠️ Auto-Approve ACTIVO[/]"
+        )
 
         status_text = (
             f"[bold cyan]ESTADO DEL SISTEMA:[/bold cyan]\n"
             f"• [bold]Cerebro de IA Activo:[/bold] [magenta]{provider.upper()}[/] ([bold]{model}[/])\n"
             f"• [bold]Dispositivos Enrolados en SQLite:[/bold] [green]{len(devices)} equipos[/]\n"
             f"• [bold]Seguridad & Control Humano:[/bold] {hitl_status}\n\n"
-            f"[dim italic]Selecciona una de las 4 opciones a continuación o utiliza las teclas [1-4] / [q] para salir.[/dim italic]"
+            f"[dim italic]Selecciona una de las 4 opciones a continuación o presiona las teclas [1-4].[/dim italic]"
         )
 
         panel = Panel(
@@ -97,3 +110,15 @@ class HomeDashboard(Static):
             self.post_message(self.OpenSettingsRequested())
         elif event.button.id == "btn-nav-audit":
             self.post_message(self.NavigateToTab("pane-audit"))
+
+    def action_nav_diagnostic(self) -> None:
+        self.post_message(self.NavigateToTab("pane-diagnostic"))
+
+    def action_nav_inventory(self) -> None:
+        self.post_message(self.NavigateToTab("pane-inventory"))
+
+    def action_nav_vault(self) -> None:
+        self.post_message(self.OpenSettingsRequested())
+
+    def action_nav_audit(self) -> None:
+        self.post_message(self.NavigateToTab("pane-audit"))

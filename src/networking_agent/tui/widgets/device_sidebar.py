@@ -6,13 +6,14 @@ from rich.text import Text
 from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.message import Message
-from textual.widgets import Button, Label, ListItem, ListView, Static
+from textual.widget import Widget
+from textual.widgets import Button, Label, ListItem, ListView
 
 from networking_agent.core.db import db
 from networking_agent.models.device import DeviceInventory
 
 
-class DeviceSidebar(Static):
+class DeviceSidebar(Widget):
     """Sidebar widget managing the device inventory navigation."""
 
     class DeviceSelected(Message):

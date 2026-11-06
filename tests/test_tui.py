@@ -210,10 +210,12 @@ async def test_tui_vault_modal_submission():
 async def test_tui_home_dashboard_navigation_and_banner():
     """Verify that the home dashboard renders the ASCII banner and navigates to tabs and back."""
     app = NetworkingAgentTUIApp()
-    async with app.run_test() as pilot:
-        # Home dashboard and banner must be present
+    async with app.run_test(size=(120, 45)) as pilot:
+        # Home dashboard and banner must be present and have active height
         home = pilot.app.query_one(HomeDashboard)
         assert home is not None
+        assert home.size.height > 10
+        assert home.query_one("#home-container").size.height > 10
         assert home.query_one(BannerWidget) is not None
 
         # Click on diagnostic card
@@ -233,6 +235,15 @@ async def test_tui_home_dashboard_navigation_and_banner():
         await pilot.pause()
 
         # Active tab must return to home
+        assert tabs.active == "pane-home"
+
+        # Test direct keyboard shortcut 2 and return with h
+        await pilot.press("2")
+        await pilot.pause()
+        assert tabs.active == "pane-inventory"
+
+        await pilot.press("h")
+        await pilot.pause()
         assert tabs.active == "pane-home"
 
 

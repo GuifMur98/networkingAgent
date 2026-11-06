@@ -3,7 +3,6 @@
 from rich.align import Align
 from rich.panel import Panel
 from rich.text import Text
-from textual.app import ComposeResult
 from textual.widgets import Static
 
 ASCII_BANNER = r"""  _   _      _                      _     _               _                    _   
@@ -27,18 +26,21 @@ class BannerWidget(Static):
     BannerWidget {
         height: auto;
         margin-bottom: 1;
+        width: 100%;
     }
     """
 
-    def compose(self) -> ComposeResult:
+    def render(self) -> Panel:
+        width = self.size.width or 100
+        raw_art = ASCII_BANNER if width >= 90 else COMPACT_BANNER
+
         banner_text = Text()
-        banner_text.append(ASCII_BANNER + "\n\n", style="bold cyan")
+        banner_text.append(raw_art + "\n\n", style="bold #00e5ff")
         banner_text.append("Enterprise Autonomous Closed-Loop Network Agent\n", style="bold white")
         banner_text.append("Cisco • Juniper • MikroTik  |  Ollama • Gemini • OpenAI • Claude", style="dim cyan")
 
-        panel = Panel(
+        return Panel(
             Align.center(banner_text),
-            border_style="bright_blue",
+            border_style="#00e5ff",
             padding=(0, 1),
         )
-        yield Static(panel)

@@ -4,12 +4,13 @@ from rich.text import Text
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.message import Message
-from textual.widgets import Button, DataTable, Label, Static
+from textual.widget import Widget
+from textual.widgets import Button, DataTable, Label
 
 from networking_agent.core.db import db
 
 
-class DeviceInventoryView(Static):
+class DeviceInventoryView(Widget):
     """View allowing operator to inspect, add, and delete registered devices."""
 
     class AddDeviceRequested(Message):

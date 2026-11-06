@@ -118,6 +118,10 @@ class NetworkingAgentTUIApp(App):
         Binding("d", "add_device", "➕ Añadir Equipo", show=True),
         Binding("s", "open_settings", "🧠 Ajustes IA", show=True),
         Binding("r", "refresh_all", "🔄 Recargar", show=True),
+        Binding("1", "nav_tab_1", "1 Diagnóstico", show=False),
+        Binding("2", "nav_tab_2", "2 Equipos", show=False),
+        Binding("3", "open_settings", "3 Ajustes IA", show=False),
+        Binding("4", "nav_tab_4", "4 Auditoría", show=False),
     ]
 
     def __init__(self, *args, **kwargs):
@@ -169,6 +173,21 @@ class NetworkingAgentTUIApp(App):
             home.update_status_card()
         except Exception:
             pass
+
+    def action_nav_tab_1(self) -> None:
+        """Switch navigation to Diagnostic workspace."""
+        tabs = self.query_one("#main-tabs", TabbedContent)
+        tabs.active = "pane-diagnostic"
+
+    def action_nav_tab_2(self) -> None:
+        """Switch navigation to Device Inventory view."""
+        tabs = self.query_one("#main-tabs", TabbedContent)
+        tabs.active = "pane-inventory"
+
+    def action_nav_tab_4(self) -> None:
+        """Switch navigation to Audit trail view."""
+        tabs = self.query_one("#main-tabs", TabbedContent)
+        tabs.active = "pane-audit"
 
     def on_home_dashboard_navigate_to_tab(self, event: HomeDashboard.NavigateToTab) -> None:
         tabs = self.query_one("#main-tabs", TabbedContent)

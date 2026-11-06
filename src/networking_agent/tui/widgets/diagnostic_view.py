@@ -8,13 +8,14 @@ from rich.text import Text
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.message import Message
+from textual.widget import Widget
 from textual.widgets import Button, Label, Log, RadioButton, RadioSet, Static, TextArea
 
 from networking_agent.models.device import DeviceInventory
 from networking_agent.models.intent import NetworkIntent
 
 
-class DiagnosticWorkspace(Static):
+class DiagnosticWorkspace(Widget):
     """Main operational diagnostic workspace combining proactive and reactive flows."""
 
     class RunDiagnosisRequested(Message):
