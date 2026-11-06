@@ -26,15 +26,15 @@ class DeviceInventoryView(Widget):
         with Vertical(id="inventory-container"):
             with Horizontal(id="inventory-top-bar"):
                 yield Label("CATALOGO DE EQUIPOS DE RED ENROLADOS", id="inventory-title")
-                yield Button("[ Volver al Inicio ]", id="btn-back-from-inventory")
+                yield Button("Volver al Inicio", id="btn-back-from-inventory")
 
             yield DataTable(id="inventory-data-table", cursor_type="row", zebra_stripes=True)
 
             with Horizontal(classes="inventory-actions"):
-                yield Button("[ + Registrar Equipo ]", id="btn-inv-add", variant="primary")
-                yield Button("[ - Eliminar ]", id="btn-inv-delete", variant="error")
-                yield Button("[ Recargar ]", id="btn-inv-refresh")
-                yield Button("[ Volver al Inicio ]", id="btn-inv-home")
+                yield Button("Registrar Equipo", id="btn-inv-add", variant="primary")
+                yield Button("Eliminar", id="btn-inv-delete", variant="error")
+                yield Button("Recargar", id="btn-inv-refresh")
+                yield Button("Volver al Inicio", id="btn-inv-home")
 
     def on_mount(self) -> None:
         table = self.query_one("#inventory-data-table", DataTable)

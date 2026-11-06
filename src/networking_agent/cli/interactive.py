@@ -49,7 +49,7 @@ def select_ai_brain_interactively(
     print_step_header(
         step=1,
         total=3,
-        title="🧠 Selección del Cerebro de Inteligencia Artificial",
+        title="SELECCION DE CEREBRO DE INTELIGENCIA ARTIFICIAL",
         subtitle="Elige el motor de inferencia encargado de diagnosticar y diseñar la remediación neutral.",
     )
 
@@ -111,7 +111,7 @@ def select_ai_brain_interactively(
             model_table.add_column("Tamaño", style="dim", width=12)
 
             for idx, m in enumerate(installed_models, 1):
-                star = " 🌟 (Recomendado para Redes)" if "netexpert" in m["name"].lower() else ""
+                star = " [Recomendado para Redes]" if "netexpert" in m["name"].lower() else ""
                 model_table.add_row(str(idx), f"{m['name']}{star}", m["size"])
             console.print(model_table)
 
@@ -152,7 +152,7 @@ def select_ai_brain_interactively(
     elif selected_provider == "gemini":
         gemini_key = db.get_setting("gemini_api_key") or os.environ.get("GEMINI_API_KEY")
         if gemini_key:
-            console.print("[dim]✓ API Key de Gemini recuperada desde almacén seguro SQLite.[/dim]")
+            console.print("[dim][OK] API Key de Gemini recuperada desde almacén seguro SQLite.[/dim]")
             if prompt_confirm("¿Deseas actualizar la GEMINI_API_KEY almacenada?", default=False):
                 gemini_key = prompt_non_empty("Ingresa tu nueva GEMINI_API_KEY", password=True)
                 db.set_setting("gemini_api_key", gemini_key, is_secret=True)
@@ -171,7 +171,7 @@ def select_ai_brain_interactively(
             "Personalizado",
         ]
         for idx, m in enumerate(gemini_models, 1):
-            star = " 🌟 (Recomendado: Rápido y Equilibrado)" if m == "gemini-3.8-flash" else ""
+            star = " [Recomendado: Rapido y Equilibrado]" if m == "gemini-3.8-flash" else ""
             console.print(f"  [yellow]{idx}[/yellow]. {m}{star}")
         m_idx = prompt_choice("Selecciona modelo", choices=["1", "2", "3", "4"], default="1")
         if m_idx == "4":
@@ -183,7 +183,7 @@ def select_ai_brain_interactively(
     elif selected_provider == "openai":
         openai_key = db.get_setting("openai_api_key") or os.environ.get("OPENAI_API_KEY")
         if openai_key:
-            console.print("[dim]✓ API Key de OpenAI recuperada desde almacén seguro SQLite.[/dim]")
+            console.print("[dim][OK] API Key de OpenAI recuperada desde almacén seguro SQLite.[/dim]")
             if prompt_confirm("¿Deseas actualizar la OPENAI_API_KEY almacenada?", default=False):
                 openai_key = prompt_non_empty("Ingresa tu nueva OPENAI_API_KEY", password=True)
                 db.set_setting("openai_api_key", openai_key, is_secret=True)
@@ -208,7 +208,7 @@ def select_ai_brain_interactively(
     else:
         anthropic_key = db.get_setting("anthropic_api_key") or os.environ.get("ANTHROPIC_API_KEY")
         if anthropic_key:
-            console.print("[dim]✓ API Key de Anthropic recuperada desde almacén seguro SQLite.[/dim]")
+            console.print("[dim][OK] API Key de Anthropic recuperada desde almacén seguro SQLite.[/dim]")
             if prompt_confirm("¿Deseas actualizar la ANTHROPIC_API_KEY almacenada?", default=False):
                 anthropic_key = prompt_non_empty("Ingresa tu nueva ANTHROPIC_API_KEY", password=True)
                 db.set_setting("anthropic_api_key", anthropic_key, is_secret=True)
@@ -238,7 +238,7 @@ def select_ai_brain_interactively(
     db.set_setting("ai_model", selected_model)
 
     console.print(
-        f"\n[bold green]✓ Cerebro configurado y guardado:[/bold green] "
+        f"\n[bold green][OK] Cerebro configurado y guardado:[/bold green] "
         f"[bold]{selected_provider.upper()} / {selected_model}[/bold]\n"
     )
     return selected_provider, selected_model
@@ -253,14 +253,14 @@ def configure_device_interactively(
     print_step_header(
         step=2,
         total=3,
-        title="🔌 Configuración de Conexión al Dispositivo de Red",
+        title="CONFIGURACION DE CONEXION AL DISPOSITIVO DE RED",
         subtitle="Selecciona un equipo guardado en la base de datos o da de alta un nuevo dispositivo SSH.",
     )
 
     # 1. Check if there are saved devices in SQLite
     saved_devices = db.list_devices()
     if saved_devices:
-        console.print("[bold green]💾 Equipos guardados en la base de datos SQLite:[/bold green]")
+        console.print("[bold green]Equipos guardados en la base de datos SQLite:[/bold green]")
         saved_table = Table(show_header=True, header_style="bold cyan")
         saved_table.add_column("Opción", style="bold yellow", width=8, justify="center")
         saved_table.add_column("Perfil / Nombre", style="bold")
@@ -301,7 +301,7 @@ def configure_device_interactively(
             loaded_device = db.get_device_by_id(chosen_dev_id)
             if loaded_device:
                 console.print(
-                    f"\n[green]✓ Equipo cargado desde la base de datos:[/green] "
+                    f"\n[green][OK] Equipo cargado desde la base de datos:[/green] "
                     f"[bold]{loaded_device.host}[/bold] ([cyan]{loaded_device.device_type}[/cyan]) "
                     f"con usuario [bold]{loaded_device.username}[/bold]\n"
                 )
@@ -404,10 +404,10 @@ def configure_device_interactively(
             default=f"{selected_platform.upper()}-{host}",
         )
         db.save_device(device, name=friendly_name)
-        console.print("[dim]✓ Dispositivo guardado de forma cifrada en SQLite.[/dim]")
+        console.print("[dim][OK] Dispositivo guardado de forma cifrada en SQLite.[/dim]")
 
     console.print(
-        f"\n[green]✓ Dispositivo configurado:[/green] [bold]{device.host}[/bold] "
+        f"\n[green][OK] Dispositivo configurado:[/green] [bold]{device.host}[/bold] "
         f"([cyan]{device.device_type}[/cyan]) con usuario [bold]{device.username}[/bold]\n"
     )
     return device
@@ -418,7 +418,7 @@ def prompt_telemetry_event(allow_back: bool = False) -> Tuple[Optional[str], Opt
     print_step_header(
         step=3,
         total=3,
-        title="🔍 Selección del Modo de Diagnóstico y Telemetría",
+        title="SELECCION DEL MODO DE DIAGNOSTICO Y TELEMETRIA",
         subtitle="Elige si deseas investigar proactivamente un síntoma reportado o analizar un Syslog reactivo.",
     )
 
@@ -476,7 +476,7 @@ def prompt_telemetry_event(allow_back: bool = False) -> Tuple[Optional[str], Opt
             ("Describir un Síntoma Personalizado en Lenguaje Natural", "CUSTOM"),
         ]
 
-        console.print("\n[bold cyan]📋 Selecciona el síntoma operacional a investigar:[/bold cyan]")
+        console.print("\n[bold cyan]Selecciona el sintoma operacional a investigar:[/bold cyan]")
         for idx, (s_name, _) in enumerate(proactive_scenarios, 1):
             console.print(f"  [yellow]{idx}[/yellow]. [bold]{s_name}[/bold]")
 
@@ -634,7 +634,7 @@ def manage_devices_interactively() -> None:
                 confirm_msg = f"¿Estás seguro de eliminar '{dev_to_del['name']}' ({dev_to_del['host']})?"
                 if prompt_confirm(confirm_msg, default=False):
                     db.delete_device(dev_to_del["id"])
-                    console.print(f"[green]✓ Dispositivo {dev_to_del['host']} eliminado con éxito.[/green]")
+                    console.print(f"[green][OK] Dispositivo {dev_to_del['host']} eliminado con exito.[/green]")
 
 
 def view_audit_trail_interactively() -> None:

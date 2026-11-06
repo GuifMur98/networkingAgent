@@ -40,7 +40,7 @@ class DiagnosticWorkspace(Widget):
             # Navigation Header with Back button
             with Horizontal(id="diagnostic-nav-bar"):
                 yield Label("DIAGNOSTICO Y REMEDIACION ASISTIDA", id="diagnostic-title")
-                yield Button("[ Volver al Inicio ]", id="btn-back-to-home")
+                yield Button("Volver al Inicio", id="btn-back-to-home")
 
             # Selected Device Card
             yield Static(id="target-device-card")
@@ -68,7 +68,7 @@ class DiagnosticWorkspace(Widget):
             )
 
             # Trigger Button
-            yield Button("[ Ejecutar Diagnostico y Remediacion ]", id="btn-run-remediation", variant="primary")
+            yield Button("Ejecutar Diagnostico y Remediacion", id="btn-run-remediation", variant="primary")
 
             # AI Diagnosis Summary Static Panel
             yield Static(id="diagnosis-result")

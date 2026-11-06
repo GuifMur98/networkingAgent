@@ -62,7 +62,7 @@ def print_execution_summary(
 ) -> None:
     """Displays a clean summary card of the selected parameters before running."""
     summary_table = Table(
-        title="📋 Resumen del Plan de Diagnóstico",
+        title="RESUMEN DEL PLAN DE DIAGNOSTICO",
         show_header=True,
         header_style="bold cyan",
         border_style="bright_blue",
@@ -70,13 +70,13 @@ def print_execution_summary(
     summary_table.add_column("Componente", style="bold white", width=22)
     summary_table.add_column("Detalle Configurado", style="green")
 
-    summary_table.add_row("🧠 Cerebro de IA", f"{provider.upper()} ({model})")
-    summary_table.add_row("🔌 Dispositivo Destino", f"{device_host} [{device_type}] (Usuario: {device_user})")
+    summary_table.add_row("Cerebro de IA", f"{provider.upper()} ({model})")
+    summary_table.add_row("Dispositivo Destino", f"{device_host} [{device_type}] (Usuario: {device_user})")
     summary_table.add_row(
-        "🔍 Modo de Operación", f"[{'bold magenta' if mode == 'PROACTIVE' else 'bold yellow'}]{mode}[/]"
+        "Modo de Operacion", f"[{'bold magenta' if mode == 'PROACTIVE' else 'bold yellow'}]{mode}[/]"
     )
     summary_table.add_row(
-        "📄 Telemetría / Síntoma", symptom_summary[:90] + ("..." if len(symptom_summary) > 90 else "")
+        "Telemetria / Sintoma", symptom_summary[:90] + ("..." if len(symptom_summary) > 90 else "")
     )
 
     console.print(summary_table)

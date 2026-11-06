@@ -60,19 +60,19 @@ class ConsoleAgentObserver:
 
     def on_no_op_required(self, device: DeviceInventory, intent: NetworkIntent) -> None:
         findings_panel = Panel(
-            f"[bold green]✔ EVALUACIÓN DIAGNÓSTICA TÉCNICA COMPLETADA[/bold green]\n\n"
+            f"[bold green][OK] EVALUACION DIAGNOSTICA TECNICA COMPLETADA[/bold green]\n\n"
             f"[bold cyan]Diagnóstico de Causa Raíz:[/bold cyan]\n"
             f"{intent.diagnosis}\n\n"
             f"[bold yellow]Estado de Configuración:[/bold yellow] No se requieren cambios en el equipo.\n"
             f"[dim]Severidad: {intent.severity} | Acción: {intent.action} | Equipo: {device.host}[/dim]",
-            title="📋 INFORME OPERACIONAL DEL ASISTENTE DE RED",
+            title="INFORME OPERACIONAL DEL ASISTENTE DE RED",
             border_style="green",
         )
         console.print(findings_panel)
 
     def on_guardrail_blocked(self, intent: NetworkIntent, reason: str) -> None:
         shield_panel = Panel(
-            f"[bold red]🛑 ACCIÓN BLOQUEADA POR GUARDARRAÍL DE SEGURIDAD (BLAST RADIUS)[/bold red]\n\n"
+            f"[bold red][ALERTA] ACCION BLOQUEADA POR GUARDARAIL DE SEGURIDAD (BLAST RADIUS)[/bold red]\n\n"
             f"[yellow]El cerebro de IA propuso una modificación de riesgo:[/yellow]\n"
             f"  • Acción solicitada: [bold red]{intent.action}[/bold red]\n"
             f"  • Interfaz Objetivo: [bold yellow]{escape(intent.target_interface or 'N/A')}[/bold yellow]\n\n"
@@ -81,7 +81,7 @@ class ConsoleAgentObserver:
             f"[green]Recomendación de Seguridad:[/green]\n"
             f"Las interfaces WAN / Enlace Ascendente están blindadas contra reinicios remotos.\n"
             f"Para lentitud o caídas en la WAN, verifique el cableado/óptica física o contacte al ISP.",
-            title="🛡️ SEGURIDAD ACTIVA: PROTECCIÓN DE INFRAESTRUCTURA CRÍTICA",
+            title="SEGURIDAD ACTIVA: PROTECCION DE INFRAESTRUCTURA CRITICA",
             border_style="bold red",
         )
         console.print(shield_panel)
@@ -97,7 +97,7 @@ class ConsoleAgentObserver:
         sev_color = "red" if intent.severity == "CRITICAL" else "yellow"
         cli_preview = "\n".join([f"  [bold green]+[/bold green] [white]{escape(c)}[/white]" for c in candidate_cli])
         approval_panel = Panel(
-            f"[bold red]⚠️  SOLICITUD DE AUTORIZACIÓN OBLIGATORIA (HUMAN-IN-THE-LOOP)[/bold red]\n\n"
+            f"[bold red][SEGURIDAD] SOLICITUD DE AUTORIZACION OBLIGATORIA (HUMAN-IN-THE-LOOP)[/bold red]\n\n"
             f"[bold]Dispositivo Destino:[/bold] [cyan]{device.host}[/cyan] ({device.device_type})  |  "
             f"[bold]Operador:[/bold] [cyan]{device.username}[/cyan]\n"
             f"[bold]Acción Propuesta:[/bold] [yellow]{intent.action}[/yellow]  |  "
@@ -109,7 +109,7 @@ class ConsoleAgentObserver:
             f"[bold green]Garantía de Resiliencia y Rollback:[/bold green]\n"
             f"• Se tomará un snapshot de configuración previa antes de inyectar cambios.\n"
             f"• Mecanismo de reversión disponible: [italic]{rollback_info}[/italic]",
-            title="🛡️ PUERTA DE CONTROL Y APROBACIÓN HUMANA",
+            title="PUERTA DE CONTROL Y APROBACION HUMANA",
             border_style="bold red",
         )
         console.print(approval_panel)
@@ -118,7 +118,7 @@ class ConsoleAgentObserver:
             cancel_panel = Panel(
                 f"[yellow]Operación CANCELADA por el operador.[/yellow]\n"
                 f"El equipo [bold]{device.host}[/bold] NO ha sido modificado y permanece 100% en su estado original.",
-                title="⛔ OPERACIÓN RECHAZADA - DISPOSITIVO INTACTO",
+                title="OPERACION RECHAZADA - DISPOSITIVO INTACTO",
                 border_style="yellow",
             )
             console.print(cancel_panel)

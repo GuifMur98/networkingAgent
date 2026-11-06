@@ -31,7 +31,7 @@ def prompt_hitl_approval() -> bool:
             return False
         else:
             console.print(
-                f"[bold red]✖ Respuesta no reconocida: '[white]{raw}[/white]'.[/bold red] "
+                f"[bold red][!] Respuesta no reconocida: '[white]{raw}[/white]'.[/bold red] "
                 f"Por favor ingresa [bold green]'s'[/bold green] (Sí, autorizar) o "
                 f"[bold red]'n'[/bold red] (No, rechazar/cancelar)."
             )
@@ -61,7 +61,7 @@ def prompt_confirm(prompt_text: str, default: Optional[bool] = None) -> bool:
             return False
         else:
             console.print(
-                f"[bold red]✖ Opción no válida: '[white]{raw}[/white]'.[/bold red] "
+                f"[bold red][!] Opción no válida: '[white]{raw}[/white]'.[/bold red] "
                 f"Por favor ingresa [bold green]'s'[/bold green] para Sí o "
                 f"[bold red]'n'[/bold red] para No."
             )
@@ -89,7 +89,7 @@ def prompt_choice(prompt_text: str, choices: List[str], default: Optional[str] =
         else:
             valid_opts = ", ".join([f"'{c}'" for c in normalized_choices])
             console.print(
-                f"[bold red]✖ Opción no válida: '[white]{raw}[/white]'.[/bold red] "
+                f"[bold red][!] Opción no válida: '[white]{raw}[/white]'.[/bold red] "
                 f"Por favor, selecciona una de las opciones disponibles: [bold cyan]{valid_opts}[/bold cyan]."
             )
 
@@ -110,7 +110,7 @@ def prompt_non_empty(prompt_text: str, default: Optional[str] = None, password: 
                 return default
             raise
 
-        console.print("[bold red]✖ Este campo es obligatorio y no puede estar vacío.[/bold red]")
+        console.print("[bold red][!] Este campo es obligatorio y no puede estar vacío.[/bold red]")
 
 
 def prompt_int_range(prompt_text: str, min_val: int, max_val: int, default: Optional[int] = None) -> int:
@@ -125,12 +125,12 @@ def prompt_int_range(prompt_text: str, min_val: int, max_val: int, default: Opti
                 return num
             else:
                 console.print(
-                    f"[bold red]✖ El número {num} está fuera de rango.[/bold red] "
+                    f"[bold red][!] El número {num} está fuera de rango.[/bold red] "
                     f"Debe estar entre [bold cyan]{min_val}[/bold cyan] y [bold cyan]{max_val}[/bold cyan]."
                 )
         except ValueError:
             console.print(
-                f"[bold red]✖ Entrada inválida.[/bold red] Por favor ingresa un número entero entre "
+                f"[bold red][!] Entrada inválida.[/bold red] Por favor ingresa un número entero entre "
                 f"[bold cyan]{min_val}[/bold cyan] y [bold cyan]{max_val}[/bold cyan]."
             )
         except (KeyboardInterrupt, EOFError):

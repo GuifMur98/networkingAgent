@@ -28,39 +28,38 @@ class DeviceModal(ModalScreen[Optional[DeviceInventory]]):
     ]
 
     def compose(self) -> ComposeResult:
-        with Vertical(classes="modal-screen"):
-            with Vertical(classes="modal-dialog"):
-                yield Label("REGISTRO DE DISPOSITIVO DE RED", classes="modal-title")
+        with Vertical(classes="modal-dialog"):
+            yield Label("REGISTRO DE DISPOSITIVO DE RED", classes="modal-title")
 
-                with Horizontal(classes="modal-row"):
-                    with Vertical(classes="modal-col modal-col-large"):
-                        yield Label("Direccion IP o FQDN:")
-                        yield Input(placeholder="192.168.1.1", id="input-host")
-                    with Vertical(classes="modal-col modal-col-small"):
-                        yield Label("Puerto SSH:")
-                        yield Input(value="22", id="input-port")
+            with Horizontal(classes="modal-row"):
+                with Vertical(classes="modal-col modal-col-large"):
+                    yield Label("Direccion IP o FQDN:")
+                    yield Input(placeholder="192.168.1.1", id="input-host")
+                with Vertical(classes="modal-col modal-col-small"):
+                    yield Label("Puerto SSH:")
+                    yield Input(value="22", id="input-port")
 
-                with Horizontal(classes="modal-row"):
-                    with Vertical(classes="modal-col"):
-                        yield Label("Sistema Operativo:")
-                        yield Select(self.OS_CHOICES, value="cisco_ios", id="select-os", allow_blank=False)
-                    with Vertical(classes="modal-col"):
-                        yield Label("Usuario SSH:")
-                        yield Input(value="admin", id="input-username")
+            with Horizontal(classes="modal-row"):
+                with Vertical(classes="modal-col"):
+                    yield Label("Sistema Operativo:")
+                    yield Select(self.OS_CHOICES, value="cisco_ios", id="select-os", allow_blank=False)
+                with Vertical(classes="modal-col"):
+                    yield Label("Usuario SSH:")
+                    yield Input(value="admin", id="input-username")
 
-                with Horizontal(classes="modal-row"):
-                    with Vertical(classes="modal-col"):
-                        yield Label("Contrasena SSH:")
-                        yield Input(placeholder="Contrasena", password=True, id="input-password")
-                    with Vertical(classes="modal-col"):
-                        yield Label("Secret Enable (Opcional):")
-                        yield Input(placeholder="Enable secret", password=True, id="input-secret")
+            with Horizontal(classes="modal-row"):
+                with Vertical(classes="modal-col"):
+                    yield Label("Contrasena SSH:")
+                    yield Input(placeholder="Contrasena", password=True, id="input-password")
+                with Vertical(classes="modal-col"):
+                    yield Label("Secret Enable (Opcional):")
+                    yield Input(placeholder="Enable secret", password=True, id="input-secret")
 
-                yield Label("", id="lbl-error", classes="error-label")
+            yield Label("", id="lbl-error", classes="error-label")
 
-                with Horizontal(classes="modal-actions"):
-                    yield Button("[ Guardar Equipo ]", id="btn-save-device", variant="primary")
-                    yield Button("[ Cancelar ]", id="btn-cancel")
+            with Horizontal(classes="modal-actions"):
+                yield Button("Guardar Equipo", id="btn-save-device", variant="primary")
+                yield Button("Cancelar", id="btn-cancel")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "btn-save-device":

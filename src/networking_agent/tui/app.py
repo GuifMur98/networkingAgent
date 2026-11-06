@@ -56,14 +56,14 @@ class TextualAgentObserver(AgentObserver):
         self._safe_call(self.workspace.display_no_op, device, intent)
         self._safe_call(
             self.workspace.append_log,
-            "[bold green]✔ Evaluación diagnóstica finalizada: No se requieren cambios en la configuración.[/]",
+            "[bold green][OK] Evaluacion diagnostica finalizada: No se requieren cambios en la configuracion.[/]",
         )
 
     def on_guardrail_blocked(self, intent: NetworkIntent, reason: str) -> None:
         self._safe_call(self.workspace.display_guardrail_block, intent, reason)
         self._safe_call(
             self.workspace.append_log,
-            f"[bold red]🛑 Guardarraíl activado: {reason}[/]",
+            f"[bold red][ALERTA] Guardarail activado: {reason}[/]",
         )
 
     def on_hitl_approval_required(
@@ -143,18 +143,18 @@ class NetworkingAgentTUIApp(App):
         )
 
         with TabbedContent(id="main-tabs", initial="pane-home"):
-            with TabPane("[ Inicio ]", id="pane-home"):
+            with TabPane("Inicio", id="pane-home"):
                 yield HomeDashboard(id="home-widget")
 
-            with TabPane("[ Diagnostico ]", id="pane-diagnostic"):
+            with TabPane("Diagnostico", id="pane-diagnostic"):
                 with Horizontal(id="main-split"):
                     yield DeviceSidebar(id="device-sidebar")
                     yield DiagnosticWorkspace(id="diagnostic-workspace")
 
-            with TabPane("[ Inventario ]", id="pane-inventory"):
+            with TabPane("Inventario", id="pane-inventory"):
                 yield DeviceInventoryView(id="inventory-widget")
 
-            with TabPane("[ Auditoria ]", id="pane-audit"):
+            with TabPane("Auditoria", id="pane-audit"):
                 yield AuditTableWidget(id="audit-widget")
 
         yield Footer()
@@ -166,32 +166,59 @@ class NetworkingAgentTUIApp(App):
 
     def action_go_home(self) -> None:
         """Switch navigation back to the Home Dashboard."""
+        self.set_focus(None)
         tabs = self.query_one("#main-tabs", TabbedContent)
         tabs.active = "pane-home"
         try:
             home = self.query_one(HomeDashboard)
             home.update_status_card()
+            self.query_one("#btn-nav-diagnostic").focus()
         except Exception:
             pass
 
     def action_nav_tab_1(self) -> None:
         """Switch navigation to Diagnostic workspace."""
+        self.set_focus(None)
         tabs = self.query_one("#main-tabs", TabbedContent)
         tabs.active = "pane-diagnostic"
+        try:
+            self.query_one("#symptom-input").focus()
+        except Exception:
+            pass
 
     def action_nav_tab_2(self) -> None:
         """Switch navigation to Device Inventory view."""
+        self.set_focus(None)
         tabs = self.query_one("#main-tabs", TabbedContent)
         tabs.active = "pane-inventory"
+        try:
+            self.query_one("#inventory-data-table").focus()
+        except Exception:
+            pass
 
     def action_nav_tab_4(self) -> None:
         """Switch navigation to Audit trail view."""
+        self.set_focus(None)
         tabs = self.query_one("#main-tabs", TabbedContent)
         tabs.active = "pane-audit"
+        try:
+            self.query_one("#audit-data-table").focus()
+        except Exception:
+            pass
 
     def on_home_dashboard_navigate_to_tab(self, event: HomeDashboard.NavigateToTab) -> None:
+        self.set_focus(None)
         tabs = self.query_one("#main-tabs", TabbedContent)
         tabs.active = event.tab_id
+        try:
+            if event.tab_id == "pane-diagnostic":
+                self.query_one("#symptom-input").focus()
+            elif event.tab_id == "pane-inventory":
+                self.query_one("#inventory-data-table").focus()
+            elif event.tab_id == "pane-audit":
+                self.query_one("#audit-data-table").focus()
+        except Exception:
+            pass
 
     def on_home_dashboard_open_settings_requested(self, event: HomeDashboard.OpenSettingsRequested) -> None:
         self.action_open_settings()
@@ -297,7 +324,7 @@ class NetworkingAgentTUIApp(App):
         """Runs the long-running Netmiko SSH and AI inference in a background thread."""
         self.is_busy = True
         workspace = self.query_one(DiagnosticWorkspace)
-        workspace.append_log(f"[bold cyan]▶ Iniciando análisis [{mode}] en {device.host}...[/]")
+        workspace.append_log(f"[bold cyan][>] Iniciando analisis [{mode}] en {device.host}...[/]")
 
         try:
             # Load active configuration

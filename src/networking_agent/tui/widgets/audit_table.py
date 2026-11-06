@@ -24,13 +24,13 @@ class AuditTableWidget(Widget):
         with Vertical(id="audit-container"):
             with Horizontal(id="audit-top-bar"):
                 yield Label("HISTORIAL CRIPTOGRAFICO DE AUDITORIA Y REMEDIACIONES", id="lbl-audit-header")
-                yield Button("[ Volver al Inicio ]", id="btn-back-from-audit")
+                yield Button("Volver al Inicio", id="btn-back-from-audit")
 
             yield DataTable(id="audit-data-table", cursor_type="row", zebra_stripes=True)
 
             with Horizontal(classes="audit-actions"):
-                yield Button("[ Recargar Registro ]", id="btn-refresh-audit", variant="primary")
-                yield Button("[ Volver al Inicio ]", id="btn-audit-home")
+                yield Button("Recargar Registro", id="btn-refresh-audit", variant="primary")
+                yield Button("Volver al Inicio", id="btn-audit-home")
 
     def on_mount(self) -> None:
         table = self.query_one("#audit-data-table", DataTable)

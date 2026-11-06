@@ -160,12 +160,12 @@ def cli_entrypoint() -> None:
                     console.print("\n")
                     continuity_panel = Panel(
                         f"[bold cyan]El análisis ha finalizado.[/bold cyan] ¿Cómo deseas continuar?\n\n"
-                        f"  [yellow]1[/yellow]. [bold green]🔍 Diagnosticar otro síntoma o log en este mismo equipo "
+                        f"  [yellow]1[/yellow]. [bold green]Diagnosticar otro sintoma o log en este mismo equipo "
                         f"({device.host})[/bold green]\n"
-                        f"  [yellow]2[/yellow]. [bold blue]🔌 Cambiar de equipo de red[/bold blue]\n"
-                        f"  [yellow]3[/yellow]. [bold magenta]🏠 Volver al Menú Principal[/bold magenta]\n"
-                        f"  [yellow]4[/yellow]. [bold red]🚪 Salir del asistente[/bold red]",
-                        title="🔄 CONTINUIDAD DE OPERACIONES Y DIAGNÓSTICO",
+                        f"  [yellow]2[/yellow]. [bold blue]Cambiar de equipo de red[/bold blue]\n"
+                        f"  [yellow]3[/yellow]. [bold magenta]Volver al Menu Principal[/bold magenta]\n"
+                        f"  [yellow]4[/yellow]. [bold red]Salir del asistente[/bold red]",
+                        title="CONTINUIDAD DE OPERACIONES Y DIAGNOSTICO",
                         border_style="cyan",
                     )
                     console.print(continuity_panel)
@@ -188,7 +188,7 @@ def cli_entrypoint() -> None:
                         break
                     elif next_action == "4":
                         console.print(
-                            "\n[bold green]✓ Sesión finalizada con éxito. "
+                            "\n[bold green][OK] Sesion finalizada con exito. "
                             "¡Gracias por usar NetworkingAgent![/bold green]\n"
                         )
                         sys.exit(0)
@@ -204,7 +204,7 @@ def cli_entrypoint() -> None:
 
             elif choice == "5":
                 console.print(
-                    "\n[bold green]✓ Sesión finalizada con éxito. ¡Gracias por usar NetworkingAgent![/bold green]\n"
+                    "\n[bold green][OK] Sesion finalizada con exito. Gracias por usar NetworkingAgent.[/bold green]\n"
                 )
                 sys.exit(0)
     else:

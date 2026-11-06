@@ -44,22 +44,22 @@ class HomeDashboard(Widget):
             # 4 Action Cards in Grid
             with Grid(id="home-action-grid"):
                 yield Button(
-                    "[1] DIAGNOSTICO Y REMEDIACION\nSondeo de interfaces y analisis de telemetria",
+                    "1. DIAGNOSTICO Y REMEDIACION\nSondeo de interfaces y analisis de telemetria",
                     id="btn-nav-diagnostic",
                     classes="home-nav-card card-diagnostic",
                 )
                 yield Button(
-                    "[2] INVENTARIO DE EQUIPOS\nCatalogo de routers, alta y prueba de conectividad",
+                    "2. INVENTARIO DE EQUIPOS\nCatalogo de routers, alta y prueba de conectividad",
                     id="btn-nav-inventory",
                     classes="home-nav-card card-inventory",
                 )
                 yield Button(
-                    "[3] AJUSTES DE IA Y BOVEDA\nConfiguracion de proveedor, modelo y llaves de API",
+                    "3. AJUSTES DE IA Y BOVEDA\nConfiguracion de proveedor, modelo y llaves de API",
                     id="btn-nav-vault",
                     classes="home-nav-card card-settings",
                 )
                 yield Button(
-                    "[4] REGISTRO DE AUDITORIA\nBitacora inmutable de cambios y rollbacks",
+                    "4. REGISTRO DE AUDITORIA\nBitacora inmutable de cambios y rollbacks",
                     id="btn-nav-audit",
                     classes="home-nav-card card-audit",
                 )
