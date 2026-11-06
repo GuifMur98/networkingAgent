@@ -219,7 +219,7 @@ Una vez autorizada la operación por el ingeniero humano:
 2. **Inyección Transaccional:**  
    Se envían los comandos validados utilizando la sesión SSH activa reutilizada (sin reconexiones lentas). En Junos e IOS-XR se aplican con temporizador de confirmación (`commit confirmed 3`).
 3. **Verificación Post-Cambio:**  
-   El motor [`VerificationEngine`](file:///c:/Users/pedro/OneDrive/Desktop/networkingAgent/src/networking_agent/engine/verification.py) realiza una segunda interrogación de telemetría y compara el estado contra el snapshot inicial.
+   El motor [`VerificationEngine`](../src/networking_agent/engine/verification.py) realiza una segunda interrogación de telemetría y compara el estado contra el snapshot inicial.
 4. **Rollback de Emergencia:**  
    Si el problema persiste, la interfaz sigue caída o se detectan errores adicionales, el agente dispara el rollback de inmediato restaurando el snapshot previo y alertando al operador.
 
@@ -229,7 +229,7 @@ Una vez autorizada la operación por el ingeniero humano:
 
 Cada acción, diagnóstico, intento de inyección bloqueado, autorización u orden de rollback se registra en formato **JSONL inmutable**:
 
-- **Ruta de auditoría:** [`logs/audit.jsonl`](file:///c:/Users/pedro/OneDrive/Desktop/networkingAgent/logs/audit.jsonl)
+- **Ruta de auditoría:** [`logs/audit.jsonl`](../logs/audit.jsonl)
 - **Campos registrados:**
   - `timestamp`: Fecha y hora UTC precisa en estándar ISO 8601.
   - `event_type`: Tipo de evento (`NO_OP`, `OPERATOR_REJECTED`, `SECURITY_REJECTED`, `INJECTION_REJECTED`, `REMEDIATION_SUCCESS`, `REMEDIATION_ROLLBACK`).
