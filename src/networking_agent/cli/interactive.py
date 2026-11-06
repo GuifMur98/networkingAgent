@@ -5,9 +5,14 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import SecretStr
-from rich.prompt import Confirm, IntPrompt, Prompt
 from rich.table import Table
 
+from networking_agent.cli.prompts import (
+    prompt_choice,
+    prompt_confirm,
+    prompt_int_range,
+    prompt_non_empty,
+)
 from networking_agent.cli.ui_theme import print_step_header
 from networking_agent.core.config import settings
 from networking_agent.core.db import db
@@ -74,7 +79,7 @@ def select_ai_brain_interactively(
             default_idx = str(idx)
             break
 
-    prov_choice = Prompt.ask(
+    prov_choice = prompt_choice(
         "Selecciona el proveedor de IA [1-4]",
         choices=["1", "2", "3", "4"],
         default=default_idx,
@@ -112,19 +117,19 @@ def select_ai_brain_interactively(
                         model_default_idx = str(idx)
                         break
 
-            picked = Prompt.ask(
+            picked = prompt_choice(
                 f"Selecciona el modelo a usar [1-{len(installed_models)}] o 'c' para ingresar otro",
                 choices=choices,
                 default=model_default_idx,
             )
 
             if picked == "c":
-                selected_model = Prompt.ask("Ingresa el nombre exacto del modelo en Ollama")
+                selected_model = prompt_non_empty("Ingresa el nombre exacto del modelo en Ollama")
             else:
                 selected_model = installed_models[int(picked) - 1]["name"]
         else:
             console.print("[yellow]No se detectaron modelos activos en Ollama o el servicio no respondió.[/yellow]")
-            selected_model = Prompt.ask(
+            selected_model = prompt_non_empty(
                 "Ingresa el nombre del modelo de Ollama a utilizar",
                 default=saved_model or "llama3.1",
             )
@@ -134,12 +139,12 @@ def select_ai_brain_interactively(
         gemini_key = db.get_setting("gemini_api_key") or os.environ.get("GEMINI_API_KEY")
         if gemini_key:
             console.print("[dim]✓ API Key de Gemini recuperada desde almacén seguro SQLite.[/dim]")
-            if Confirm.ask("¿Deseas actualizar la GEMINI_API_KEY almacenada?", default=False):
-                gemini_key = Prompt.ask("Ingresa tu nueva GEMINI_API_KEY", password=True)
+            if prompt_confirm("¿Deseas actualizar la GEMINI_API_KEY almacenada?", default=False):
+                gemini_key = prompt_non_empty("Ingresa tu nueva GEMINI_API_KEY", password=True)
                 db.set_setting("gemini_api_key", gemini_key, is_secret=True)
         else:
-            gemini_key = Prompt.ask("Ingresa tu GEMINI_API_KEY", password=True)
-            if Confirm.ask("¿Deseas almacenar esta API Key de forma cifrada en la base de datos?", default=True):
+            gemini_key = prompt_non_empty("Ingresa tu GEMINI_API_KEY", password=True)
+            if prompt_confirm("¿Deseas almacenar esta API Key de forma cifrada en la base de datos?", default=True):
                 db.set_setting("gemini_api_key", gemini_key, is_secret=True)
 
         os.environ["GEMINI_API_KEY"] = gemini_key
@@ -154,9 +159,9 @@ def select_ai_brain_interactively(
         for idx, m in enumerate(gemini_models, 1):
             star = " 🌟 (Recomendado: Rápido y Equilibrado)" if m == "gemini-3.8-flash" else ""
             console.print(f"  [yellow]{idx}[/yellow]. {m}{star}")
-        m_idx = Prompt.ask("Selecciona modelo", choices=["1", "2", "3", "4"], default="1")
+        m_idx = prompt_choice("Selecciona modelo", choices=["1", "2", "3", "4"], default="1")
         if m_idx == "4":
-            selected_model = Prompt.ask("Ingresa el identificador del modelo (ej. gemini-3.8-flash)")
+            selected_model = prompt_non_empty("Ingresa el identificador del modelo (ej. gemini-3.8-flash)")
         else:
             selected_model = gemini_models[int(m_idx) - 1]
 
@@ -165,12 +170,12 @@ def select_ai_brain_interactively(
         openai_key = db.get_setting("openai_api_key") or os.environ.get("OPENAI_API_KEY")
         if openai_key:
             console.print("[dim]✓ API Key de OpenAI recuperada desde almacén seguro SQLite.[/dim]")
-            if Confirm.ask("¿Deseas actualizar la OPENAI_API_KEY almacenada?", default=False):
-                openai_key = Prompt.ask("Ingresa tu nueva OPENAI_API_KEY", password=True)
+            if prompt_confirm("¿Deseas actualizar la OPENAI_API_KEY almacenada?", default=False):
+                openai_key = prompt_non_empty("Ingresa tu nueva OPENAI_API_KEY", password=True)
                 db.set_setting("openai_api_key", openai_key, is_secret=True)
         else:
-            openai_key = Prompt.ask("Ingresa tu OPENAI_API_KEY", password=True)
-            if Confirm.ask("¿Deseas almacenar esta API Key de forma cifrada en la base de datos?", default=True):
+            openai_key = prompt_non_empty("Ingresa tu OPENAI_API_KEY", password=True)
+            if prompt_confirm("¿Deseas almacenar esta API Key de forma cifrada en la base de datos?", default=True):
                 db.set_setting("openai_api_key", openai_key, is_secret=True)
 
         os.environ["OPENAI_API_KEY"] = openai_key
@@ -179,9 +184,9 @@ def select_ai_brain_interactively(
         openai_models = ["gpt-4o", "gpt-4o-mini", "o1-mini", "Personalizado"]
         for idx, m in enumerate(openai_models, 1):
             console.print(f"  [yellow]{idx}[/yellow]. {m}")
-        m_idx = Prompt.ask("Selecciona modelo", choices=["1", "2", "3", "4"], default="1")
+        m_idx = prompt_choice("Selecciona modelo", choices=["1", "2", "3", "4"], default="1")
         if m_idx == "4":
-            selected_model = Prompt.ask("Ingresa el identificador del modelo")
+            selected_model = prompt_non_empty("Ingresa el identificador del modelo")
         else:
             selected_model = openai_models[int(m_idx) - 1]
 
@@ -190,12 +195,12 @@ def select_ai_brain_interactively(
         anthropic_key = db.get_setting("anthropic_api_key") or os.environ.get("ANTHROPIC_API_KEY")
         if anthropic_key:
             console.print("[dim]✓ API Key de Anthropic recuperada desde almacén seguro SQLite.[/dim]")
-            if Confirm.ask("¿Deseas actualizar la ANTHROPIC_API_KEY almacenada?", default=False):
-                anthropic_key = Prompt.ask("Ingresa tu nueva ANTHROPIC_API_KEY", password=True)
+            if prompt_confirm("¿Deseas actualizar la ANTHROPIC_API_KEY almacenada?", default=False):
+                anthropic_key = prompt_non_empty("Ingresa tu nueva ANTHROPIC_API_KEY", password=True)
                 db.set_setting("anthropic_api_key", anthropic_key, is_secret=True)
         else:
-            anthropic_key = Prompt.ask("Ingresa tu ANTHROPIC_API_KEY", password=True)
-            if Confirm.ask("¿Deseas almacenar esta API Key de forma cifrada en la base de datos?", default=True):
+            anthropic_key = prompt_non_empty("Ingresa tu ANTHROPIC_API_KEY", password=True)
+            if prompt_confirm("¿Deseas almacenar esta API Key de forma cifrada en la base de datos?", default=True):
                 db.set_setting("anthropic_api_key", anthropic_key, is_secret=True)
 
         os.environ["ANTHROPIC_API_KEY"] = anthropic_key
@@ -208,9 +213,9 @@ def select_ai_brain_interactively(
         ]
         for idx, m in enumerate(anthropic_models, 1):
             console.print(f"  [yellow]{idx}[/yellow]. {m}")
-        m_idx = Prompt.ask("Selecciona modelo", choices=["1", "2", "3"], default="1")
+        m_idx = prompt_choice("Selecciona modelo", choices=["1", "2", "3"], default="1")
         if m_idx == "3":
-            selected_model = Prompt.ask("Ingresa el identificador del modelo")
+            selected_model = prompt_non_empty("Ingresa el identificador del modelo")
         else:
             selected_model = anthropic_models[int(m_idx) - 1]
 
@@ -261,7 +266,7 @@ def configure_device_interactively(
         choices = [str(i) for i in range(1, len(saved_devices) + 1)]
         choices.append("n")  # New device
 
-        pick = Prompt.ask(
+        pick = prompt_choice(
             f"Selecciona un equipo guardado [1-{len(saved_devices)}] o 'n' para configurar uno nuevo",
             choices=choices,
             default="1",
@@ -280,7 +285,7 @@ def configure_device_interactively(
 
     # 2. Configure a New Device
     console.print("\n[bold cyan]Configuración de Nuevo Dispositivo:[/bold cyan]")
-    host = Prompt.ask(
+    host = prompt_non_empty(
         "Dirección IP o FQDN del dispositivo",
         default=default_host or os.environ.get("NET_HOST", "10.10.20.11"),
     )
@@ -302,7 +307,7 @@ def configure_device_interactively(
         plat_table.add_row(str(idx), p_id, p_desc)
     console.print(plat_table)
 
-    plat_choice = Prompt.ask(
+    plat_choice = prompt_choice(
         "Selecciona el Sistema Operativo del equipo [1-5]",
         choices=["1", "2", "3", "4", "5"],
         default="1"
@@ -313,9 +318,9 @@ def configure_device_interactively(
     )
     selected_platform = platforms[int(plat_choice) - 1][0]
 
-    port = IntPrompt.ask("Puerto SSH", default=22)
-    username = Prompt.ask("Usuario SSH", default=os.environ.get("NET_USER", "admin"))
-    auth_type = Prompt.ask("Tipo de autenticación SSH", choices=["password", "key"], default="password")
+    port = prompt_int_range("Puerto SSH", min_val=1, max_val=65535, default=22)
+    username = prompt_non_empty("Usuario SSH", default=os.environ.get("NET_USER", "admin"))
+    auth_type = prompt_choice("Tipo de autenticación SSH", choices=["password", "key"], default="password")
 
     password: Optional[SecretStr] = None
     secret: Optional[SecretStr] = None
@@ -325,7 +330,7 @@ def configure_device_interactively(
     if auth_type == "password":
         existing_pass = os.environ.get("NET_PASS")
         if existing_pass:
-            use_existing = Confirm.ask(
+            use_existing = prompt_confirm(
                 "¿Deseas usar la contraseña definida en la variable de entorno NET_PASS?",
                 default=True,
             )
@@ -333,19 +338,19 @@ def configure_device_interactively(
                 password = SecretStr(existing_pass)
 
         if not password:
-            raw_pass = Prompt.ask("Ingresa la contraseña SSH del equipo", password=True)
+            raw_pass = prompt_non_empty("Ingresa la contraseña SSH del equipo", password=True)
             password = SecretStr(raw_pass) if raw_pass else None
 
-        has_enable = Confirm.ask(
+        has_enable = prompt_confirm(
             "¿El equipo requiere contraseña de modo privilegiado (enable secret)?",
             default=False,
         )
         if has_enable:
-            raw_secret = Prompt.ask("Ingresa el enable secret", password=True)
+            raw_secret = prompt_non_empty("Ingresa el enable secret", password=True)
             secret = SecretStr(raw_secret) if raw_secret else None
     else:
         use_keys = True
-        key_file = Prompt.ask(
+        key_file = prompt_non_empty(
             "Ruta a la llave privada SSH",
             default=str(Path.home() / ".ssh" / "id_rsa"),
         )
@@ -362,8 +367,8 @@ def configure_device_interactively(
     )
 
     # Offer to save in SQLite vault
-    if Confirm.ask("¿Deseas guardar este equipo en la base de datos local SQLite para futuros usos?", default=True):
-        friendly_name = Prompt.ask(
+    if prompt_confirm("¿Deseas guardar este equipo en la base de datos local SQLite para futuros usos?", default=True):
+        friendly_name = prompt_non_empty(
             "Nombre o alias para este equipo",
             default=f"{selected_platform.upper()}-{host}",
         )
@@ -395,7 +400,7 @@ def prompt_telemetry_event() -> Tuple[str, str]:
         "(Eventos críticos capturados en log del switch o router)"
     )
 
-    mode_choice = Prompt.ask("Selecciona el modo [1-2]", choices=["1", "2"], default="1")
+    mode_choice = prompt_choice("Selecciona el modo [1-2]", choices=["1", "2"], default="1")
 
     if mode_choice == "1":
         proactive_scenarios = [
@@ -437,14 +442,14 @@ def prompt_telemetry_event() -> Tuple[str, str]:
         for idx, (s_name, _) in enumerate(proactive_scenarios, 1):
             console.print(f"  [yellow]{idx}[/yellow]. [bold]{s_name}[/bold]")
 
-        picked = Prompt.ask(
+        picked = prompt_choice(
             f"Elige el escenario [1-{len(proactive_scenarios)}]",
             choices=[str(i) for i in range(1, len(proactive_scenarios) + 1)],
             default="1",
         )
         chosen_idx = int(picked) - 1
         if proactive_scenarios[chosen_idx][1] == "CUSTOM":
-            custom_symptom = Prompt.ask(
+            custom_symptom = prompt_non_empty(
                 "Describe el síntoma (ej. 'Este router está teniendo pérdidas en la LAN en ether2')"
             )
             return f"SÍNTOMA OPERACIONAL REPORTADO POR EL OPERADOR:\n{custom_symptom}", "PROACTIVE"
@@ -472,13 +477,13 @@ def prompt_telemetry_event() -> Tuple[str, str]:
         for idx, (s_name, _) in enumerate(reactive_scenarios, 1):
             console.print(f"  [yellow]{idx}[/yellow]. [bold]{s_name}[/bold]")
 
-        picked = Prompt.ask(
+        picked = prompt_choice(
             f"Elige el evento [1-{len(reactive_scenarios)}]",
             choices=[str(i) for i in range(1, len(reactive_scenarios) + 1)],
             default="1",
         )
         chosen_idx = int(picked) - 1
         if reactive_scenarios[chosen_idx][1] == "CUSTOM":
-            custom_log = Prompt.ask("Pega o escribe el log de telemetría")
+            custom_log = prompt_non_empty("Pega o escribe el log de telemetría")
             return custom_log, "REACTIVE"
         return reactive_scenarios[chosen_idx][1], "REACTIVE"

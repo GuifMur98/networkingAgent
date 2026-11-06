@@ -4,10 +4,10 @@ from typing import Optional
 
 from rich.markup import escape
 from rich.panel import Panel
-from rich.prompt import Prompt
 from rich.table import Table
 
 from networking_agent.brains.factory import get_ai_brain
+from networking_agent.cli.prompts import prompt_hitl_approval
 from networking_agent.core.audit import audit_logger
 from networking_agent.core.config import settings
 from networking_agent.core.exceptions import (
@@ -194,14 +194,7 @@ class NetworkAssistantAgent:
             logger.warning("[bold red]ATENCIÓN: Modo auto-approve activo. Omitiendo confirmación humana.[/bold red]")
             approved = True
         else:
-            try:
-                user_choice = Prompt.ask(
-                    "\n[bold yellow]¿Autorizas la inyección de esta configuración en el equipo? [s/N][/bold yellow]",
-                    default="n",
-                ).strip().lower()
-                approved = user_choice in ["s", "si", "y", "yes", "confirmar"]
-            except (EOFError, KeyboardInterrupt):
-                approved = False
+            approved = prompt_hitl_approval()
 
         if not approved:
             cancel_panel = Panel(
