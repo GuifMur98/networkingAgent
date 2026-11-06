@@ -47,8 +47,25 @@ class NetworkAssistantAgent:
             f"[bold green]{device.host}[/bold green] ({device.device_type})..."
         )
 
+        analysis_payload = telemetry.raw_text
+        if mode == "PROACTIVE":
+            logger.info("[*] Running proactive diagnostic interrogation on device...")
+            try:
+                driver = get_os_driver(device)
+                health_data = driver.run_health_check()
+                telemetry_str = "\n".join([f"=== {cmd} ===\n{out}" for cmd, out in health_data.items()])
+                analysis_payload = (
+                    f"OPERATIONAL SYMPTOM REPORTED BY OPERATOR:\n{telemetry.raw_text}\n\n"
+                    f"LIVE DEVICE DIAGNOSTIC TELEMETRY:\n{telemetry_str}"
+                )
+            except Exception as e:
+                logger.warning(
+                    f"[yellow]Could not fetch live device diagnostics ({e}); "
+                    "proceeding with reported symptom description.[/yellow]"
+                )
+
         # 1. AI Diagnosis -> Neutral Intent
-        intent: NetworkIntent = self.brain.analyze_event(telemetry.raw_text)
+        intent: NetworkIntent = self.brain.analyze_event(analysis_payload)
 
         # Display Diagnosis Panel
         table = Table(title="AI Diagnostic Assessment", show_header=True, header_style="bold magenta")

@@ -100,3 +100,38 @@ def test_mikrotik_routeros_driver_generates_correct_cli():
         '/routing bgp connection enable [find remote.address="10.255.0.1"]',
     ]
     assert driver.get_running_config_command() == "/export verbose=no"
+
+
+def test_proactive_remediations_across_drivers():
+    cisco_dev = DeviceInventory(host="10.0.0.1", device_type="cisco_ios")
+    cisco_driver = CiscoIOSDriver(cisco_dev)
+
+    # Duplex full remediation on Cisco
+    duplex_intent = NetworkIntent(
+        diagnosis="Packet loss due to half-duplex mismatch on LAN interface",
+        severity="HIGH",
+        requires_config_change=True,
+        action="set_interface_duplex_full",
+        target_interface="GigabitEthernet1/0/2",
+    )
+    assert cisco_driver.build_candidate_commands(duplex_intent) == [
+        "interface GigabitEthernet1/0/2",
+        "speed auto",
+        "duplex full",
+    ]
+
+    # Restart interface on MikroTik
+    mikro_dev = DeviceInventory(host="192.168.88.1", device_type="mikrotik_routeros")
+    mikro_driver = MikrotikRouterOSDriver(mikro_dev)
+
+    restart_intent = NetworkIntent(
+        diagnosis="Interface hung, resetting link",
+        severity="MEDIUM",
+        requires_config_change=True,
+        action="restart_interface",
+        target_interface="ether2",
+    )
+    assert mikro_driver.build_candidate_commands(restart_intent) == [
+        '/interface set [find name="ether2"] disabled=yes',
+        '/interface set [find name="ether2"] disabled=no',
+    ]

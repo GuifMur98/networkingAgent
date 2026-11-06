@@ -51,6 +51,12 @@ def cli_entrypoint() -> None:
         help="Plataforma de red (cisco_nxos, cisco_ios, cisco_xr, juniper_junos, mikrotik_routeros)",
     )
     parser.add_argument(
+        "--mode",
+        choices=["REACTIVE", "PROACTIVE"],
+        default="REACTIVE",
+        help="Modo de ejecución: REACTIVE (analizar syslog) o PROACTIVE (investigar síntoma/pérdidas)",
+    )
+    parser.add_argument(
         "--auto-approve",
         action="store_true",
         help="Omitir confirmación manual HitL (usar con precaución en laboratorio)",
@@ -80,8 +86,9 @@ def cli_entrypoint() -> None:
         )
         if args.log_message:
             log_text = args.log_message
+            run_mode = args.mode or "REACTIVE"
         else:
-            log_text = prompt_telemetry_event()
+            log_text, run_mode = prompt_telemetry_event()
 
         event = TelemetryEvent(raw_text=log_text, source_host=device.host)
         agent = NetworkAssistantAgent(
@@ -89,12 +96,15 @@ def cli_entrypoint() -> None:
             ai_model=model,
             auto_approve=args.auto_approve,
         )
+        success = agent.process_telemetry(device=device, telemetry=event, mode=run_mode)
+        sys.exit(0 if success else 1)
     else:
         # Non-interactive CLI flags mode
         provider = args.provider or os.environ.get("AI_PROVIDER", "ollama")
         model = args.model or os.environ.get("AI_MODEL", "llama3.1")
         host = args.device_host or os.environ.get("NET_HOST", "10.10.20.11")
         dev_type = args.device_type or os.environ.get("NET_TYPE", "cisco_nxos")
+        run_mode = args.mode or "REACTIVE"
 
         net_pass = os.environ.get("NET_PASS")
         device = DeviceInventory(
@@ -114,9 +124,8 @@ def cli_entrypoint() -> None:
             ai_model=model,
             auto_approve=args.auto_approve,
         )
-
-    success = agent.process_telemetry(device=device, telemetry=event, mode="REACTIVE")
-    sys.exit(0 if success else 1)
+        success = agent.process_telemetry(device=device, telemetry=event, mode=run_mode)
+        sys.exit(0 if success else 1)
 
 
 if __name__ == "__main__":

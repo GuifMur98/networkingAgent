@@ -16,6 +16,8 @@ class CiscoIOSDriver(NetworkOSDriver):
     def get_health_commands(self) -> List[str]:
         return [
             "show ip interface brief",
+            "show interfaces status",
+            "show interfaces counters errors",
             "show ip ospf neighbor",
             "show interfaces status err-disabled",
         ]
@@ -25,10 +27,16 @@ class CiscoIOSDriver(NetworkOSDriver):
             return [f"interface {intent.target_interface}", "shutdown"]
         elif intent.action == "enable_interface" and intent.target_interface:
             return [f"interface {intent.target_interface}", "no shutdown"]
+        elif intent.action == "restart_interface" and intent.target_interface:
+            return [f"interface {intent.target_interface}", "shutdown", "no shutdown"]
+        elif intent.action == "set_interface_duplex_full" and intent.target_interface:
+            return [f"interface {intent.target_interface}", "speed auto", "duplex full"]
         elif intent.action == "set_interface_mtu" and intent.target_interface and intent.mtu_value:
             return [f"interface {intent.target_interface}", f"ip mtu {intent.mtu_value}"]
         elif intent.action == "reset_bgp_neighbor" and intent.bgp_neighbor_ip:
             return [f"clear ip bgp {intent.bgp_neighbor_ip}"]
+        elif intent.action == "clear_arp_cache":
+            return ["clear arp-cache"]
         return []
 
     def rollback(self, backup_reference: Optional[Path] = None) -> bool:

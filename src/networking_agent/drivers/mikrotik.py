@@ -17,6 +17,8 @@ class MikrotikRouterOSDriver(NetworkOSDriver):
 
     def get_health_commands(self) -> List[str]:
         return [
+            "/interface print stats",
+            "/system resource print",
             "/interface print terse",
             "/routing ospf neighbor print",
             "/ip route print count-only",
@@ -31,6 +33,15 @@ class MikrotikRouterOSDriver(NetworkOSDriver):
             return [f'/interface set [find name="{intent.target_interface}"] disabled=yes']
         elif intent.action == "enable_interface" and intent.target_interface:
             return [f'/interface set [find name="{intent.target_interface}"] disabled=no']
+        elif intent.action == "restart_interface" and intent.target_interface:
+            return [
+                f'/interface set [find name="{intent.target_interface}"] disabled=yes',
+                f'/interface set [find name="{intent.target_interface}"] disabled=no',
+            ]
+        elif intent.action == "set_interface_duplex_full" and intent.target_interface:
+            return [
+                f'/interface ethernet set [find name="{intent.target_interface}"] auto-negotiation=yes full-duplex=yes'
+            ]
         elif intent.action == "set_interface_mtu" and intent.target_interface and intent.mtu_value:
             return [f'/interface set [find name="{intent.target_interface}"] mtu={intent.mtu_value}']
         elif intent.action == "reset_bgp_neighbor" and intent.bgp_neighbor_ip:
@@ -39,6 +50,8 @@ class MikrotikRouterOSDriver(NetworkOSDriver):
                 f'/routing bgp connection disable [find remote.address="{intent.bgp_neighbor_ip}"]',
                 f'/routing bgp connection enable [find remote.address="{intent.bgp_neighbor_ip}"]',
             ]
+        elif intent.action == "clear_arp_cache":
+            return ["/ip arp remove [find]"]
         return []
 
     def backup_running_config(self) -> Path:

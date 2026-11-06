@@ -8,7 +8,8 @@ from networking_agent.core.logging import logger
 
 # Disallowed dangerous CLI keywords that should never be executed autonomously
 FORBIDDEN_COMMAND_PATTERNS = [
-    re.compile(r"\b(format|erase|delete|rmdir|boot|reload)\b", re.IGNORECASE),
+    re.compile(r"\b(format|erase|rmdir|boot|reload)\b", re.IGNORECASE),
+    re.compile(r"\b(delete\s+(?:flash|nvram|bootflash|disk|harddisk|system|all))\b", re.IGNORECASE),
     re.compile(r"\b(username|password|secret|radius|tacacs)\b", re.IGNORECASE),
     re.compile(r"\b(no\s+ip\s+routing|no\s+router)\b", re.IGNORECASE),
     re.compile(r"\b(crypto\s+key\s+zeroize)\b", re.IGNORECASE),

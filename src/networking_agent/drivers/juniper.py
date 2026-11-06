@@ -31,6 +31,17 @@ class JuniperJunosDriver(NetworkOSDriver):
                 f"delete interfaces {intent.target_interface} disable",
                 "commit confirmed 3",
             ]
+        elif intent.action == "restart_interface" and intent.target_interface:
+            return [
+                f"set interfaces {intent.target_interface} disable",
+                f"delete interfaces {intent.target_interface} disable",
+                "commit confirmed 3",
+            ]
+        elif intent.action == "set_interface_duplex_full" and intent.target_interface:
+            return [
+                f"set interfaces {intent.target_interface} gigether-options full-duplex",
+                "commit confirmed 3",
+            ]
         elif intent.action == "set_interface_mtu" and intent.target_interface and intent.mtu_value:
             return [
                 f"set interfaces {intent.target_interface} mtu {intent.mtu_value}",
@@ -38,6 +49,8 @@ class JuniperJunosDriver(NetworkOSDriver):
             ]
         elif intent.action == "reset_bgp_neighbor" and intent.bgp_neighbor_ip:
             return [f"clear bgp neighbor {intent.bgp_neighbor_ip}"]
+        elif intent.action == "clear_arp_cache":
+            return ["clear arp"]
         return []
 
     def rollback(self, backup_reference: Optional[Path] = None) -> bool:

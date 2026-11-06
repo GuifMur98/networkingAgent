@@ -295,33 +295,112 @@ def configure_device_interactively(
     return device
 
 
-def prompt_telemetry_event() -> str:
-    """Allows selecting a real-world scenario or typing custom telemetry."""
-    scenarios = [
-        (
-            "OSPF MTU Mismatch",
-            "%OSPF-4-NONEIGHBOR: OSPF process 1, Neighbor 10.0.0.2 on interface Ethernet1/1 "
-            "stuck in EXSTART/EXCHANGE state. Neighbor MTU 9216 is larger than local interface MTU 1500.",
-        ),
-        (
-            "BGP Neighbor Down / Flapping",
-            "%BGP-5-ADJCHANGE: neighbor 10.10.10.2 Down - BGP Notification sent, hold time expired",
-        ),
-        (
-            "Interface Err-Disabled por Loop / BPDUGuard",
-            "%PM-4-ERR_DISABLE: bpduguard error detected on Ethernet1/10, putting Ethernet1/10 in err-disable state",
-        ),
-        ("Evento Personalizado (Escribir o pegar log manual)", "CUSTOM"),
-    ]
+def prompt_telemetry_event() -> Tuple[str, str]:
+    """Allows selecting between Proactive Symptom Investigation or Reactive Syslog Alerting."""
+    console.print(
+        Panel(
+            "[bold cyan]🔍 Selección del Modo Operativo y Telemetría[/bold cyan]\n"
+            "Elige si deseas investigar proactivamente un síntoma de red reportado por usuarios "
+            "o analizar un evento de Syslog reactivo.",
+            border_style="cyan",
+        )
+    )
 
-    console.print("[bold cyan]📋 Selecciona el Evento de Telemetría o Syslog a Simular:[/bold cyan]")
-    for idx, (s_name, s_log) in enumerate(scenarios, 1):
-        preview = f": {s_log[:70]}..." if s_log != "CUSTOM" else ""
-        console.print(f"  [yellow]{idx}[/yellow]. [bold]{s_name}[/bold]{preview}")
+    console.print(
+        "  [bold yellow]1[/bold yellow]. [bold green]Modo Proactivo / Investigación de Síntomas[/bold green] "
+        "(Pérdidas de paquetes en LAN, lentitud, errores CRC, caídas)"
+    )
+    console.print(
+        "  [bold yellow]2[/bold yellow]. [bold blue]Modo Reactivo / Análisis de Syslog[/bold blue] "
+        "(Eventos críticos capturados en log del switch o router)"
+    )
 
-    scen_choice = Prompt.ask("Elige el escenario [1-4]", choices=["1", "2", "3", "4"], default="1")
-    chosen_idx = int(scen_choice) - 1
+    mode_choice = Prompt.ask("Selecciona el modo [1-2]", choices=["1", "2"], default="1")
 
-    if scenarios[chosen_idx][1] == "CUSTOM":
-        return Prompt.ask("Pega o escribe el log de telemetría")
-    return scenarios[chosen_idx][1]
+    if mode_choice == "1":
+        # Proactive Scenarios
+        proactive_scenarios = [
+            (
+                "Pérdida de Paquetes en LAN y Caídas Intermitentes",
+                (
+                    "SÍNTOMA OPERACIONAL REPORTADO: Los usuarios del segmento LAN reportan un 20% a 30% "
+                    "de pérdida de paquetes hacia el router y latencia anormalmente alta. "
+                    "El ping hacia el gateway es intermitente. La red LAN está conectada a la interfaz ether2 "
+                    "(o GigabitEthernet1/0/2)."
+                ),
+            ),
+            (
+                "Errores CRC y Descarte Masivo de Tramas (Duplex/Speed Mismatch)",
+                (
+                    "SÍNTOMA OPERACIONAL REPORTADO: El enlace presenta lentitud extrema y pérdida de paquetes. "
+                    "La interfaz reporta colisiones tardías (late collisions), errores CRC y descartes (input drops) "
+                    "en la interfaz ether1 (o Ethernet1/1)."
+                ),
+            ),
+            (
+                "Problemas de Carga Web y Pérdidas por Fragmentación MTU",
+                (
+                    "SÍNTOMA OPERACIONAL REPORTADO: Los clientes tienen pérdida de paquetes en conexiones HTTPS "
+                    "y transferencias de archivos que se congelan debido a fragmentación de MTU."
+                ),
+            ),
+            (
+                "Tormenta de Broadcast y Saturación de CPU en la Red Local",
+                (
+                    "SÍNTOMA OPERACIONAL REPORTADO: El router reporta 95% de uso de CPU y switches parpadean. "
+                    "Se sospecha de un bucle de red o tormenta de broadcast afectando el tráfico local en ether1."
+                ),
+            ),
+            ("Describir un Síntoma Personalizado en Lenguaje Natural", "CUSTOM"),
+        ]
+
+        console.print("\n[bold cyan]📋 Selecciona el síntoma operacional a investigar:[/bold cyan]")
+        for idx, (s_name, _) in enumerate(proactive_scenarios, 1):
+            console.print(f"  [yellow]{idx}[/yellow]. [bold]{s_name}[/bold]")
+
+        picked = Prompt.ask(
+            f"Elige el escenario [1-{len(proactive_scenarios)}]",
+            choices=[str(i) for i in range(1, len(proactive_scenarios) + 1)],
+            default="1",
+        )
+        chosen_idx = int(picked) - 1
+        if proactive_scenarios[chosen_idx][1] == "CUSTOM":
+            custom_symptom = Prompt.ask(
+                "Describe el síntoma (ej. 'Este router está teniendo pérdidas en la LAN en ether2')"
+            )
+            return f"SÍNTOMA OPERACIONAL REPORTADO POR EL OPERADOR:\n{custom_symptom}", "PROACTIVE"
+        return proactive_scenarios[chosen_idx][1], "PROACTIVE"
+
+    else:
+        # Reactive Scenarios
+        reactive_scenarios = [
+            (
+                "OSPF MTU Mismatch",
+                "%OSPF-4-NONEIGHBOR: OSPF process 1, Neighbor 10.0.0.2 on interface Ethernet1/1 "
+                "stuck in EXSTART/EXCHANGE state. Neighbor MTU 9216 is larger than local interface MTU 1500.",
+            ),
+            (
+                "BGP Neighbor Down / Flapping",
+                "%BGP-5-ADJCHANGE: neighbor 10.10.10.2 Down - BGP Notification sent, hold time expired",
+            ),
+            (
+                "Interface Err-Disabled por Loop / BPDUGuard",
+                "%PM-4-ERR_DISABLE: bpduguard error detected on Ethernet1/10, putting port in err-disable state",
+            ),
+            ("Syslog Personalizado (Pegar log exacto)", "CUSTOM"),
+        ]
+
+        console.print("\n[bold cyan]📋 Selecciona el evento de Syslog a simular:[/bold cyan]")
+        for idx, (s_name, _) in enumerate(reactive_scenarios, 1):
+            console.print(f"  [yellow]{idx}[/yellow]. [bold]{s_name}[/bold]")
+
+        picked = Prompt.ask(
+            f"Elige el evento [1-{len(reactive_scenarios)}]",
+            choices=[str(i) for i in range(1, len(reactive_scenarios) + 1)],
+            default="1",
+        )
+        chosen_idx = int(picked) - 1
+        if reactive_scenarios[chosen_idx][1] == "CUSTOM":
+            custom_log = Prompt.ask("Pega o escribe el log de telemetría")
+            return custom_log, "REACTIVE"
+        return reactive_scenarios[chosen_idx][1], "REACTIVE"

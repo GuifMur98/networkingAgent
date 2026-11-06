@@ -36,8 +36,11 @@ class NetworkIntent(BaseModel):
         "none",
         "disable_interface",
         "enable_interface",
+        "restart_interface",
         "set_interface_mtu",
+        "set_interface_duplex_full",
         "reset_bgp_neighbor",
+        "clear_arp_cache",
     ] = Field(..., description="Standardized neutral network action.")
     target_interface: Optional[str] = Field(
         default=None,
