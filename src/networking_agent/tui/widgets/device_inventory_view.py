@@ -16,22 +16,25 @@ class DeviceInventoryView(Widget):
     class AddDeviceRequested(Message):
         """Emitted when the operator clicks the add device button."""
 
+    class DeviceDeleted(Message):
+        """Emitted when a device is deleted so the app can refresh counts."""
+
     class ReturnHomeRequested(Message):
         """Emitted when the operator wants to return to the Home/Inicio view."""
 
     def compose(self) -> ComposeResult:
         with Vertical(id="inventory-container"):
             with Horizontal(id="inventory-top-bar"):
-                yield Label("🖥️ CATÁLOGO DE EQUIPOS DE RED ENROLADOS", id="inventory-title")
-                yield Button("⬅️ Volver al Inicio", id="btn-back-from-inventory", variant="default")
+                yield Label("CATALOGO DE EQUIPOS DE RED ENROLADOS", id="inventory-title")
+                yield Button("[ Volver al Inicio ]", id="btn-back-from-inventory")
 
             yield DataTable(id="inventory-data-table", cursor_type="row", zebra_stripes=True)
 
             with Horizontal(classes="inventory-actions"):
-                yield Button("+ Registrar Nuevo Dispositivo", id="btn-inv-add", variant="success")
-                yield Button("🗑️ Eliminar Seleccionado", id="btn-inv-delete", variant="error")
-                yield Button("🔄 Recargar Lista", id="btn-inv-refresh", variant="primary")
-                yield Button("⬅️ Menú Principal", id="btn-inv-home", variant="default")
+                yield Button("[ + Registrar Equipo ]", id="btn-inv-add", variant="primary")
+                yield Button("[ - Eliminar ]", id="btn-inv-delete", variant="error")
+                yield Button("[ Recargar ]", id="btn-inv-refresh")
+                yield Button("[ Volver al Inicio ]", id="btn-inv-home")
 
     def on_mount(self) -> None:
         table = self.query_one("#inventory-data-table", DataTable)
@@ -71,11 +74,13 @@ class DeviceInventoryView(Widget):
             self.reload_devices()
         elif event.button.id == "btn-inv-delete":
             table = self.query_one("#inventory-data-table", DataTable)
-            if table.row_count > 0 and table.cursor_coordinate:
-                row_key = table.coordinate_to_cell_key(table.cursor_coordinate).row_key.value
+            if table.row_count > 0:
+                coordinate = table.cursor_coordinate or (0, 0)
                 try:
+                    row_key = table.coordinate_to_cell_key(coordinate).row_key.value
                     dev_id = int(row_key)
                     db.delete_device(dev_id)
                     self.reload_devices()
+                    self.post_message(self.DeviceDeleted())
                 except Exception:
                     pass

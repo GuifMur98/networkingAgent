@@ -1,26 +1,22 @@
-"""ASCII Art typography banner widget for the NetworkingAgent Textual TUI."""
+"""Typography banner widget for the NetworkingAgent Textual TUI."""
 
 from rich.align import Align
 from rich.panel import Panel
 from rich.text import Text
 from textual.widgets import Static
 
-ASCII_BANNER = r"""  _   _      _                      _     _               _                    _   
- | \ | | ___| |___      _____  _ __| | __(_)_ __   __ _  / \   __ _  ___ _ __ | |_ 
- |  \| |/ _ \ __\ \ /\ / / _ \| '__| |/ /| | '_ \ / _` |/ _ \ / _` |/ _ \ '_ \| __|
- | |\  |  __/ |_ \ V  V / (_) | |  |   < | | | | | (_| / ___ \ (_| |  __/ | | | |_ 
- |_| \_|\___|\__| \_/\_/ \___/|_|  |_|\_\|_|_| |_|\__, /_/   \_\__, |\___|_| |_|\__|
-                                                   |___/        |___/                """
+ASCII_BANNER = r"""  _   _      _                      _               _   
+ | \ | | ___| |___      _____  _ __| | __  /\   ___| |_ 
+ |  \| |/ _ \ __\ \ /\ / / _ \| '__| |/ / /  \ / _ \ __|
+ | |\  |  __/ |_ \ V  V / (_) | |  |   < / /\ \  __/ |_ 
+ |_| \_|\___|\__| \_/\_/ \___/|_|  |_|\_/_/  \_\___|\__|"""
 
-COMPACT_BANNER = r""" _   _      _                      _               _   
-| \ | | ___| |___      _____  _ __| | __  /\   ___| |_ 
-|  \| |/ _ \ __\ \ /\ / / _ \| '__| |/ / /  \ / _ \ __|
-| |\  |  __/ |_ \ V  V / (_) | |  |   < / /\ \  __/ |_ 
-|_| \_|\___|\__| \_/\_/ \___/|_|  |_|\_/_/  \_\___|\__|"""
+BANNER_TAGLINE = "Enterprise Autonomous Closed-Loop Network Engineering Agent"
+BANNER_SUBS = "Cisco | Juniper | MikroTik  --  Ollama | Gemini | OpenAI | Claude"
 
 
 class BannerWidget(Static):
-    """Renders the prominent ASCII art logo and enterprise tagline."""
+    """Renders a clean, minimalist ASCII banner with version metadata."""
 
     DEFAULT_CSS = """
     BannerWidget {
@@ -31,16 +27,13 @@ class BannerWidget(Static):
     """
 
     def render(self) -> Panel:
-        width = self.size.width or 100
-        raw_art = ASCII_BANNER if width >= 90 else COMPACT_BANNER
-
         banner_text = Text()
-        banner_text.append(raw_art + "\n\n", style="bold #00e5ff")
-        banner_text.append("Enterprise Autonomous Closed-Loop Network Agent\n", style="bold white")
-        banner_text.append("Cisco • Juniper • MikroTik  |  Ollama • Gemini • OpenAI • Claude", style="dim cyan")
+        banner_text.append(ASCII_BANNER + "\n", style="bold cyan")
+        banner_text.append(f"{BANNER_TAGLINE}\n", style="bold white")
+        banner_text.append(BANNER_SUBS, style="dim white")
 
         return Panel(
             Align.center(banner_text),
-            border_style="#00e5ff",
+            border_style="cyan",
             padding=(0, 1),
         )

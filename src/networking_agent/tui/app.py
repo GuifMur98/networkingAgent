@@ -113,15 +113,15 @@ class NetworkingAgentTUIApp(App):
     CSS_PATH = "styles.tcss"
 
     BINDINGS = [
-        Binding("h", "go_home", "🏠 Inicio", show=True),
-        Binding("q", "quit", "🚪 Salir", show=True),
-        Binding("d", "add_device", "➕ Añadir Equipo", show=True),
-        Binding("s", "open_settings", "🧠 Ajustes IA", show=True),
-        Binding("r", "refresh_all", "🔄 Recargar", show=True),
-        Binding("1", "nav_tab_1", "1 Diagnóstico", show=False),
-        Binding("2", "nav_tab_2", "2 Equipos", show=False),
-        Binding("3", "open_settings", "3 Ajustes IA", show=False),
-        Binding("4", "nav_tab_4", "4 Auditoría", show=False),
+        Binding("h", "go_home", "Inicio", show=True),
+        Binding("q", "quit", "Salir", show=True),
+        Binding("d", "add_device", "Nuevo Equipo", show=True),
+        Binding("s", "open_settings", "Ajustes IA", show=True),
+        Binding("r", "refresh_all", "Recargar", show=True),
+        Binding("1", "nav_tab_1", "Diagnostico", show=False),
+        Binding("2", "nav_tab_2", "Inventario", show=False),
+        Binding("3", "open_settings", "Ajustes IA", show=False),
+        Binding("4", "nav_tab_4", "Auditoria", show=False),
     ]
 
     def __init__(self, *args, **kwargs):
@@ -143,18 +143,18 @@ class NetworkingAgentTUIApp(App):
         )
 
         with TabbedContent(id="main-tabs", initial="pane-home"):
-            with TabPane("🏠 Inicio (Menú Principal)", id="pane-home"):
+            with TabPane("[ Inicio ]", id="pane-home"):
                 yield HomeDashboard(id="home-widget")
 
-            with TabPane("🔍 Diagnóstico y Remediación", id="pane-diagnostic"):
+            with TabPane("[ Diagnostico ]", id="pane-diagnostic"):
                 with Horizontal(id="main-split"):
                     yield DeviceSidebar(id="device-sidebar")
                     yield DiagnosticWorkspace(id="diagnostic-workspace")
 
-            with TabPane("🖥️ Catálogo de Dispositivos", id="pane-inventory"):
+            with TabPane("[ Inventario ]", id="pane-inventory"):
                 yield DeviceInventoryView(id="inventory-widget")
 
-            with TabPane("📋 Registro de Auditoría", id="pane-audit"):
+            with TabPane("[ Auditoria ]", id="pane-audit"):
                 yield AuditTableWidget(id="audit-widget")
 
         yield Footer()
@@ -210,6 +210,14 @@ class NetworkingAgentTUIApp(App):
         self, event: DeviceInventoryView.AddDeviceRequested
     ) -> None:
         self.action_add_device()
+
+    def on_device_inventory_view_device_deleted(
+        self, event: DeviceInventoryView.DeviceDeleted
+    ) -> None:
+        sidebar = self.query_one(DeviceSidebar)
+        sidebar.reload_devices()
+        status_bar = self.query_one(TopStatusBar)
+        status_bar.update_device_count(len(db.list_devices()))
 
     def on_audit_table_widget_return_home_requested(
         self, event: AuditTableWidget.ReturnHomeRequested

@@ -35,7 +35,7 @@ class DeviceSidebar(Widget):
         with Vertical(id="sidebar-container"):
             yield Label("INVENTARIO DE RED", id="sidebar-title")
             yield ListView(id="device-list")
-            yield Button("+ Añadir Dispositivo", id="btn-add-device", variant="primary")
+            yield Button("[ + Registrar Equipo ]", id="btn-add-device", variant="primary")
 
     def on_mount(self) -> None:
         self.reload_devices()
@@ -47,7 +47,6 @@ class DeviceSidebar(Widget):
         list_view.clear()
 
         for dev in self.devices:
-            # Vendor styling
             vendor_badge = dev.device_type
             badge_color = "cyan"
             if "cisco" in dev.device_type:
@@ -70,7 +69,6 @@ class DeviceSidebar(Widget):
             list_view.append(item)
 
         if self.devices:
-            # Select first device by default if none selected
             if not self.selected_device or self.selected_device not in self.devices:
                 self.selected_device = self.devices[0]
                 self.post_message(self.DeviceSelected(self.selected_device))

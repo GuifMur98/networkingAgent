@@ -72,7 +72,7 @@ def select_ai_brain_interactively(
     for idx, (p_id, p_desc) in enumerate(providers, 1):
         provider_table.add_row(str(idx), p_id, p_desc)
     if allow_back:
-        provider_table.add_row("0", "Volver", "⬅️ Volver al Menú Principal")
+        provider_table.add_row("0", "Volver", "Volver al Menu Principal")
     console.print(provider_table)
 
     initial_choice = default_provider or saved_provider or "1"
@@ -511,7 +511,7 @@ def prompt_telemetry_event(allow_back: bool = False) -> Tuple[Optional[str], Opt
             ("Syslog Personalizado (Pegar log exacto)", "CUSTOM"),
         ]
 
-        console.print("\n[bold cyan]📋 Selecciona el evento de Syslog a simular:[/bold cyan]")
+        console.print("\n[bold cyan]Selecciona el evento de Syslog a simular:[/bold cyan]")
         for idx, (s_name, _) in enumerate(reactive_scenarios, 1):
             console.print(f"  [yellow]{idx}[/yellow]. [bold]{s_name}[/bold]")
 
@@ -537,50 +537,50 @@ def display_main_menu() -> str:
     devices = db.list_devices()
     auto_approve = db.get_setting("auto_approve") == "true" or settings.auto_approve
     if not auto_approve:
-        hitl_status = "[bold yellow]🛡️ HitL Activo (Confirmación Requerida)[/bold yellow]"
+        hitl_status = "[bold yellow]HitL Activo (Confirmacion Requerida)[/bold yellow]"
     else:
-        hitl_status = "[bold red]⚠️ Auto-Approve ACTIVO[/bold red]"
+        hitl_status = "[bold red]Auto-Approve ACTIVO[/bold red]"
 
     status_table = Table(show_header=False, box=None, padding=(0, 2))
     status_table.add_column("Key", style="bold cyan")
     status_table.add_column("Value", style="bold white")
-    status_table.add_row("🧠 Cerebro de IA:", f"{saved_provider.upper()} ({saved_model})")
-    status_table.add_row("🖥️ Equipos Registrados:", f"{len(devices)} dispositivos en base de datos SQLite")
-    status_table.add_row("🛡️ Control Humano:", hitl_status)
+    status_table.add_row("Cerebro de IA:", f"{saved_provider.upper()} ({saved_model})")
+    status_table.add_row("Equipos Registrados:", f"{len(devices)} dispositivos en SQLite")
+    status_table.add_row("Control Humano:", hitl_status)
 
     from rich.panel import Panel
-    console.print(Panel(status_table, title="📊 ESTADO OPERACIONAL DEL ASISTENTE", border_style="cyan"))
+    console.print(Panel(status_table, title="ESTADO OPERACIONAL DEL ASISTENTE", border_style="cyan"))
 
     menu_table = Table(
-        title="🏠 MENÚ PRINCIPAL - SELECCIONA UNA OPERACIÓN",
+        title="MENU PRINCIPAL - SELECCIONA UNA OPERACION",
         show_header=True,
         header_style="bold magenta",
     )
-    menu_table.add_column("Opción", style="bold yellow", width=8, justify="center")
-    menu_table.add_column("Operación", style="bold")
-    menu_table.add_column("Descripción")
+    menu_table.add_column("Opcion", style="bold yellow", width=8, justify="center")
+    menu_table.add_column("Operacion", style="bold")
+    menu_table.add_column("Descripcion")
 
     menu_table.add_row(
         "1",
-        "🚀 Iniciar Diagnóstico y Remediación",
-        "Sondeo en vivo o análisis de Syslog con IA, guardarraíles y rollback",
+        "Iniciar Diagnostico y Remediacion",
+        "Sondeo en vivo o analisis de Syslog con IA, guardarrailes y rollback",
     )
     menu_table.add_row(
         "2",
-        "🖥️ Gestionar Inventario de Equipos",
+        "Gestionar Inventario de Equipos",
         "Ver routers/switches, dar de alta nuevo equipo SSH o eliminar perfiles",
     )
     menu_table.add_row(
         "3",
-        "🧠 Configuración de IA y Bóveda",
+        "Configuracion de IA y Boveda",
         "Cambiar proveedor (Ollama/Gemini), modelo, llaves de API o modo Auto-Approve",
     )
     menu_table.add_row(
         "4",
-        "📋 Registro de Auditoría Criptográfica",
-        "Visualizar bitácora inmutable (audit.jsonl) de cambios verificados y rollbacks",
+        "Registro de Auditoria Criptografica",
+        "Visualizar bitacora inmutable (audit.jsonl) de cambios verificados y rollbacks",
     )
-    menu_table.add_row("5", "🚪 Salir", "Cerrar la sesión del asistente")
+    menu_table.add_row("5", "Salir", "Cerrar la sesion del asistente")
 
     console.print(menu_table)
     return prompt_choice("Selecciona una opción [1-5]", choices=["1", "2", "3", "4", "5"], default="1")
@@ -590,7 +590,7 @@ def manage_devices_interactively() -> None:
     """Lists enrolled devices and offers actions: add, delete, return."""
     while True:
         devices = db.list_devices()
-        table = Table(title="🖥️ CATÁLOGO DE DISPOSITIVOS DE RED REGISTRADOS", show_header=True, header_style="bold cyan")
+        table = Table(title="CATALOGO DE DISPOSITIVOS DE RED REGISTRADOS", show_header=True, header_style="bold cyan")
         table.add_column("#", style="bold yellow", width=4, justify="center")
         table.add_column("Nombre / Alias", style="bold")
         table.add_column("Host / IP", style="cyan")
@@ -611,9 +611,9 @@ def manage_devices_interactively() -> None:
         console.print(table)
 
         console.print("\n[bold]Acciones disponibles:[/bold]")
-        console.print("  [yellow]1[/yellow]. ➕ Registrar un nuevo dispositivo")
-        console.print("  [yellow]2[/yellow]. 🗑️ Eliminar un dispositivo existente")
-        console.print("  [yellow]0[/yellow]. ⬅️ Volver al Menú Principal")
+        console.print("  [yellow]1[/yellow]. Registrar un nuevo dispositivo")
+        console.print("  [yellow]2[/yellow]. Eliminar un dispositivo existente")
+        console.print("  [yellow]0[/yellow]. Volver al Menu Principal")
 
         choice = prompt_choice("Selecciona una acción [0-2]", choices=["0", "1", "2"], default="0")
         if choice == "0":
@@ -664,7 +664,7 @@ def view_audit_trail_interactively() -> None:
         return
 
     table = Table(
-        title="📋 REGISTRO CRIPTOGRÁFICO DE AUDITORÍA (Últimos 15 Eventos)",
+        title="REGISTRO CRIPTOGRAFICO DE AUDITORIA (Ultimos 15 Eventos)",
         show_header=True,
         header_style="bold magenta",
     )

@@ -23,24 +23,24 @@ class AuditTableWidget(Widget):
     def compose(self) -> ComposeResult:
         with Vertical(id="audit-container"):
             with Horizontal(id="audit-top-bar"):
-                yield Label("📋 HISTORIAL CRIPTOGRÁFICO DE AUDITORÍA Y REMEDIACIONES", id="lbl-audit-header")
-                yield Button("⬅️ Volver al Inicio", id="btn-back-from-audit", variant="default")
+                yield Label("HISTORIAL CRIPTOGRAFICO DE AUDITORIA Y REMEDIACIONES", id="lbl-audit-header")
+                yield Button("[ Volver al Inicio ]", id="btn-back-from-audit")
 
             yield DataTable(id="audit-data-table", cursor_type="row", zebra_stripes=True)
 
             with Horizontal(classes="audit-actions"):
-                yield Button("🔄 Actualizar Registro", id="btn-refresh-audit", variant="primary")
-                yield Button("⬅️ Menú Principal", id="btn-audit-home", variant="default")
+                yield Button("[ Recargar Registro ]", id="btn-refresh-audit", variant="primary")
+                yield Button("[ Volver al Inicio ]", id="btn-audit-home")
 
     def on_mount(self) -> None:
         table = self.query_one("#audit-data-table", DataTable)
         table.add_columns(
             "Timestamp",
-            "Tipo de Evento",
+            "Tipo Evento",
             "Equipo",
-            "Acción",
+            "Accion",
             "Aprobado",
-            "Verificación",
+            "Verificacion",
             "Comandos",
         )
         self.reload_audit_data()
@@ -67,13 +67,12 @@ class AuditTableWidget(Widget):
         except Exception:
             return
 
-        # Show newest events first
         for rec in reversed(records[-100:]):
             ts = (rec.get("timestamp") or "")[:19]
             etype = rec.get("event_type") or "UNKNOWN"
             host = rec.get("device_host") or ""
             action = rec.get("action") or ""
-            approved = "SÍ" if rec.get("approved") else "NO"
+            approved = "SI" if rec.get("approved") else "NO"
             vstatus = rec.get("verification_status") or "N/A"
             raw_cmds = rec.get("commands") or []
             cmds = ", ".join(raw_cmds) or "Ninguno"
@@ -90,7 +89,7 @@ class AuditTableWidget(Widget):
                 etype_styled.stylize("bold yellow")
 
             appr_styled = Text(approved)
-            appr_styled.stylize("green" if approved == "SÍ" else "red")
+            appr_styled.stylize("green" if approved == "SI" else "red")
 
             verif_styled = Text(vstatus)
             if vstatus == "PASSED":
