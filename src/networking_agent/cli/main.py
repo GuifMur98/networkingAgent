@@ -24,10 +24,21 @@ def cli_entrypoint() -> None:
     """Parses command-line arguments and runs the agent."""
     parser = argparse.ArgumentParser(description="NetworkingAgent: Enterprise Closed-Loop Network Assistant")
     parser.add_argument(
+        "--tui",
+        action="store_true",
+        help="Iniciar la interfaz de usuario reactiva en terminal (Textual TUI)",
+    )
+    parser.add_argument(
+        "-c",
+        "--cli",
+        action="store_true",
+        help="Iniciar el asistente interactivo clásico de consola por pasos",
+    )
+    parser.add_argument(
         "-i",
         "--interactive",
         action="store_true",
-        help="Iniciar en modo asistente interactivo (detecta modelos locales y solicita credenciales)",
+        help="Iniciar en modo asistente interactivo clásico (detecta modelos y solicita credenciales)",
     )
     parser.add_argument(
         "--provider",
@@ -73,9 +84,23 @@ def cli_entrypoint() -> None:
 
     args = parser.parse_args()
 
-    # Determine whether to run interactively:
-    # If -i is passed, or if neither provider nor device-host was supplied via CLI:
-    is_interactive = args.interactive or (args.provider is None and args.device_host is None)
+    # Determine whether to launch Textual TUI:
+    # 1. Explicitly requested with --tui
+    # 2. Default behavior: interactive terminal session without batch flags or --cli/-i
+    has_batch_args = bool(args.provider or args.device_host or args.log_message)
+    should_launch_tui = args.tui or (
+        not args.cli and not args.interactive and not has_batch_args and sys.stdin.isatty()
+    )
+
+    if should_launch_tui:
+        from networking_agent.tui import run_tui
+
+        run_tui()
+        sys.exit(0)
+
+    # Determine whether to run classic CLI interactively:
+    # If -i or -c is passed, or if neither provider nor device-host was supplied via CLI:
+    is_interactive = args.cli or args.interactive or (args.provider is None and args.device_host is None)
 
     if is_interactive:
         print_main_banner()

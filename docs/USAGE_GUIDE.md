@@ -77,18 +77,45 @@ Variables disponibles:
 | `AUTO_ROLLBACK_ON_FAILURE` | Reversión automática si falla la verificación | `true` |
 | `SSH_TIMEOUT` | Timeout en segundos para transacciones Netmiko | `30` |
 
-### 3.2. Configuración Dinámica desde la CLI
+### 3.2. Modos de Lanzamiento: TUI vs CLI
 
-Puedes configurar o actualizar las variables y credenciales directamente desde el menú interactivo sin editar archivos a mano:
+NetworkingAgent soporta una arquitectura dual desacoplada:
 
-```bash
-uv run python main.py
-```
+1. **Interfaz Gráfica de Terminal Reactiva (Textual TUI - Predeterminada):**
+   ```bash
+   uv run python main.py
+   # o explícitamente:
+   uv run networking-agent --tui
+   ```
+   - **60 FPS & Multihilo:** Las conexiones SSH de Netmiko y las llamadas a la IA corren en hilos de trabajo independientes (`@work(thread=True)`), manteniendo la interfaz 100% fluida.
+   - **Atajos de teclado:**
+     - `q`: Salir del asistente.
+     - `d`: Registrar nuevo equipo (abre modal con validación y cifrado).
+     - `s`: Configurar proveedor y modelo de IA (Ollama / Gemini).
+     - `r`: Recargar lista de equipos y tabla de auditoría.
+     - `y` / `n`: Autorizar o Rechazar remediación en la ventana modal HitL.
+     - `Tab` / `Shift+Tab`: Mover el foco entre controles.
 
-Selecciona la opción **`[3] Configuración y Claves de API`** para:
-- Guardar de forma cifrada tu `GEMINI_API_KEY` o credenciales Cloud.
-- Modificar el endpoint de Ollama.
-- Definir el proveedor y modelo predeterminado.
+2. **Asistente Interactivo Clásico de Consola (Rich Wizard):**
+   ```bash
+   uv run networking-agent --cli
+   # o versión corta:
+   uv run python main.py -c
+   ```
+   Ideal para entornos con terminales mínimos o sin soporte completo de eventos de ratón.
+
+3. **Ejecución Automatizada en Modo Lote (CI/CD / Scripts):**
+   ```bash
+   uv run networking-agent \
+     --provider ollama \
+     --model netexpert:latest \
+     --device-host 10.10.20.11 \
+     --device-type cisco_nxos \
+     --mode PROACTIVE \
+     --log-message "OSPF MTU mismatch en Ethernet1/1"
+   ```
+
+### 3.3. Configuración Dinámica y Bóveda Criptográfica
 
 ---
 

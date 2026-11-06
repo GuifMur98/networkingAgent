@@ -3,7 +3,8 @@
 <div align="center">
 
 [![Python 3.14](https://img.shields.io/badge/python-3.14-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-105%20passed-brightgreen.svg?style=flat&logo=pytest&logoColor=white)]()
+[![UI: Textual TUI](https://img.shields.io/badge/ui-Textual%20TUI%20&%20Rich-00e5ff.svg?style=flat&logo=gnometerminal)](https://textual.textualize.io/)
+[![Tests](https://img.shields.io/badge/tests-113%20passed-brightgreen.svg?style=flat&logo=pytest&logoColor=white)]()
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg?style=flat&logo=ruff&logoColor=white)](https://github.com/astral-sh/ruff)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=flat)](LICENSE)
 [![Security: Hardened](https://img.shields.io/badge/security-hardened%20defense--in--depth-red.svg?style=flat&logo=shield)]()
@@ -120,12 +121,18 @@ networkingAgent/
 │       │   └── factory.py      # Factory de drivers
 │       ├── engine/             # Orquestador del bucle cerrado
 │       │   ├── agent.py        # NetworkAssistantAgent
+│       │   ├── observer.py     # Protocolo de observabilidad desacoplado
 │       │   └── verification.py # VerificationEngine (pre vs post)
-│       └── cli/                # Interfaz de usuario por consola
+│       ├── tui/                # Interfaz Gráfica de Terminal (Textual TUI)
+│       │   ├── app.py          # Aplicación reactiva multihilo
+│       │   ├── styles.tcss     # Estilos modernos Cyberpunk/Nord
+│       │   ├── widgets/        # Barra de estado, sidebar, workspace y tabla de auditoría
+│       │   └── modals/         # Modales de aprobación HitL, equipos y bóveda de IA
+│       └── cli/                # Interfaz clásica por consola
 │           ├── main.py         # Controlador de flujo y continuidad
 │           ├── interactive.py  # Menús ricos y autodescubrimiento
 │           └── prompts.py      # Validadores interactivos de repregunta
-└── tests/                      # Suite de 105 pruebas unitarias automatizadas
+└── tests/                      # Suite de 113 pruebas unitarias automatizadas
     ├── test_brains.py
     ├── test_crypto.py
     ├── test_db.py
@@ -133,7 +140,8 @@ networkingAgent/
     ├── test_engine.py
     ├── test_guardrails.py
     ├── test_models.py
-    └── test_prompts.py
+    ├── test_prompts.py
+    └── test_tui.py
 ```
 
 ---
@@ -166,18 +174,46 @@ cp .env.example .env
 
 *(Opcional: Si deseas utilizar Google Gemini, configura `GEMINI_API_KEY=tu_clave` o agrégala desde el menú interactivo).*
 
-### 4. Ejecución del Asistente
+### 4. Modos de Ejecución
 
-Ejecuta el asistente interactivo:
+#### 🚀 Modo A: Interfaz Gráfica de Terminal Reactiva (Textual TUI - Predeterminado)
+Inicia la experiencia interactiva moderna con navegación visual por pestañas, catálogo lateral de equipos, historial de auditoría y diálogos modales de autorización HitL:
 
 ```bash
+# Iniciar TUI moderna (por defecto en terminales interactivos)
 uv run python main.py
+
+# O explícitamente con la bandera:
+uv run networking-agent --tui
 ```
 
-O como comando CLI:
+*Atajos de teclado en la TUI:*
+- `q`: Salir de la aplicación.
+- `d`: Registrar nuevo equipo de red (Abre modal cifrado).
+- `s`: Ajustes del Cerebro de IA y Bóveda criptográfica.
+- `r`: Recargar inventario y tabla de auditoría.
+- `y` / `n`: Autorizar o Rechazar cambios en el diálogo HitL.
+
+#### 📟 Modo B: Asistente Interactivo de Consola Clásico (Rich Wizard)
+Si prefieres el menú paso a paso secuencial en la consola:
 
 ```bash
-uv run networking-agent
+uv run networking-agent --cli
+# o versión corta:
+uv run python main.py -c
+```
+
+#### 🤖 Modo C: Ejecución Automatizada / CI/CD (Sin Intervención)
+Para pipelines de monitoreo o ejecución por lotes:
+
+```bash
+uv run networking-agent \
+  --provider ollama \
+  --model netexpert:latest \
+  --device-host 192.168.1.1 \
+  --device-type cisco_ios \
+  --mode PROACTIVE \
+  --log-message "Pérdida de paquetes en GigabitEthernet0/1"
 ```
 
 ---
@@ -206,7 +242,7 @@ Al iniciar, se presenta el panel de control:
 
 ## 🧪 Pruebas Automatizadas y Calidad de Código
 
-El repositorio cuenta con **105 pruebas unitarias** pasando al 100%, validando modelos, validadores de inyección, blindaje WAN, criptografía, base de datos SQLite y pooling SSH:
+El repositorio cuenta con **113 pruebas unitarias** pasando al 100%, validando modelos, validadores de inyección, blindaje WAN, criptografía, base de datos SQLite, interfaces TUI y pooling SSH:
 
 ```bash
 # Ejecutar todas las pruebas unitarias

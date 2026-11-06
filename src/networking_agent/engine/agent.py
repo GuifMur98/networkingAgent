@@ -2,20 +2,16 @@
 
 from typing import Optional
 
-from rich.markup import escape
-from rich.panel import Panel
-from rich.table import Table
-
 from networking_agent.brains.factory import get_ai_brain
-from networking_agent.cli.prompts import prompt_hitl_approval
 from networking_agent.core.audit import audit_logger
 from networking_agent.core.config import settings
 from networking_agent.core.exceptions import (
     BlastRadiusViolationError,
     CommandInjectionError,
 )
-from networking_agent.core.logging import console, logger
+from networking_agent.core.logging import logger
 from networking_agent.drivers.factory import get_os_driver
+from networking_agent.engine.observer import AgentObserver, ConsoleAgentObserver
 from networking_agent.engine.verification import VerificationEngine
 from networking_agent.guardrails.blast_radius import BlastRadiusGuard
 from networking_agent.guardrails.validator import CommandValidator
@@ -32,10 +28,12 @@ class NetworkAssistantAgent:
         ai_provider: Optional[str] = None,
         ai_model: Optional[str] = None,
         auto_approve: bool = False,
+        observer: Optional[AgentObserver] = None,
     ):
         self.brain = get_ai_brain(provider=ai_provider, model=ai_model)
         self.blast_guard = BlastRadiusGuard()
         self.auto_approve = auto_approve
+        self.observer = observer or ConsoleAgentObserver()
 
     def process_telemetry(
         self,
@@ -44,9 +42,8 @@ class NetworkAssistantAgent:
         mode: str = "REACTIVE",
     ) -> bool:
         """Executes the closed-loop remediation workflow."""
-        logger.info(
-            f"\n[bold cyan][{mode}][/bold cyan] Ingesting telemetry for "
-            f"[bold green]{device.host}[/bold green] ({device.device_type})..."
+        self.observer.on_status_update(
+            f"[{mode}] Ingesting telemetry for {device.host} ({device.device_type})..."
         )
 
         analysis_payload = telemetry.raw_text
@@ -55,7 +52,7 @@ class NetworkAssistantAgent:
             health_data = {}
 
             if mode == "PROACTIVE":
-                logger.info("[*] Running proactive diagnostic interrogation on device...")
+                self.observer.on_status_update("[*] Running proactive diagnostic interrogation on device...")
                 try:
                     health_data = driver.run_health_check()
                     telemetry_str = "\n".join([f"=== {cmd} ===\n{out}" for cmd, out in health_data.items()])
@@ -79,34 +76,12 @@ class NetworkAssistantAgent:
             # 1. AI Diagnosis -> Neutral Intent
             intent: NetworkIntent = self.brain.analyze_event(analysis_payload)
 
-            # Display Diagnosis Panel
-            table = Table(title="AI Diagnostic Assessment", show_header=True, header_style="bold magenta")
-            table.add_column("Property", style="dim", width=24)
-            table.add_column("Value", style="bold")
-            table.add_row("Severity", f"[{'red' if intent.severity == 'CRITICAL' else 'yellow'}]{intent.severity}[/]")
-            table.add_row("Root Cause Diagnosis", intent.diagnosis)
-            table.add_row("Proposed Action", intent.action)
-            table.add_row("Requires Config Change", str(intent.requires_config_change))
-            if intent.target_interface:
-                table.add_row("Target Interface", intent.target_interface)
-            if intent.mtu_value:
-                table.add_row("MTU Value", str(intent.mtu_value))
-            if intent.bgp_neighbor_ip:
-                table.add_row("BGP Neighbor IP", intent.bgp_neighbor_ip)
-            console.print(table)
+            # Display Diagnosis Panel via Observer
+            self.observer.on_diagnosis_ready(intent)
 
             # 2. Check if configuration change is needed
             if not intent.requires_config_change or intent.action == "none":
-                findings_panel = Panel(
-                    f"[bold green]✔ EVALUACIÓN DIAGNÓSTICA TÉCNICA COMPLETADA[/bold green]\n\n"
-                    f"[bold cyan]Diagnóstico de Causa Raíz:[/bold cyan]\n"
-                    f"{intent.diagnosis}\n\n"
-                    f"[bold yellow]Estado de Configuración:[/bold yellow] No se requieren cambios en el equipo.\n"
-                    f"[dim]Severidad: {intent.severity} | Acción: {intent.action} | Equipo: {device.host}[/dim]",
-                    title="📋 INFORME OPERACIONAL DEL ASISTENTE DE RED",
-                    border_style="green",
-                )
-                console.print(findings_panel)
+                self.observer.on_no_op_required(device, intent)
                 logger.info("[green]No configuration changes required. Incident logged.[/green]")
                 audit_logger.record_event(
                     event_type="NO_OP",
@@ -122,20 +97,7 @@ class NetworkAssistantAgent:
             try:
                 self.blast_guard.verify_intent(intent, wan_interfaces=wan_interfaces)
             except BlastRadiusViolationError as e:
-                shield_panel = Panel(
-                    f"[bold red]🛑 ACCIÓN BLOQUEADA POR GUARDARRAÍL DE SEGURIDAD (BLAST RADIUS)[/bold red]\n\n"
-                    f"[yellow]El cerebro de IA propuso una modificación de riesgo:[/yellow]\n"
-                    f"  • Acción solicitada: [bold red]{intent.action}[/bold red]\n"
-                    f"  • Interfaz Objetivo: [bold yellow]{escape(intent.target_interface or 'N/A')}[/bold yellow]\n\n"
-                    f"[bold cyan]Motivo de Protección:[/bold cyan]\n"
-                    f"{escape(str(e))}\n\n"
-                    f"[green]Recomendación de Seguridad:[/green]\n"
-                    f"Las interfaces WAN / Enlace Ascendente están blindadas contra reinicios remotos.\n"
-                    f"Para lentitud o caídas en la WAN, verifique el cableado/óptica física o contacte al ISP.",
-                    title="🛡️ SEGURIDAD ACTIVA: PROTECCIÓN DE INFRAESTRUCTURA CRÍTICA",
-                    border_style="bold red",
-                )
-                console.print(shield_panel)
+                self.observer.on_guardrail_blocked(intent, str(e))
                 audit_logger.record_event(
                     event_type="SECURITY_REJECTED",
                     device_host=device.host,
@@ -169,27 +131,6 @@ class NetworkAssistantAgent:
 
             # 5. Human-in-the-Loop (HitL) Approval Gate
             rollback_info = driver.get_rollback_description()
-            target_display = escape(intent.target_interface or intent.bgp_neighbor_ip or 'N/A')
-            sev_color = 'red' if intent.severity == 'CRITICAL' else 'yellow'
-            cli_preview = "\n".join([f"  [bold green]+[/bold green] [white]{escape(c)}[/white]" for c in candidate_cli])
-            approval_panel = Panel(
-                f"[bold red]⚠️  SOLICITUD DE AUTORIZACIÓN OBLIGATORIA (HUMAN-IN-THE-LOOP)[/bold red]\n\n"
-                f"[bold]Dispositivo Destino:[/bold] [cyan]{device.host}[/cyan] ({device.device_type})  |  "
-                f"[bold]Operador:[/bold] [cyan]{device.username}[/cyan]\n"
-                f"[bold]Acción Propuesta:[/bold] [yellow]{intent.action}[/yellow]  |  "
-                f"[bold]Objetivo:[/bold] [yellow]{target_display}[/yellow]\n"
-                f"[bold]Severidad:[/bold] [{sev_color}]{intent.severity}[/]\n\n"
-                f"[bold cyan]Diagnóstico Técnico Justificativo:[/bold cyan]\n"
-                f"{intent.diagnosis}\n\n"
-                f"[bold yellow]Comandos exactos a inyectar en el equipo:[/bold yellow]\n{cli_preview}\n\n"
-                f"[bold green]Garantía de Resiliencia y Rollback:[/bold green]\n"
-                f"• Se tomará un snapshot de configuración previa antes de inyectar cambios.\n"
-                f"• Mecanismo de reversión disponible: [italic]{rollback_info}[/italic]",
-                title="🛡️ PUERTA DE CONTROL Y APROBACIÓN HUMANA",
-                border_style="bold red",
-            )
-            console.print(approval_panel)
-
             approved = False
             if self.auto_approve:
                 logger.warning(
@@ -197,17 +138,14 @@ class NetworkAssistantAgent:
                 )
                 approved = True
             else:
-                approved = prompt_hitl_approval()
+                approved = self.observer.on_hitl_approval_required(
+                    device=device,
+                    intent=intent,
+                    candidate_cli=candidate_cli,
+                    rollback_info=rollback_info,
+                )
 
             if not approved:
-                cancel_panel = Panel(
-                    f"[yellow]Operación CANCELADA por el operador.[/yellow]\n"
-                    f"El equipo [bold]{device.host}[/bold] NO ha sido modificado y permanece 100% en su estado "
-                    "original.",
-                    title="⛔ OPERACIÓN RECHAZADA - DISPOSITIVO INTACTO",
-                    border_style="yellow",
-                )
-                console.print(cancel_panel)
                 logger.info("[bold yellow][X] Operation rejected by operator. Device was NOT modified.[/bold yellow]")
                 audit_logger.record_event(
                     event_type="OPERATOR_REJECTED",
@@ -219,7 +157,7 @@ class NetworkAssistantAgent:
                 return False
 
             # 6. Pre-Check & Snapshot Backup
-            logger.info("[*] Executing pre-change health snapshot...")
+            self.observer.on_execution_progress("[*] Executing pre-change health snapshot...")
             backup_path = None
             pre_health = {}
             try:
@@ -227,17 +165,18 @@ class NetworkAssistantAgent:
                 backup_path = driver.backup_running_config()
             except Exception as e:
                 logger.error(f"[bold red]Pre-change safety checks failed: {e}[/bold red]")
+                self.observer.on_completion(False, f"Pre-change safety checks failed: {e}")
                 return False
 
             # 7. Apply Configuration
-            logger.info("[*] Applying validated commands on device...")
+            self.observer.on_execution_progress("[*] Applying validated commands on device...")
             execution_output = ""
             try:
                 execution_output = driver.execute_commands(candidate_cli)
             except Exception as e:
                 logger.critical(f"[bold red]Execution error on {device.host}: {e}[/bold red]")
                 if settings.auto_rollback_on_failure and backup_path:
-                    logger.warning("[yellow]Initiating emergency rollback...[/yellow]")
+                    self.observer.on_execution_progress("[yellow]Initiating emergency rollback...[/yellow]")
                     driver.rollback(backup_path)
                 audit_logger.record_event(
                     event_type="EXECUTION_FAILED",
@@ -248,10 +187,11 @@ class NetworkAssistantAgent:
                     execution_output=str(e),
                     rollback_triggered=True,
                 )
+                self.observer.on_completion(False, f"Execution error: {e}")
                 return False
 
             # 8. Post-Check and Verification
-            logger.info("[*] Running post-change health verification...")
+            self.observer.on_execution_progress("[*] Running post-change health verification...")
             post_health = {}
             verification_passed = False
             try:
@@ -268,7 +208,7 @@ class NetworkAssistantAgent:
             if not verification_passed:
                 logger.error("[bold red]Verification FAILED! Remediation did not resolve the problem.[/bold red]")
                 if settings.auto_rollback_on_failure:
-                    logger.warning("[bold yellow]Triggering automated rollback...[/bold yellow]")
+                    self.observer.on_execution_progress("[bold yellow]Triggering automated rollback...[/bold yellow]")
                     driver.rollback(backup_path)
                     audit_logger.record_event(
                         event_type="REMEDIATION_ROLLBACK",
@@ -279,11 +219,15 @@ class NetworkAssistantAgent:
                         verification_status="FAILED",
                         rollback_triggered=True,
                     )
+                    self.observer.on_completion(False, "Remediation verification failed; device rolled back.")
                     return False
 
             # 9. Success Audit Record
             logger.info(
                 "[bold green][OK] Configuration successfully applied and verified in closed-loop.[/bold green]"
+            )
+            self.observer.on_completion(
+                True, "Configuration successfully applied and verified in closed-loop."
             )
             audit_logger.record_event(
                 event_type="REMEDIATION_SUCCESS",

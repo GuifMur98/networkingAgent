@@ -108,6 +108,19 @@ class DatabaseManager:
             rows = cursor.fetchall()
             return [dict(row) for row in rows]
 
+    def list_device_inventories(self) -> List[DeviceInventory]:
+        """Returns all saved network devices as fully hydrated DeviceInventory models."""
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id FROM devices ORDER BY last_used_at DESC")
+            rows = cursor.fetchall()
+            devices = []
+            for r in rows:
+                dev = self.get_device_by_id(r["id"])
+                if dev:
+                    devices.append(dev)
+            return devices
+
     def get_device_by_id(self, device_id: int) -> Optional[DeviceInventory]:
         """Retrieves a device by ID and decrypts credentials into a DeviceInventory."""
         with self._get_connection() as conn:

@@ -70,6 +70,7 @@ class AgentSettings(BaseSettings):
     audit_log_path: Path = Field(default=Path("logs/audit.jsonl"), description="Path to immutable audit trail")
     ssh_timeout: int = Field(default=30, description="SSH connection timeout in seconds")
     auto_rollback_on_failure: bool = Field(default=True, description="Trigger automatic rollback if verification fails")
+    auto_approve: bool = Field(default=False, description="Skip Human-in-the-Loop authorization gate")
 
 
 # Singleton instance
