@@ -139,9 +139,10 @@ class VaultModal(ModalScreen[Optional[Dict[str, str]]]):
         provider: str,
         current_model: str,
         host: Optional[str] = None,
+        force_refresh: bool = False,
     ) -> Tuple[List[Tuple[str, str]], str, str]:
         """Build choices for Select dropdown, determine initial selection and status message."""
-        discovered = discover_provider_models(provider, host=host)
+        discovered = discover_provider_models(provider, host=host, force_refresh=force_refresh)
         installed_ids = {m_id for _, m_id in discovered}
 
         choices: List[Tuple[str, str]] = list(discovered)
@@ -161,7 +162,7 @@ class VaultModal(ModalScreen[Optional[Dict[str, str]]]):
 
         # Formulate status message
         if provider == "ollama":
-            installed_ollama = get_installed_ollama_models(host=host)
+            installed_ollama = get_installed_ollama_models(host=host, force_refresh=False)
             if installed_ollama:
                 count = len(installed_ollama)
                 if current_model and current_model not in {m["model"] for m in installed_ollama}:
@@ -196,7 +197,7 @@ class VaultModal(ModalScreen[Optional[Dict[str, str]]]):
         lbl_status = self.query_one("#lbl-model-status", Label)
         if provider == "ollama":
             host = self.query_one("#input-api-key", Input).value.strip() or None
-            installed = get_installed_ollama_models(host=host)
+            installed = get_installed_ollama_models(host=host, force_refresh=False)
             if any(m["model"] == model_id for m in installed):
                 lbl_status.update(f"[bold green][✓] Modelo instalado seleccionado: {model_id}[/]")
             else:
@@ -226,7 +227,9 @@ class VaultModal(ModalScreen[Optional[Dict[str, str]]]):
 
         # Refresh model options for new provider
         host = stored if provider == "ollama" else None
-        choices, sel_val, status_msg = self._build_model_choices(provider, inp_model.value.strip(), host=host)
+        choices, sel_val, status_msg = self._build_model_choices(
+            provider, inp_model.value.strip(), host=host, force_refresh=True
+        )
         sel_model.set_options(choices)
         if sel_val:
             sel_model.value = sel_val
@@ -249,7 +252,9 @@ class VaultModal(ModalScreen[Optional[Dict[str, str]]]):
         sel_model = self.query_one("#select-model", Select)
         lbl_status = self.query_one("#lbl-model-status", Label)
 
-        choices, sel_val, status_msg = self._build_model_choices(provider, inp_model.value.strip(), host=host)
+        choices, sel_val, status_msg = self._build_model_choices(
+            provider, inp_model.value.strip(), host=host, force_refresh=True
+        )
         sel_model.set_options(choices)
         if sel_val:
             sel_model.value = sel_val
@@ -257,7 +262,7 @@ class VaultModal(ModalScreen[Optional[Dict[str, str]]]):
         lbl_status.update(status_msg)
 
         if provider == "ollama":
-            installed = get_installed_ollama_models(host=host)
+            installed = get_installed_ollama_models(host=host, force_refresh=False)
             count = len(installed)
             if count > 0:
                 self.notify(
