@@ -52,17 +52,24 @@ class AutomationView(Widget):
 
             # Control Toolbar
             with Horizontal(id="automation-toolbar", classes="section-panel"):
-                template_options = [
-                    (t.name, t.name) for t in self.templates
-                ] + [("Script Personalizado / Directo", "custom")]
-                yield Label("Plantilla:", id="lbl-tpl-picker")
-                yield Select(template_options, value=self.templates[0].name, id="select-template", allow_blank=False)
+                with Horizontal(id="automation-selectors"):
+                    template_options = [
+                        (t.name, t.name) for t in self.templates
+                    ] + [("Script Personalizado / Directo", "custom")]
+                    yield Label("Plantilla:", id="lbl-tpl-picker")
+                    yield Select(
+                        template_options,
+                        value=self.templates[0].name,
+                        id="select-template",
+                        allow_blank=False,
+                    )
 
-                yield Label("Fabricante OS:", id="lbl-vendor-picker")
-                yield Select(self.VENDOR_CHOICES, value="cisco_ios", id="select-vendor-auto", allow_blank=False)
+                    yield Label("Fabricante:", id="lbl-vendor-picker")
+                    yield Select(self.VENDOR_CHOICES, value="cisco_ios", id="select-vendor-auto", allow_blank=False)
 
-                yield Button("Validar Sintaxis (Dry-Run)", id="btn-validate-script")
-                yield Button("Desplegar en Equipos", id="btn-deploy-batch", variant="primary")
+                with Horizontal(id="automation-actions"):
+                    yield Button("Validar Sintaxis (Dry-Run)", id="btn-validate-script")
+                    yield Button("Desplegar en Equipos", id="btn-deploy-batch", variant="primary")
 
             # Main Workspace Split (Editor on Left, Device & Validation on Right)
             with Horizontal(id="automation-split"):

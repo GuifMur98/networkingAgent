@@ -513,31 +513,77 @@ ModalScreen {
 }
 
 #automation-toolbar {
-    layout: horizontal;
-    height: auto;
+    height: 4;
     min-height: 4;
     padding: 0 1;
     align-vertical: middle;
     margin-bottom: 1;
 }
 
-#automation-toolbar Select {
-    width: 28;
+#automation-selectors {
+    width: 1fr;
+    height: 100%;
+    align-vertical: middle;
+}
+
+#lbl-tpl-picker, #lbl-vendor-picker {
+    height: 3;
+    content-align: left middle;
     margin-right: 1;
+    text-style: bold;
+    color: #e6edf3;
+}
+
+#lbl-vendor-picker {
+    margin-left: 2;
+}
+
+#select-template {
+    width: 36;
+    height: 3;
+}
+
+#select-vendor-auto {
+    width: 26;
+    height: 3;
+}
+
+#automation-actions {
+    width: auto;
+    height: 100%;
+    align-vertical: middle;
+    align-horizontal: right;
 }
 
 #btn-validate-script {
+    width: 26;
+    height: 3;
     background: #21262d;
     color: #58a6ff;
     border: round #388bfd;
     margin-right: 1;
+    text-align: center;
+    content-align: center middle;
+}
+
+#btn-validate-script:hover {
+    background: #30363d;
+    color: #ffffff;
 }
 
 #btn-deploy-batch {
+    width: 24;
+    height: 3;
     background: #238636;
     color: #ffffff;
     text-style: bold;
     border: round #2ea043;
+    text-align: center;
+    content-align: center middle;
+}
+
+#btn-deploy-batch:hover {
+    background: #2ea043;
 }
 
 #automation-split {
