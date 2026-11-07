@@ -1,9 +1,12 @@
 """Local, private inference provider using Ollama with structured schema."""
 
-from networking_agent.brains.base import HARDENED_SYSTEM_PROMPT, LLMBrain
+from typing import Optional
+
+from networking_agent.brains.base import HARDENED_CONFIG_SYSTEM_PROMPT, HARDENED_SYSTEM_PROMPT, LLMBrain
 from networking_agent.core.config import settings
 from networking_agent.core.exceptions import AIAnalysisError
 from networking_agent.core.logging import logger
+from networking_agent.models.config_intent import ConfigurationIntent
 from networking_agent.models.intent import NetworkIntent
 
 
@@ -53,3 +56,37 @@ class OllamaBrain(LLMBrain):
                     pass
             logger.error(f"[bold red]Ollama Brain analysis failed:[/bold red] {error_msg}")
             raise AIAnalysisError(f"Ollama inference error: {error_msg}") from e
+
+    def synthesize_configuration(
+        self,
+        device_host: str,
+        vendor_family: str,
+        natural_request: str,
+        protocol_hint: Optional[str] = None,
+    ) -> ConfigurationIntent:
+        try:
+            from ollama import Client
+
+            client = Client(host=settings.ollama_host)
+            hint_str = f" [Protocol Focus: {protocol_hint}]" if protocol_hint else ""
+            user_content = (
+                f"TARGET DEVICE: Host {device_host} | Operating System: {vendor_family}{hint_str}\n"
+                f"OPERATOR CONFIGURATION REQUEST IN NATURAL LANGUAGE:\n"
+                f"<configuration_request>\n{natural_request}\n</configuration_request>\n\n"
+                f"Synthesize the complete, secure configuration change and emit ConfigurationIntent JSON."
+            )
+
+            response = client.chat(
+                model=self.model_name,
+                messages=[
+                    {"role": "system", "content": HARDENED_CONFIG_SYSTEM_PROMPT},
+                    {"role": "user", "content": user_content},
+                ],
+                format=ConfigurationIntent.model_json_schema(),
+                options={"temperature": 0},
+            )
+            return ConfigurationIntent.model_validate_json(response.message.content)
+        except Exception as e:
+            logger.error(f"[bold red]Ollama Brain configuration synthesis failed:[/bold red] {e}")
+            raise AIAnalysisError(f"Ollama configuration synthesis error: {e}") from e
+

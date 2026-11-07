@@ -3,10 +3,11 @@
 import os
 from typing import Optional
 
-from networking_agent.brains.base import HARDENED_SYSTEM_PROMPT, LLMBrain
+from networking_agent.brains.base import HARDENED_CONFIG_SYSTEM_PROMPT, HARDENED_SYSTEM_PROMPT, LLMBrain
 from networking_agent.core.config import settings
 from networking_agent.core.exceptions import AIAnalysisError
 from networking_agent.core.logging import logger
+from networking_agent.models.config_intent import ConfigurationIntent
 from networking_agent.models.intent import NetworkIntent
 
 
@@ -44,3 +45,36 @@ class OpenAIBrain(LLMBrain):
         except Exception as e:
             logger.error(f"[bold red]OpenAI Brain analysis failed:[/bold red] {e}")
             raise AIAnalysisError(f"OpenAI inference error: {e}") from e
+
+    def synthesize_configuration(
+        self,
+        device_host: str,
+        vendor_family: str,
+        natural_request: str,
+        protocol_hint: Optional[str] = None,
+    ) -> ConfigurationIntent:
+        try:
+            hint_str = f" [Protocol Focus: {protocol_hint}]" if protocol_hint else ""
+            user_content = (
+                f"TARGET DEVICE: Host {device_host} | Operating System: {vendor_family}{hint_str}\n"
+                f"OPERATOR CONFIGURATION REQUEST IN NATURAL LANGUAGE:\n"
+                f"<configuration_request>\n{natural_request}\n</configuration_request>\n\n"
+                f"Synthesize the complete, secure configuration change and emit ConfigurationIntent JSON."
+            )
+            completion = self.client.beta.chat.completions.parse(
+                model=self.model_name,
+                messages=[
+                    {"role": "system", "content": HARDENED_CONFIG_SYSTEM_PROMPT},
+                    {"role": "user", "content": user_content},
+                ],
+                response_format=ConfigurationIntent,
+                temperature=0,
+            )
+            parsed = completion.choices[0].message.parsed
+            if not parsed:
+                raise AIAnalysisError("OpenAI returned an empty parsed response.")
+            return parsed
+        except Exception as e:
+            logger.error(f"[bold red]OpenAI Brain configuration synthesis failed:[/bold red] {e}")
+            raise AIAnalysisError(f"OpenAI configuration synthesis error: {e}") from e
+

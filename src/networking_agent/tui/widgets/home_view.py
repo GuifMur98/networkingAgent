@@ -17,10 +17,11 @@ class HomeDashboard(Widget):
     """Main welcome screen with ASCII banner, operational summary, and action cards."""
 
     BINDINGS = [
-        Binding("1", "nav_diagnostic", "Diagnostico", show=False),
-        Binding("2", "nav_inventory", "Inventario", show=False),
-        Binding("3", "nav_vault", "Ajustes IA", show=False),
-        Binding("4", "nav_audit", "Auditoria", show=False),
+        Binding("1", "nav_troubleshooting", "Troubleshooting", show=False),
+        Binding("2", "nav_configuration", "Configuración", show=False),
+        Binding("3", "nav_automation", "Automatización", show=False),
+        Binding("4", "nav_inventory", "Inventario", show=False),
+        Binding("5", "nav_audit", "Auditoría", show=False),
     ]
 
     class NavigateToTab(Message):
@@ -41,25 +42,30 @@ class HomeDashboard(Widget):
             # Operational Status Card
             yield Static(id="home-status-card")
 
-            # 4 Action Cards in Grid
+            # 5 Action Cards in Responsive Grid
             with Grid(id="home-action-grid"):
                 yield Button(
-                    "1. DIAGNOSTICO Y REMEDIACION\nSondeo de interfaces y analisis de telemetria",
-                    id="btn-nav-diagnostic",
-                    classes="home-nav-card card-diagnostic",
+                    "1. TROUBLESHOOTING\nDiagnóstico autónomo y análisis de causa raíz en lenguaje natural",
+                    id="btn-nav-troubleshooting",
+                    classes="home-nav-card card-troubleshooting",
                 )
                 yield Button(
-                    "2. INVENTARIO DE EQUIPOS\nCatalogo de routers, alta y prueba de conectividad",
+                    "2. CONFIGURACION\nAprovisionamiento de BGP, OSPF, VLAN, ACLs en lenguaje natural",
+                    id="btn-nav-configuration",
+                    classes="home-nav-card card-configuration",
+                )
+                yield Button(
+                    "3. AUTOMATIZACION\nEditor de plantillas, validación sintáctica y despliegue masivo",
+                    id="btn-nav-automation",
+                    classes="home-nav-card card-automation",
+                )
+                yield Button(
+                    "4. INVENTARIO DE EQUIPOS\nCatálogo de routers, alta y prueba de conectividad",
                     id="btn-nav-inventory",
                     classes="home-nav-card card-inventory",
                 )
                 yield Button(
-                    "3. AJUSTES DE IA Y BOVEDA\nConfiguracion de proveedor, modelo y llaves de API",
-                    id="btn-nav-vault",
-                    classes="home-nav-card card-settings",
-                )
-                yield Button(
-                    "4. REGISTRO DE AUDITORIA\nBitacora inmutable de cambios y rollbacks",
+                    "5. REGISTRO DE AUDITORIA\nBitácora inmutable de cambios, eventos y rollbacks",
                     id="btn-nav-audit",
                     classes="home-nav-card card-audit",
                 )
@@ -76,7 +82,7 @@ class HomeDashboard(Widget):
         auto_approve = db.get_setting("auto_approve") == "true" or settings.auto_approve
 
         hitl_status = (
-            "[bold green]ACTIVO (Confirmacion Requerida)[/bold green]"
+            "[bold green]ACTIVO (Confirmación Requerida)[/bold green]"
             if not auto_approve
             else "[bold red]DESACTIVADO (Auto-Approve ON)[/bold red]"
         )
@@ -86,7 +92,7 @@ class HomeDashboard(Widget):
             f"  * Proveedor de IA: [bold white]{provider.upper()}[/] ([dim]{model}[/])\n"
             f"  * Dispositivos Registrados: [bold white]{len(devices)} equipos en SQLite[/]\n"
             f"  * Control Humano (HitL): {hitl_status}\n\n"
-            f"[dim]Seleccione una opcion [1-4], use los atajos de teclado o presione [Q] para salir.[/dim]"
+            f"[dim]Seleccione una opción [1-5], use atajos de teclado o presione [S] para Ajustes de IA.[/dim]"
         )
 
         panel = Panel(
@@ -98,23 +104,28 @@ class HomeDashboard(Widget):
         card.update(panel)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == "btn-nav-diagnostic":
-            self.post_message(self.NavigateToTab("pane-diagnostic"))
+        if event.button.id in ["btn-nav-troubleshooting", "btn-nav-diagnostic"]:
+            self.post_message(self.NavigateToTab("pane-troubleshooting"))
+        elif event.button.id == "btn-nav-configuration":
+            self.post_message(self.NavigateToTab("pane-configuration"))
+        elif event.button.id == "btn-nav-automation":
+            self.post_message(self.NavigateToTab("pane-automation"))
         elif event.button.id == "btn-nav-inventory":
             self.post_message(self.NavigateToTab("pane-inventory"))
-        elif event.button.id == "btn-nav-vault":
-            self.post_message(self.OpenSettingsRequested())
         elif event.button.id == "btn-nav-audit":
             self.post_message(self.NavigateToTab("pane-audit"))
 
-    def action_nav_diagnostic(self) -> None:
-        self.post_message(self.NavigateToTab("pane-diagnostic"))
+    def action_nav_troubleshooting(self) -> None:
+        self.post_message(self.NavigateToTab("pane-troubleshooting"))
+
+    def action_nav_configuration(self) -> None:
+        self.post_message(self.NavigateToTab("pane-configuration"))
+
+    def action_nav_automation(self) -> None:
+        self.post_message(self.NavigateToTab("pane-automation"))
 
     def action_nav_inventory(self) -> None:
         self.post_message(self.NavigateToTab("pane-inventory"))
-
-    def action_nav_vault(self) -> None:
-        self.post_message(self.OpenSettingsRequested())
 
     def action_nav_audit(self) -> None:
         self.post_message(self.NavigateToTab("pane-audit"))

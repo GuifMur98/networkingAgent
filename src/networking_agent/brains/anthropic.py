@@ -3,10 +3,11 @@
 import os
 from typing import Optional
 
-from networking_agent.brains.base import HARDENED_SYSTEM_PROMPT, LLMBrain
+from networking_agent.brains.base import HARDENED_CONFIG_SYSTEM_PROMPT, HARDENED_SYSTEM_PROMPT, LLMBrain
 from networking_agent.core.config import settings
 from networking_agent.core.exceptions import AIAnalysisError
 from networking_agent.core.logging import logger
+from networking_agent.models.config_intent import ConfigurationIntent
 from networking_agent.models.intent import NetworkIntent
 
 
@@ -48,3 +49,40 @@ class AnthropicBrain(LLMBrain):
         except Exception as e:
             logger.error(f"[bold red]Anthropic Brain analysis failed:[/bold red] {e}")
             raise AIAnalysisError(f"Anthropic inference error: {e}") from e
+
+    def synthesize_configuration(
+        self,
+        device_host: str,
+        vendor_family: str,
+        natural_request: str,
+        protocol_hint: Optional[str] = None,
+    ) -> ConfigurationIntent:
+        try:
+            hint_str = f" [Protocol Focus: {protocol_hint}]" if protocol_hint else ""
+            user_content = (
+                f"TARGET DEVICE: Host {device_host} | Operating System: {vendor_family}{hint_str}\n"
+                f"OPERATOR CONFIGURATION REQUEST IN NATURAL LANGUAGE:\n"
+                f"<configuration_request>\n{natural_request}\n</configuration_request>\n\n"
+                f"Synthesize the complete, secure configuration change and emit ConfigurationIntent JSON."
+            )
+            response = self.client.messages.create(
+                model=self.model_name,
+                max_tokens=2048,
+                temperature=0,
+                system=HARDENED_CONFIG_SYSTEM_PROMPT,
+                tools=[
+                    {
+                        "name": "emit_configuration_intent",
+                        "description": "Emits the structured network configuration intent and commands.",
+                        "input_schema": ConfigurationIntent.model_json_schema(),
+                    }
+                ],
+                tool_choice={"type": "tool", "name": "emit_configuration_intent"},
+                messages=[{"role": "user", "content": user_content}],
+            )
+            tool_input = response.content[0].input
+            return ConfigurationIntent.model_validate(tool_input)
+        except Exception as e:
+            logger.error(f"[bold red]Anthropic Brain configuration synthesis failed:[/bold red] {e}")
+            raise AIAnalysisError(f"Anthropic configuration synthesis error: {e}") from e
+

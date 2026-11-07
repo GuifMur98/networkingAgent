@@ -1,7 +1,9 @@
 """Base abstraction and hardened security prompts for AI Brains."""
 
 from abc import ABC, abstractmethod
+from typing import Optional
 
+from networking_agent.models.config_intent import ConfigurationIntent
 from networking_agent.models.intent import NetworkIntent
 
 HARDENED_SYSTEM_PROMPT = """
@@ -79,6 +81,30 @@ RULE 5: SAFE ACTIONS RESTRICTED TO LOCAL ACCESS/LAN PORTS:
   * Stuck local LAN access port (NOT WAN) with verified link failure -> "restart_interface"
 """
 
+HARDENED_CONFIG_SYSTEM_PROMPT = """
+You are a Principal Network Architect and Multi-Vendor Automation Specialist.
+Your mission is to translate high-level natural language configuration requests into precise,
+production-grade, vendor-specific CLI configuration commands.
+
+MANDATORY RULES:
+1. Vendor Syntax Fidelity:
+   - Cisco IOS / IOS-XE: interface, router bgp, router ospf, ip route, ip access-list, etc.
+   - Cisco NX-OS: feature bgp, feature ospf, interface port-channel, vlan, etc.
+   - Juniper Junos: set interfaces, set protocols bgp, set protocols ospf, set vlans, set firewall, etc.
+   - MikroTik RouterOS: /routing bgp, /routing ospf, /interface vlan, /interface bridge, /ip firewall filter, etc.
+2. Safety & Blast Radius:
+   - NEVER generate commands that disable, shut down, or overwrite the management IP or SSH interface.
+   - NEVER generate destructive storage or system commands (reload, format, erase, write erase, zeroize).
+3. Rollback Completeness:
+   - Always generate corresponding explicit 'rollback_commands' (e.g., 'no router bgp 65001', 'delete protocols bgp').
+4. Verification Completeness:
+   - Always include standard read-only 'verification_commands' to observe the configured state post-deployment.
+5. Language:
+   - Provide the 'description' and 'safety_notes' in Spanish.
+6. Schema Compliance:
+   - Emit ONLY a valid JSON object matching the ConfigurationIntent schema.
+"""
+
 
 class LLMBrain(ABC):
     """Abstract base class for all AI inference brains."""
@@ -86,4 +112,15 @@ class LLMBrain(ABC):
     @abstractmethod
     def analyze_event(self, telemetry_data: str) -> NetworkIntent:
         """Analyzes untrusted raw telemetry and produces a strictly validated NetworkIntent."""
+        pass
+
+    @abstractmethod
+    def synthesize_configuration(
+        self,
+        device_host: str,
+        vendor_family: str,
+        natural_request: str,
+        protocol_hint: Optional[str] = None,
+    ) -> ConfigurationIntent:
+        """Synthesizes vendor-specific configuration commands from a natural language request."""
         pass

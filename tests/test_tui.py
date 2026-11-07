@@ -219,14 +219,18 @@ async def test_tui_home_dashboard_navigation_and_banner():
         assert home.query_one(BannerWidget) is not None
 
         # Click on diagnostic card
-        btn_diag = home.query_one("#btn-nav-diagnostic")
+        btn_diag = (
+            home.query_one("#btn-nav-troubleshooting")
+            if home.query("#btn-nav-troubleshooting")
+            else home.query_one("#btn-nav-diagnostic")
+        )
         btn_diag.press()
         await pilot.pause()
 
         # Active tab must now be diagnostic
         from textual.widgets import TabbedContent
         tabs = pilot.app.query_one(TabbedContent)
-        assert tabs.active == "pane-diagnostic"
+        assert tabs.active in ("pane-troubleshooting", "pane-diagnostic")
 
         # Click back button inside diagnostic view
         workspace = pilot.app.query_one(DiagnosticWorkspace)
@@ -238,7 +242,7 @@ async def test_tui_home_dashboard_navigation_and_banner():
         assert tabs.active == "pane-home"
 
         # Test direct keyboard shortcut 2 and return with h
-        await pilot.press("2")
+        await pilot.press("4")
         await pilot.pause()
         assert tabs.active == "pane-inventory"
 

@@ -3,10 +3,11 @@
 import os
 from typing import Optional
 
-from networking_agent.brains.base import HARDENED_SYSTEM_PROMPT, LLMBrain
+from networking_agent.brains.base import HARDENED_CONFIG_SYSTEM_PROMPT, HARDENED_SYSTEM_PROMPT, LLMBrain
 from networking_agent.core.config import settings
 from networking_agent.core.exceptions import AIAnalysisError
 from networking_agent.core.logging import logger
+from networking_agent.models.config_intent import ConfigurationIntent
 from networking_agent.models.intent import NetworkIntent
 
 
@@ -58,3 +59,37 @@ class GeminiBrain(LLMBrain):
         except Exception as e:
             logger.error(f"[bold red]Gemini Brain analysis failed:[/bold red] {e}")
             raise AIAnalysisError(f"Gemini inference error: {e}") from e
+
+    def synthesize_configuration(
+        self,
+        device_host: str,
+        vendor_family: str,
+        natural_request: str,
+        protocol_hint: Optional[str] = None,
+    ) -> ConfigurationIntent:
+        try:
+            from google.genai import types
+
+            hint_str = f" [Protocol Focus: {protocol_hint}]" if protocol_hint else ""
+            user_content = (
+                f"TARGET DEVICE: Host {device_host} | Operating System: {vendor_family}{hint_str}\n"
+                f"OPERATOR CONFIGURATION REQUEST IN NATURAL LANGUAGE:\n"
+                f"<configuration_request>\n{natural_request}\n</configuration_request>\n\n"
+                f"Synthesize the complete, secure configuration change and emit ConfigurationIntent JSON."
+            )
+
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=user_content,
+                config=types.GenerateContentConfig(
+                    system_instruction=HARDENED_CONFIG_SYSTEM_PROMPT,
+                    response_mime_type="application/json",
+                    response_schema=ConfigurationIntent,
+                    temperature=0.0,
+                ),
+            )
+            return ConfigurationIntent.model_validate_json(response.text)
+        except Exception as e:
+            logger.error(f"[bold red]Gemini Brain configuration synthesis failed:[/bold red] {e}")
+            raise AIAnalysisError(f"Gemini configuration synthesis error: {e}") from e
+

@@ -1,7 +1,7 @@
 """Main reactive Textual TUI application for NetworkingAgent."""
 
 import threading
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from textual import work
 from textual.app import App, ComposeResult
@@ -13,6 +13,7 @@ from networking_agent.core.config import settings
 from networking_agent.core.crypto import vault
 from networking_agent.core.db import db
 from networking_agent.engine.agent import NetworkAssistantAgent
+from networking_agent.engine.automation import BatchDeployer
 from networking_agent.engine.observer import AgentObserver
 from networking_agent.models.device import DeviceInventory
 from networking_agent.models.intent import NetworkIntent
@@ -21,17 +22,19 @@ from networking_agent.tui.modals.device_modal import DeviceModal
 from networking_agent.tui.modals.hitl_modal import HitLModal
 from networking_agent.tui.modals.vault_modal import VaultModal
 from networking_agent.tui.widgets.audit_table import AuditTableWidget
+from networking_agent.tui.widgets.automation_view import AutomationView
+from networking_agent.tui.widgets.configuration_view import ConfigurationView
 from networking_agent.tui.widgets.device_inventory_view import DeviceInventoryView
 from networking_agent.tui.widgets.device_sidebar import DeviceSidebar
-from networking_agent.tui.widgets.diagnostic_view import DiagnosticWorkspace
 from networking_agent.tui.widgets.home_view import HomeDashboard
 from networking_agent.tui.widgets.status_bar import TopStatusBar
+from networking_agent.tui.widgets.troubleshooting_view import TroubleshootingWorkspace
 
 
 class TextualAgentObserver(AgentObserver):
     """Bridge observer connecting NetworkAssistantAgent events to Textual widgets."""
 
-    def __init__(self, app: "NetworkingAgentTUIApp", workspace: DiagnosticWorkspace):
+    def __init__(self, app: "NetworkingAgentTUIApp", workspace: Optional[Any] = None):
         self.app = app
         self.workspace = workspace
 
@@ -43,28 +46,35 @@ class TextualAgentObserver(AgentObserver):
             self.app.call_from_thread(callback, *args, **kwargs)
 
     def on_status_update(self, message: str) -> None:
-        self._safe_call(self.workspace.append_log, f"[*] {message}")
+        if self.workspace and hasattr(self.workspace, "append_log"):
+            self._safe_call(self.workspace.append_log, f"[*] {message}")
 
     def on_diagnosis_ready(self, intent: NetworkIntent) -> None:
-        self._safe_call(self.workspace.display_diagnosis, intent)
-        self._safe_call(
-            self.workspace.append_log,
-            f"[bold cyan]AI Diagnosis:[/] {intent.diagnosis} (Severity: {intent.severity})",
-        )
+        if self.workspace and hasattr(self.workspace, "display_diagnosis"):
+            self._safe_call(self.workspace.display_diagnosis, intent)
+        if self.workspace and hasattr(self.workspace, "append_log"):
+            self._safe_call(
+                self.workspace.append_log,
+                f"[bold cyan]AI Diagnosis:[/] {intent.diagnosis} (Severity: {intent.severity})",
+            )
 
     def on_no_op_required(self, device: DeviceInventory, intent: NetworkIntent) -> None:
-        self._safe_call(self.workspace.display_no_op, device, intent)
-        self._safe_call(
-            self.workspace.append_log,
-            "[bold green][OK] Evaluacion diagnostica finalizada: No se requieren cambios en la configuracion.[/]",
-        )
+        if self.workspace and hasattr(self.workspace, "display_no_op"):
+            self._safe_call(self.workspace.display_no_op, device, intent)
+        if self.workspace and hasattr(self.workspace, "append_log"):
+            self._safe_call(
+                self.workspace.append_log,
+                "[bold green][OK] Evaluacion diagnostica finalizada: No se requieren cambios en la configuracion.[/]",
+            )
 
     def on_guardrail_blocked(self, intent: NetworkIntent, reason: str) -> None:
-        self._safe_call(self.workspace.display_guardrail_block, intent, reason)
-        self._safe_call(
-            self.workspace.append_log,
-            f"[bold red][ALERTA] Guardarail activado: {reason}[/]",
-        )
+        if self.workspace and hasattr(self.workspace, "display_guardrail_block"):
+            self._safe_call(self.workspace.display_guardrail_block, intent, reason)
+        if self.workspace and hasattr(self.workspace, "append_log"):
+            self._safe_call(
+                self.workspace.append_log,
+                f"[bold red][ALERTA] Guardarail activado: {reason}[/]",
+            )
 
     def on_hitl_approval_required(
         self,
@@ -98,11 +108,13 @@ class TextualAgentObserver(AgentObserver):
         return approval_result[0]
 
     def on_execution_progress(self, step: str) -> None:
-        self._safe_call(self.workspace.append_log, step)
+        if self.workspace and hasattr(self.workspace, "append_log"):
+            self._safe_call(self.workspace.append_log, step)
 
     def on_completion(self, success: bool, message: str) -> None:
         color = "bold green" if success else "bold red"
-        self._safe_call(self.workspace.append_log, f"[{color}]{message}[/{color}]")
+        if self.workspace and hasattr(self.workspace, "append_log"):
+            self._safe_call(self.workspace.append_log, f"[{color}]{message}[/{color}]")
 
 
 class NetworkingAgentTUIApp(App):
@@ -118,10 +130,11 @@ class NetworkingAgentTUIApp(App):
         Binding("d", "add_device", "Nuevo Equipo", show=True),
         Binding("s", "open_settings", "Ajustes IA", show=True),
         Binding("r", "refresh_all", "Recargar", show=True),
-        Binding("1", "nav_tab_1", "Diagnostico", show=False),
-        Binding("2", "nav_tab_2", "Inventario", show=False),
-        Binding("3", "open_settings", "Ajustes IA", show=False),
-        Binding("4", "nav_tab_4", "Auditoria", show=False),
+        Binding("1", "nav_tab_1", "Troubleshooting", show=False),
+        Binding("2", "nav_tab_2", "Configuración", show=False),
+        Binding("3", "nav_tab_3", "Automatización", show=False),
+        Binding("4", "nav_tab_4", "Inventario", show=False),
+        Binding("5", "nav_tab_5", "Auditoría", show=False),
     ]
 
     def __init__(self, *args, **kwargs):
@@ -129,7 +142,6 @@ class NetworkingAgentTUIApp(App):
         self.is_busy = False
 
     def compose(self) -> ComposeResult:
-        # Load configuration preferences
         ai_provider = db.get_setting("ai_provider") or settings.ai_provider or "ollama"
         ai_model = db.get_setting("ai_model") or settings.ai_model or "qwen2.5-coder:7b"
         auto_approve = db.get_setting("auto_approve") == "true" or settings.auto_approve
@@ -146,10 +158,18 @@ class NetworkingAgentTUIApp(App):
             with TabPane("Inicio", id="pane-home"):
                 yield HomeDashboard(id="home-widget")
 
-            with TabPane("Diagnostico", id="pane-diagnostic"):
+            with TabPane("Troubleshooting", id="pane-troubleshooting"):
                 with Horizontal(id="main-split"):
                     yield DeviceSidebar(id="device-sidebar")
-                    yield DiagnosticWorkspace(id="diagnostic-workspace")
+                    yield TroubleshootingWorkspace(id="troubleshooting-workspace")
+
+            with TabPane("Configuracion", id="pane-configuration"):
+                with Horizontal(id="config-split"):
+                    yield DeviceSidebar(id="device-sidebar-config")
+                    yield ConfigurationView(id="configuration-workspace")
+
+            with TabPane("Automatizacion", id="pane-automation"):
+                yield AutomationView(id="automation-workspace")
 
             with TabPane("Inventario", id="pane-inventory"):
                 yield DeviceInventoryView(id="inventory-widget")
@@ -160,9 +180,9 @@ class NetworkingAgentTUIApp(App):
         yield Footer()
 
     def on_mount(self) -> None:
-        """Trigger initial device sync."""
-        sidebar = self.query_one(DeviceSidebar)
-        sidebar.reload_devices()
+        """Trigger initial device sync across sidebars and views."""
+        for sidebar in self.query(DeviceSidebar):
+            sidebar.reload_devices()
 
     def action_go_home(self) -> None:
         """Switch navigation back to the Home Dashboard."""
@@ -172,21 +192,41 @@ class NetworkingAgentTUIApp(App):
         try:
             home = self.query_one(HomeDashboard)
             home.update_status_card()
-            self.query_one("#btn-nav-diagnostic").focus()
+            self.query_one("#btn-nav-troubleshooting").focus()
         except Exception:
             pass
 
     def action_nav_tab_1(self) -> None:
-        """Switch navigation to Diagnostic workspace."""
+        """Switch navigation to Troubleshooting workspace."""
         self.set_focus(None)
         tabs = self.query_one("#main-tabs", TabbedContent)
-        tabs.active = "pane-diagnostic"
+        tabs.active = "pane-troubleshooting"
         try:
             self.query_one("#symptom-input").focus()
         except Exception:
             pass
 
     def action_nav_tab_2(self) -> None:
+        """Switch navigation to Configuration view."""
+        self.set_focus(None)
+        tabs = self.query_one("#main-tabs", TabbedContent)
+        tabs.active = "pane-configuration"
+        try:
+            self.query_one("#config-request-input").focus()
+        except Exception:
+            pass
+
+    def action_nav_tab_3(self) -> None:
+        """Switch navigation to Automation view."""
+        self.set_focus(None)
+        tabs = self.query_one("#main-tabs", TabbedContent)
+        tabs.active = "pane-automation"
+        try:
+            self.query_one("#automation-editor").focus()
+        except Exception:
+            pass
+
+    def action_nav_tab_4(self) -> None:
         """Switch navigation to Device Inventory view."""
         self.set_focus(None)
         tabs = self.query_one("#main-tabs", TabbedContent)
@@ -196,7 +236,7 @@ class NetworkingAgentTUIApp(App):
         except Exception:
             pass
 
-    def action_nav_tab_4(self) -> None:
+    def action_nav_tab_5(self) -> None:
         """Switch navigation to Audit trail view."""
         self.set_focus(None)
         tabs = self.query_one("#main-tabs", TabbedContent)
@@ -209,13 +249,23 @@ class NetworkingAgentTUIApp(App):
     def on_home_dashboard_navigate_to_tab(self, event: HomeDashboard.NavigateToTab) -> None:
         self.set_focus(None)
         tabs = self.query_one("#main-tabs", TabbedContent)
-        tabs.active = event.tab_id
+        # Handle alias
+        target_tab = (
+            "pane-troubleshooting"
+            if event.tab_id in ["pane-diagnostic", "pane-troubleshooting"]
+            else event.tab_id
+        )
+        tabs.active = target_tab
         try:
-            if event.tab_id == "pane-diagnostic":
+            if target_tab == "pane-troubleshooting":
                 self.query_one("#symptom-input").focus()
-            elif event.tab_id == "pane-inventory":
+            elif target_tab == "pane-configuration":
+                self.query_one("#config-request-input").focus()
+            elif target_tab == "pane-automation":
+                self.query_one("#automation-editor").focus()
+            elif target_tab == "pane-inventory":
                 self.query_one("#inventory-data-table").focus()
-            elif event.tab_id == "pane-audit":
+            elif target_tab == "pane-audit":
                 self.query_one("#audit-data-table").focus()
         except Exception:
             pass
@@ -223,8 +273,18 @@ class NetworkingAgentTUIApp(App):
     def on_home_dashboard_open_settings_requested(self, event: HomeDashboard.OpenSettingsRequested) -> None:
         self.action_open_settings()
 
-    def on_diagnostic_workspace_return_home_requested(
-        self, event: DiagnosticWorkspace.ReturnHomeRequested
+    def on_troubleshooting_workspace_return_home_requested(
+        self, event: TroubleshootingWorkspace.ReturnHomeRequested
+    ) -> None:
+        self.action_go_home()
+
+    def on_configuration_view_return_home_requested(
+        self, event: ConfigurationView.ReturnHomeRequested
+    ) -> None:
+        self.action_go_home()
+
+    def on_automation_view_return_home_requested(
+        self, event: AutomationView.ReturnHomeRequested
     ) -> None:
         self.action_go_home()
 
@@ -241,8 +301,13 @@ class NetworkingAgentTUIApp(App):
     def on_device_inventory_view_device_deleted(
         self, event: DeviceInventoryView.DeviceDeleted
     ) -> None:
-        sidebar = self.query_one(DeviceSidebar)
-        sidebar.reload_devices()
+        for sidebar in self.query(DeviceSidebar):
+            sidebar.reload_devices()
+        try:
+            auto_view = self.query_one(AutomationView)
+            auto_view.reload_devices()
+        except Exception:
+            pass
         status_bar = self.query_one(TopStatusBar)
         status_bar.update_device_count(len(db.list_devices()))
 
@@ -252,9 +317,17 @@ class NetworkingAgentTUIApp(App):
         self.action_go_home()
 
     def on_device_sidebar_device_selected(self, event: DeviceSidebar.DeviceSelected) -> None:
-        """Route selected device to workspace."""
-        workspace = self.query_one(DiagnosticWorkspace)
-        workspace.set_device(event.device)
+        """Route selected device to relevant workspaces."""
+        try:
+            tb_workspace = self.query_one("#troubleshooting-workspace", TroubleshootingWorkspace)
+            tb_workspace.set_device(event.device)
+        except Exception:
+            pass
+        try:
+            cfg_workspace = self.query_one("#configuration-workspace", ConfigurationView)
+            cfg_workspace.set_device(event.device)
+        except Exception:
+            pass
 
     def on_device_sidebar_add_device_requested(self, event: DeviceSidebar.AddDeviceRequested) -> None:
         self.action_add_device()
@@ -263,11 +336,16 @@ class NetworkingAgentTUIApp(App):
         """Display DeviceModal to register a new host."""
         def on_device_added(device: Optional[DeviceInventory]) -> None:
             if device:
-                sidebar = self.query_one(DeviceSidebar)
-                sidebar.reload_devices()
+                for sidebar in self.query(DeviceSidebar):
+                    sidebar.reload_devices()
                 try:
                     inv_view = self.query_one(DeviceInventoryView)
                     inv_view.reload_devices()
+                except Exception:
+                    pass
+                try:
+                    auto_view = self.query_one(AutomationView)
+                    auto_view.reload_devices()
                 except Exception:
                     pass
                 status_bar = self.query_one(TopStatusBar)
@@ -292,11 +370,16 @@ class NetworkingAgentTUIApp(App):
 
     def action_refresh_all(self) -> None:
         """Reload inventory and audit log."""
-        sidebar = self.query_one(DeviceSidebar)
-        sidebar.reload_devices()
+        for sidebar in self.query(DeviceSidebar):
+            sidebar.reload_devices()
         try:
             inv_view = self.query_one(DeviceInventoryView)
             inv_view.reload_devices()
+        except Exception:
+            pass
+        try:
+            auto_view = self.query_one(AutomationView)
+            auto_view.reload_devices()
         except Exception:
             pass
         audit_widget = self.query_one(AuditTableWidget)
@@ -304,35 +387,28 @@ class NetworkingAgentTUIApp(App):
         status_bar = self.query_one(TopStatusBar)
         status_bar.update_device_count(len(db.list_devices()))
 
-    def on_diagnostic_workspace_run_diagnosis_requested(
-        self, event: DiagnosticWorkspace.RunDiagnosisRequested
+    # --- Background Workers ---
+
+    def on_troubleshooting_workspace_run_diagnosis_requested(
+        self, event: TroubleshootingWorkspace.RunDiagnosisRequested
     ) -> None:
-        """Handler for running the diagnostic closed-loop workflow."""
         if self.is_busy:
-            workspace = self.query_one(DiagnosticWorkspace)
+            workspace = self.query_one("#troubleshooting-workspace", TroubleshootingWorkspace)
             workspace.append_log("[bold yellow]Aviso: Una operación de red ya está en ejecución.[/]")
             return
-
-        self._execute_remediation_worker(
-            device=event.device,
-            symptom=event.symptom,
-            mode=event.mode,
-        )
+        self._execute_troubleshooting_worker(device=event.device, symptom=event.symptom, mode=event.mode)
 
     @work(thread=True)
-    def _execute_remediation_worker(self, device: DeviceInventory, symptom: str, mode: str) -> None:
-        """Runs the long-running Netmiko SSH and AI inference in a background thread."""
+    def _execute_troubleshooting_worker(self, device: DeviceInventory, symptom: str, mode: str) -> None:
         self.is_busy = True
-        workspace = self.query_one(DiagnosticWorkspace)
-        workspace.append_log(f"[bold cyan][>] Iniciando analisis [{mode}] en {device.host}...[/]")
+        workspace = self.query_one("#troubleshooting-workspace", TroubleshootingWorkspace)
+        workspace.append_log(f"[bold cyan][>] Iniciando troubleshooting en {device.host}...[/]")
 
         try:
-            # Load active configuration
             provider = db.get_setting("ai_provider") or settings.ai_provider or "ollama"
             model = db.get_setting("ai_model") or settings.ai_model
             auto_approve = db.get_setting("auto_approve") == "true" or settings.auto_approve
 
-            # Decrypt Gemini key if configured in SQLite
             encrypted_key = db.get_setting("gemini_api_key")
             if encrypted_key:
                 decrypted_key = vault.decrypt(encrypted_key)
@@ -348,22 +424,94 @@ class NetworkingAgentTUIApp(App):
                 observer=observer,
             )
 
-            telemetry = TelemetryEvent(raw_text=symptom, source_host=device.host)
-            agent.process_telemetry(device=device, telemetry=telemetry, mode=mode)
-
+            if mode == "PROACTIVE":
+                agent.execute_troubleshooting(device=device, symptom=symptom)
+            else:
+                telemetry = TelemetryEvent(raw_text=symptom, source_host=device.host)
+                agent.process_telemetry(device=device, telemetry=telemetry, mode=mode)
         except Exception as e:
-            self.call_from_thread(workspace.append_log, f"[bold red]Error fatal durante la remediación: {e}[/]")
+            self.call_from_thread(workspace.append_log, f"[bold red]Error fatal en troubleshooting: {e}[/]")
         finally:
             self.is_busy = False
-            # Refresh audit log table
-            def refresh_audit():
-                try:
-                    audit = self.query_one(AuditTableWidget)
-                    audit.reload_audit_data()
-                except Exception:
-                    pass
+            self.call_from_thread(self._refresh_audit)
 
-            self.call_from_thread(refresh_audit)
+    def on_configuration_view_run_configuration_requested(
+        self, event: ConfigurationView.RunConfigurationRequested
+    ) -> None:
+        if self.is_busy:
+            workspace = self.query_one("#configuration-workspace", ConfigurationView)
+            workspace.append_log("[bold yellow]Aviso: Una operación de red ya está en ejecución.[/]")
+            return
+        self._execute_configuration_worker(
+            device=event.device, natural_request=event.natural_request, protocol_hint=event.protocol_hint
+        )
+
+    @work(thread=True)
+    def _execute_configuration_worker(
+        self, device: DeviceInventory, natural_request: str, protocol_hint: Optional[str]
+    ) -> None:
+        self.is_busy = True
+        workspace = self.query_one("#configuration-workspace", ConfigurationView)
+        workspace.append_log(f"[bold cyan][>] Sintetizando configuración para {device.host}...[/]")
+
+        try:
+            provider = db.get_setting("ai_provider") or settings.ai_provider or "ollama"
+            model = db.get_setting("ai_model") or settings.ai_model
+            auto_approve = db.get_setting("auto_approve") == "true" or settings.auto_approve
+
+            observer = TextualAgentObserver(app=self, workspace=workspace)
+            agent = NetworkAssistantAgent(
+                ai_provider=provider,
+                ai_model=model,
+                auto_approve=auto_approve,
+                observer=observer,
+            )
+
+            intent = agent.execute_configuration(
+                device=device, natural_request=natural_request, protocol_hint=protocol_hint
+            )
+            if intent:
+                self.call_from_thread(workspace.display_plan, intent)
+        except Exception as e:
+            self.call_from_thread(workspace.append_log, f"[bold red]Error durante configuración: {e}[/]")
+        finally:
+            self.is_busy = False
+            self.call_from_thread(self._refresh_audit)
+
+    def on_automation_view_run_batch_deployment_requested(
+        self, event: AutomationView.RunBatchDeploymentRequested
+    ) -> None:
+        if self.is_busy:
+            workspace = self.query_one("#automation-workspace", AutomationView)
+            workspace.append_log("[bold yellow]Aviso: Una operación de red ya está en ejecución.[/]")
+            return
+        self._execute_batch_deployment_worker(
+            devices=event.devices, script_content=event.script_content, vendor_family=event.vendor_family
+        )
+
+    @work(thread=True)
+    def _execute_batch_deployment_worker(
+        self, devices: List[DeviceInventory], script_content: str, vendor_family: str
+    ) -> None:
+        self.is_busy = True
+        workspace = self.query_one("#automation-workspace", AutomationView)
+        workspace.append_log(f"[bold cyan][>] Iniciando despliegue en lote sobre {len(devices)} equipos...[/]")
+
+        try:
+            deployer = BatchDeployer(observer=workspace)
+            deployer.deploy_to_devices(devices=devices, raw_script=script_content, vendor_family=vendor_family)
+        except Exception as e:
+            self.call_from_thread(workspace.append_log, f"[bold red]Error en lote: {e}[/]")
+        finally:
+            self.is_busy = False
+            self.call_from_thread(self._refresh_audit)
+
+    def _refresh_audit(self) -> None:
+        try:
+            audit = self.query_one(AuditTableWidget)
+            audit.reload_audit_data()
+        except Exception:
+            pass
 
 
 def run_tui() -> None:

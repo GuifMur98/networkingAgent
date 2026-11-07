@@ -172,6 +172,67 @@ class NetworkOSDriver(ABC):
             logger.error(f"[bold red]{msg}[/bold red]")
             raise DeviceConnectionError(msg) from e
 
+    def get_protocol_verification_commands(self, protocol_type: str) -> List[str]:
+        """Returns standard verification commands for a given protocol for this vendor."""
+        proto = protocol_type.lower()
+        if "bgp" in proto and hasattr(self, "_bgp_diag_commands"):
+            return self._bgp_diag_commands()
+        elif "ospf" in proto and hasattr(self, "_ospf_diag_commands"):
+            return self._ospf_diag_commands()
+        elif "vlan" in proto and hasattr(self, "_vlan_diag_commands"):
+            return self._vlan_diag_commands()
+        elif "stp" in proto and hasattr(self, "_stp_diag_commands"):
+            return self._stp_diag_commands()
+        elif "channel" in proto and hasattr(self, "_channel_diag_commands"):
+            return self._channel_diag_commands()
+        elif "acl" in proto and hasattr(self, "_acl_diag_commands"):
+            return self._acl_diag_commands()
+        return self.get_health_commands()[:3]
+
+    def get_troubleshooting_commands(self, symptom: str) -> List[str]:
+        """Dynamically selects diagnostic commands based on natural language symptom keywords."""
+        symptom_lower = symptom.lower()
+        cmds = list(self.get_health_commands())
+
+        if any(w in symptom_lower for w in ["bgp", "peer", "neighbor", "as", "asn"]):
+            if hasattr(self, "_bgp_diag_commands"):
+                cmds.extend(self._bgp_diag_commands())
+        if any(w in symptom_lower for w in ["ospf", "area", "exstart", "init", "2-way", "dr", "bdr"]):
+            if hasattr(self, "_ospf_diag_commands"):
+                cmds.extend(self._ospf_diag_commands())
+        if any(w in symptom_lower for w in ["vlan", "trunk", "access", "802.1q", "svi", "native"]):
+            if hasattr(self, "_vlan_diag_commands"):
+                cmds.extend(self._vlan_diag_commands())
+        if any(w in symptom_lower for w in ["stp", "spanning", "loop", "bpdu", "blocking", "root"]):
+            if hasattr(self, "_stp_diag_commands"):
+                cmds.extend(self._stp_diag_commands())
+        if any(w in symptom_lower for w in ["channel", "lacp", "bundle", "etherchannel", "port-channel"]):
+            if hasattr(self, "_channel_diag_commands"):
+                cmds.extend(self._channel_diag_commands())
+        if any(w in symptom_lower for w in ["acl", "filter", "block", "permit", "deny", "access-list"]):
+            if hasattr(self, "_acl_diag_commands"):
+                cmds.extend(self._acl_diag_commands())
+
+        return list(dict.fromkeys(cmds))
+
+    def run_diagnostic_interrogation(self, commands: Optional[List[str]] = None) -> Dict[str, str]:
+        """Executes non-intrusive diagnostic commands against the live device."""
+        cmds = commands or self.get_health_commands()
+        results: Dict[str, str] = {}
+        try:
+            conn = self.get_connection()
+            for cmd in cmds:
+                try:
+                    out = conn.send_command(cmd, read_timeout=15)
+                    results[cmd] = out
+                except Exception as e:
+                    results[cmd] = f"<Error ejecutando {cmd}: {e}>"
+            return results
+        except Exception as e:
+            msg = f"Failed to run diagnostic interrogation on {self.device.host}: {e}"
+            logger.error(f"[bold red]{msg}[/bold red]")
+            raise DeviceConnectionError(msg) from e
+
     @abstractmethod
     def rollback(self, backup_reference: Optional[Path] = None) -> bool:
         """Executes a rollback to restore the device to its previous state."""

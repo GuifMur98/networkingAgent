@@ -75,3 +75,22 @@ class CiscoIOSDriver(NetworkOSDriver):
         except Exception as e:
             logger.error(f"[bold red]Rollback failed on {self.device.host}:[/bold red] {e}")
             return False
+
+    def _bgp_diag_commands(self) -> List[str]:
+        return ["show ip bgp summary", "show ip bgp neighbors"]
+
+    def _ospf_diag_commands(self) -> List[str]:
+        return ["show ip ospf neighbor", "show ip ospf interface brief"]
+
+    def _vlan_diag_commands(self) -> List[str]:
+        return ["show vlan brief", "show interfaces trunk"]
+
+    def _stp_diag_commands(self) -> List[str]:
+        return ["show spanning-tree summary", "show spanning-tree detail"]
+
+    def _channel_diag_commands(self) -> List[str]:
+        return ["show etherchannel summary", "show etherchannel port-channel"]
+
+    def _acl_diag_commands(self) -> List[str]:
+        return ["show access-lists"]
+

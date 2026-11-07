@@ -95,3 +95,22 @@ class MikrotikRouterOSDriver(NetworkOSDriver):
         except Exception as e:
             logger.error(f"[bold red]MikroTik rollback failed:[/bold red] {e}")
             return False
+
+    def _bgp_diag_commands(self) -> List[str]:
+        return ["/routing bgp session print", "/routing bgp connection print"]
+
+    def _ospf_diag_commands(self) -> List[str]:
+        return ["/routing ospf neighbor print", "/routing ospf interface print"]
+
+    def _vlan_diag_commands(self) -> List[str]:
+        return ["/interface vlan print", "/interface bridge vlan print"]
+
+    def _stp_diag_commands(self) -> List[str]:
+        return ["/interface bridge print", "/interface bridge port print"]
+
+    def _channel_diag_commands(self) -> List[str]:
+        return ["/interface bonding print"]
+
+    def _acl_diag_commands(self) -> List[str]:
+        return ["/ip firewall filter print"]
+

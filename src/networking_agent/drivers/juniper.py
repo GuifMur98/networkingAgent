@@ -84,3 +84,22 @@ class JuniperJunosDriver(NetworkOSDriver):
         except Exception as e:
             logger.error(f"[bold red]Junos rollback failed:[/bold red] {e}")
             return False
+
+    def _bgp_diag_commands(self) -> List[str]:
+        return ["show bgp summary", "show bgp neighbor"]
+
+    def _ospf_diag_commands(self) -> List[str]:
+        return ["show ospf neighbor", "show ospf interface"]
+
+    def _vlan_diag_commands(self) -> List[str]:
+        return ["show vlans", "show ethernet-switching interfaces"]
+
+    def _stp_diag_commands(self) -> List[str]:
+        return ["show spanning-tree bridge", "show spanning-tree interface"]
+
+    def _channel_diag_commands(self) -> List[str]:
+        return ["show interfaces terse ae*", "show lacp interfaces"]
+
+    def _acl_diag_commands(self) -> List[str]:
+        return ["show firewall"]
+

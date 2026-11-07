@@ -14,7 +14,9 @@ from networking_agent.drivers.factory import get_os_driver
 from networking_agent.engine.observer import AgentObserver, ConsoleAgentObserver
 from networking_agent.engine.verification import VerificationEngine
 from networking_agent.guardrails.blast_radius import BlastRadiusGuard
+from networking_agent.guardrails.syntax_validator import ConfigSyntaxValidator
 from networking_agent.guardrails.validator import CommandValidator
+from networking_agent.models.config_intent import ConfigurationIntent
 from networking_agent.models.device import DeviceInventory
 from networking_agent.models.intent import NetworkIntent
 from networking_agent.models.telemetry import TelemetryEvent
@@ -242,3 +244,174 @@ class NetworkAssistantAgent:
             return True
         finally:
             driver.disconnect()
+
+    def execute_troubleshooting(self, device: DeviceInventory, symptom: str) -> bool:
+        """Executes full autonomous troubleshooting interrogation with live telemetry correlation."""
+        driver = get_os_driver(device)
+        try:
+            self.observer.on_status_update(f"[*] Recopilando telemetría especializada para: '{symptom}'...")
+            diag_cmds = driver.get_troubleshooting_commands(symptom)
+            telemetry_data = driver.run_diagnostic_interrogation(diag_cmds)
+            telemetry_str = "\n".join([f"=== {cmd} ===\n{out}" for cmd, out in telemetry_data.items()])
+
+            wan_interfaces = driver.discover_active_management_interfaces(telemetry_data)
+            analysis_payload = (
+                f"DEVICE ARCHITECTURE CONTEXT:\n"
+                f"Host: {device.host} | OS: {device.device_type}\n"
+                f"Protected WAN / Gateway / Management Interfaces: {', '.join(wan_interfaces)}\n\n"
+                f"OPERATIONAL SYMPTOM REPORTED BY OPERATOR IN NATURAL LANGUAGE:\n{symptom}\n\n"
+                f"LIVE DEVICE DIAGNOSTIC TELEMETRY:\n{telemetry_str}"
+            )
+
+            # 1. AI Diagnosis -> Neutral Intent
+            intent: NetworkIntent = self.brain.analyze_event(analysis_payload)
+            self.observer.on_diagnosis_ready(intent)
+
+            # 2. Check if configuration change is needed
+            if not intent.requires_config_change or intent.action == "none":
+                self.observer.on_no_op_required(device, intent)
+                audit_logger.record_event(
+                    event_type="TROUBLESHOOTING_RESOLVED",
+                    device_host=device.host,
+                    action=intent.action,
+                    commands=[],
+                    approved=True,
+                    extra={"diagnosis": intent.diagnosis, "symptom": symptom},
+                )
+                return True
+
+            # 3. Guardrails & Blast Radius
+            try:
+                self.blast_guard.verify_intent(intent, wan_interfaces=wan_interfaces)
+            except BlastRadiusViolationError as e:
+                self.observer.on_guardrail_blocked(intent, str(e))
+                return False
+
+            candidate_cli = driver.build_candidate_commands(intent)
+            candidate_cli = CommandValidator.validate_command_list(candidate_cli)
+
+            # 4. HitL Approval Gate
+            rollback_info = driver.get_rollback_description()
+            approved = self.auto_approve or self.observer.on_hitl_approval_required(
+                device=device,
+                intent=intent,
+                candidate_cli=candidate_cli,
+                rollback_info=rollback_info,
+            )
+
+            if not approved:
+                self.observer.on_status_update("[yellow]Remediación rechazada por el operador.[/yellow]")
+                return False
+
+            # 5. Transactional Execution
+            backup_file = driver.backup_running_config()
+            driver.execute_commands(candidate_cli)
+            self.observer.on_completion(True, "Remediación aplicada exitosamente.")
+            audit_logger.record_event(
+                event_type="TROUBLESHOOTING_REMEDIATED",
+                device_host=device.host,
+                action=intent.action,
+                commands=candidate_cli,
+                approved=True,
+                extra={"backup": str(backup_file)},
+            )
+            return True
+        except Exception as e:
+            self.observer.on_completion(False, f"Error durante troubleshooting en {device.host}: {e}")
+            return False
+        finally:
+            driver.disconnect()
+
+    def execute_configuration(
+        self,
+        device: DeviceInventory,
+        natural_request: str,
+        protocol_hint: Optional[str] = None,
+    ) -> Optional[ConfigurationIntent]:
+        """Synthesizes, validates, and deploys declarative multi-protocol network configurations."""
+        self.observer.on_status_update(
+            f"[CONFIG] Generando configuración multi-protocolo para {device.host} ({device.device_type})..."
+        )
+        # 1. Synthesize configuration via AI Brain
+        config_intent: ConfigurationIntent = self.brain.synthesize_configuration(
+            device_host=device.host,
+            vendor_family=device.device_type,
+            natural_request=natural_request,
+            protocol_hint=protocol_hint,
+        )
+
+        # 2. Syntax & Command Validation
+        validation = ConfigSyntaxValidator.validate_script(
+            "\n".join(config_intent.candidate_commands),
+            vendor_family=device.device_type,
+        )
+        if not validation.is_valid:
+            error_msg = " | ".join(validation.errors)
+            self.observer.on_status_update(f"[bold red][!] Configuración rechazada por sintaxis: {error_msg}[/]")
+            return None
+
+        # 3. HitL Approval Gate
+        driver = get_os_driver(device)
+        rollback_info = driver.get_rollback_description()
+
+        fake_intent = NetworkIntent(
+            diagnosis=config_intent.description,
+            severity="MEDIUM",
+            requires_config_change=True,
+            action="none",
+        )
+        approved = self.auto_approve or self.observer.on_hitl_approval_required(
+            device=device,
+            intent=fake_intent,
+            candidate_cli=config_intent.candidate_commands,
+            rollback_info=rollback_info,
+        )
+
+        if not approved:
+            self.observer.on_status_update("[yellow]Operación de configuración cancelada por el operador.[/yellow]")
+            return None
+
+        # 4. Transactional Execution
+        try:
+            self.observer.on_execution_progress(f"[*] Tomando snapshot de respaldo de {device.host}...")
+            backup_file = driver.backup_running_config()
+            self.observer.on_execution_progress(f"[green][OK] Snapshot guardado en {backup_file.name}[/green]")
+
+            self.observer.on_execution_progress(f"[*] Inyectando {len(config_intent.candidate_commands)} comandos...")
+            driver.execute_commands(config_intent.candidate_commands)
+            self.observer.on_execution_progress("[green][OK] Comandos aplicados exitosamente.[/green]")
+
+            # Run verification commands if present
+            if config_intent.verification_commands:
+                self.observer.on_execution_progress("[*] Ejecutando comandos de verificación post-despliegue...")
+                for v_cmd in config_intent.verification_commands:
+                    try:
+                        v_out = driver.get_connection().send_command(v_cmd)
+                        self.observer.on_execution_progress(f"[dim]=== {v_cmd} ===\n{v_out[:300]}[/dim]")
+                    except Exception:
+                        pass
+
+            audit_logger.record_event(
+                event_type="CONFIGURATION_APPLIED",
+                device_host=device.host,
+                action=config_intent.protocol_type.value,
+                commands=config_intent.candidate_commands,
+                approved=True,
+                extra={"description": config_intent.description, "backup": str(backup_file)},
+            )
+            self.observer.on_completion(True, "Configuración completada y verificada exitosamente.")
+            return config_intent
+        except Exception as e:
+            self.observer.on_completion(False, f"Fallo durante la configuración de {device.host}: {e}")
+            audit_logger.record_event(
+                event_type="CONFIGURATION_FAILED",
+                device_host=device.host,
+                action=config_intent.protocol_type.value,
+                commands=config_intent.candidate_commands,
+                approved=True,
+                extra={"error": str(e)},
+            )
+            return None
+        finally:
+            driver.disconnect()
+

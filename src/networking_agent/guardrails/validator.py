@@ -16,7 +16,7 @@ FORBIDDEN_COMMAND_PATTERNS = [
     re.compile(r"\b(request\s+system\s+(?:zeroize|reboot|halt))\b", re.IGNORECASE),
 
     # Backdoor user creation, credential tampering, and authentication manipulation
-    re.compile(r"\b(username|password|secret|radius|tacacs)\b", re.IGNORECASE),
+    re.compile(r"(?<!service\s)\b(username|password|secret|radius|tacacs)\b", re.IGNORECASE),
     re.compile(r"\b(?:user\s+(?:add|set|remove)|login\s+user)\b", re.IGNORECASE),
 
     # Remote payload download, proxies, network flooding, persistence and underlying shell access
@@ -66,3 +66,9 @@ class CommandValidator:
             validated.append(cmd_clean)
 
         return validated
+
+    @classmethod
+    def validate(cls, command: str) -> str:
+        """Validates a single candidate command against forbidden patterns."""
+        res = cls.validate_command_list([command])
+        return res[0] if res else command
