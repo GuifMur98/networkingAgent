@@ -1,23 +1,27 @@
 """Typography banner widget for the NetworkingAgent Textual TUI."""
 
-from rich import box
 from rich.align import Align
-from rich.panel import Panel
 from rich.text import Text
 from textual.widgets import Static
 
 BANNER_TAGLINE = "Enterprise Autonomous Closed-Loop Network Engineering Agent"
 
-# 3D block gradient title: NETWORKING AGENT
-L1 = "█▄   █ █▀▀▀█ ▀█▀ █     █ ▄▀▀▀▄ █▀▀▀█ █ ▄▀ █ █▄   █ ▄▀▀▀█   ▄▀▀▀▄ ▄▀▀▀█ █▀▀▀█ █▄   █ ▀█▀"
-L2 = "██▄  █ █▄▄▄    █  █  █  █ █   █ █▄▄▄▀ █▀▄  █ ██▄  █ █ ▄▄▄   █▀▀▀█ █ ▄▄▄ █▄▄▄   ██▄  █  █ "
-L3 = "█ ▀▄ █ █       █  █ █ █ █ █   █ █   █ █  █ █ █ ▀▄ █ █   █   █   █ █   █ █      █ ▀▄ █  █ "
-L4 = "█   ██ █▄▄▄█   █   █   █   ▀▄▄▀ █   █ █   █ █ █   ██  ▀▄▄▀   █   █  ▀▄▄▀ █▄▄▄█ █   ██  █ "
+# Solid 81-column block font: NETWORKING AGENT
+R1 = "█   █ ████ █████ █   █ ████ ████ █  █ ███ █   █ ████   ████ ████ ████ █   █ █████"
+R2 = "██  █ █      █   █ █ █ █  █ █  █ █ █   █  ██  █ █      █  █ █    █    ██  █   █  "
+R3 = "█ █ █ ███    █   █ █ █ █  █ ████ ██    █  █ █ █ █ ██   ████ █ ██ ███  █ █ █   █  "
+R4 = "█  ██ █      █   ██ ██ █  █ █ █  █ █   █  █  ██ █  █   █  █ █  █ █    █  ██   █  "
+R5 = "█   █ ████   █   █   █ ████ █  █ █  █ ███ █   █ ████   █  █ ████ ████ █   █   █  "
 
-DOT_L1 = "  . " + (" " * 94) + "o  \n"
-DOT_L2 = "  - " + (" " * 94) + "-  \n"
-DOT_L3 = "  o " + (" " * 94) + ".  \n"
-GLYPH_MID = "(-; , _" + (" " * 86) + "_ , ;-)\n"
+W = 96
+DASH_TOP = "─" * 89  # 96 - 7
+DASH_BOT = "─" * 88  # 96 - 8
+SPACES_DOT = " " * 86
+SPACES_MID = " " * 82
+
+VENDORS_PREFIX = "Cisco | Juniper | MikroTik  --  "
+VENDORS_OLLAMA = "Ollama"
+VENDORS_SUFFIX = " | Gemini | OpenAI | Claude"
 
 
 class BannerWidget(Static):
@@ -31,37 +35,56 @@ class BannerWidget(Static):
     }
     """
 
-    def render(self) -> Panel:
+    def render(self) -> Align:
         t = Text()
 
-        # Top sci-fi glyphs line
-        t.append(DOT_L1, style="dim #00e5ff")
-        t.append(DOT_L2, style="dim #00e5ff")
-        t.append(DOT_L3, style="dim #00e5ff")
+        # 1. Top border: [--──────...──────[--]
+        t.append("[--", style="bold #00e5ff")
+        t.append(DASH_TOP, style="dim #00e5ff")
+        t.append("[--]\n", style="bold #00e5ff")
 
-        # 3D block gradient title
-        t.append(f"          {L1}          \n", style="bold #a5f3fc")
-        t.append(f"          {L2}           \n", style="bold #38bdf8")
-        t.append(f"          {L3}           \n", style="bold #0284c7")
-        t.append(f"          {L4}           \n", style="bold #0369a1")
+        # 2-4. Antenna / radar dot lines (. - o ... o - .)
+        dot_pairs = [(". ", "o  "), ("- ", "-  "), ("o ", ".  ")]
+        for d_l, d_r in dot_pairs:
+            t.append("│  ", style="dim #00e5ff")
+            t.append(d_l, style="dim #00e5ff")
+            t.append(SPACES_DOT)
+            t.append(d_r, style="dim #00e5ff")
+            t.append("│\n", style="dim #00e5ff")
 
-        # Side brackets decoration line
-        t.append(GLYPH_MID, style="dim #00e5ff")
+        # 5-9. Solid block 5-row gradient title (centered in 96 cols: 6 spaces left, 7 right)
+        rows = [
+            (R1, "bold #a5f3fc"),
+            (R2, "bold #67e8f9"),
+            (R3, "bold #38bdf8"),
+            (R4, "bold #0284c7"),
+            (R5, "bold #0369a1"),
+        ]
+        for r, style in rows:
+            t.append("│      ", style="dim #00e5ff")
+            t.append(r, style=style)
+            t.append("       │\n", style="dim #00e5ff")
 
-        # Tagline and vendor subtitles
-        t.append(f"                   {BANNER_TAGLINE}                        \n", style="bold #f59e0b")
-        t.append("                   Cisco | Juniper | MikroTik  --  ", style="#94a3b8")
-        t.append("Ollama", style="bold #38bdf8")
-        t.append(" | Gemini | OpenAI | Claude                    \n", style="#64748b")
+        # 10. Mid glyphs: (-; , _ ... _ , ;-)
+        t.append("(-; , _", style="dim #00e5ff")
+        t.append(SPACES_MID)
+        t.append("_ , ;-)\n", style="dim #00e5ff")
 
-        box_title = "[bold #00e5ff][--" + (" " * 70) + "[--]][/]"
-        box_sub = "[bold #00e5ff][--]" + (" " * 70) + "[--]][/]"
+        # 11. Tagline: Enterprise Autonomous Closed-Loop Network Engineering Agent
+        t.append("│" + (" " * 17), style="dim #00e5ff")
+        t.append(BANNER_TAGLINE, style="bold #f59e0b")
+        t.append((" " * 18) + "│\n", style="dim #00e5ff")
 
-        return Panel(
-            Align.center(t),
-            title=box_title,
-            subtitle=box_sub,
-            border_style="#00b4d8",
-            box=box.ROUNDED,
-            padding=(0, 0),
-        )
+        # 12. Multi-vendor & Brain list
+        t.append("│" + (" " * 14), style="dim #00e5ff")
+        t.append(VENDORS_PREFIX, style="#94a3b8")
+        t.append(VENDORS_OLLAMA, style="bold #38bdf8")
+        t.append(VENDORS_SUFFIX, style="#64748b")
+        t.append((" " * 15) + "│\n", style="dim #00e5ff")
+
+        # 13. Bottom border: [--]──────...──────[--]
+        t.append("[--]", style="bold #00e5ff")
+        t.append(DASH_BOT, style="dim #00e5ff")
+        t.append("[--]\n", style="bold #00e5ff")
+
+        return Align.center(t)
