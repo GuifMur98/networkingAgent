@@ -2,6 +2,7 @@
 
 from typing import Optional
 
+from rich import box
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
@@ -145,7 +146,7 @@ class TroubleshootingWorkspace(Widget):
     def display_diagnosis(self, intent: NetworkIntent) -> None:
         """Renders the AI root-cause analysis panel."""
         panel_widget = self.query_one("#diagnosis-result", Static)
-        table = Table(title="DICTAMEN TECNICO Y ANALISIS DE CAUSA RAIZ", show_header=True, header_style="bold cyan")
+        table = Table(title="DICTAMEN TECNICO Y ANALISIS DE CAUSA RAIZ", show_header=True, header_style="bold #00e5ff")
         table.add_column("Propiedad", style="dim", width=22)
         table.add_column("Detalle Diagnosticado", style="bold white")
 
@@ -164,7 +165,7 @@ class TroubleshootingWorkspace(Widget):
         if intent.bgp_neighbor_ip:
             table.add_row("IP Vecino BGP", intent.bgp_neighbor_ip)
 
-        panel_widget.update(Panel(table, border_style="cyan"))
+        panel_widget.update(Panel(table, border_style="#00e5ff", box=box.ROUNDED))
 
     def display_no_op(self, device: DeviceInventory, intent: NetworkIntent) -> None:
         panel_widget = self.query_one("#diagnosis-result", Static)
@@ -175,7 +176,7 @@ class TroubleshootingWorkspace(Widget):
             f"[bold]Explicación:[/bold] {intent.diagnosis}\n"
             f"[dim]No se aplicaron cambios. La investigación ha sido registrada en auditoría.[/dim]"
         )
-        panel_widget.update(Panel(content, title="DICTAMEN TECNICO", border_style="green"))
+        panel_widget.update(Panel(content, title="DICTAMEN TECNICO", border_style="#4ade80", box=box.ROUNDED))
 
     def display_guardrail_block(self, intent: NetworkIntent, reason: str) -> None:
         panel_widget = self.query_one("#diagnosis-result", Static)
@@ -185,7 +186,8 @@ class TroubleshootingWorkspace(Widget):
             f"[bold]Motivo:[/bold] [yellow]{reason}[/yellow]\n"
             f"[dim]No se inyectaron comandos en el dispositivo.[/dim]"
         )
-        panel_widget.update(Panel(content, title="SEGURIDAD Y PROTECCION ACTIVA", border_style="red"))
+        panel = Panel(content, title="SEGURIDAD Y PROTECCION ACTIVA", border_style="#f43f5e", box=box.ROUNDED)
+        panel_widget.update(panel)
 
 
 # Backward-compatibility alias

@@ -2,6 +2,7 @@
 
 from typing import Optional
 
+from rich import box
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
@@ -164,7 +165,7 @@ class ConfigurationView(Widget):
         table = Table(
             title=f"PLAN DE CONFIGURACION: {config_intent.protocol_type.value.upper()}",
             show_header=True,
-            header_style="bold green",
+            header_style="bold #00e5ff",
         )
         table.add_column("Sección", style="dim", width=22)
         table.add_column("Detalle / Comandos CLI", style="bold white")
@@ -184,4 +185,4 @@ class ConfigurationView(Widget):
             table.add_row("Plan de Rollback Inverso", f"[yellow]{rb_preview}[/yellow]")
 
         table.add_row("Notas de Seguridad", config_intent.safety_notes)
-        panel_widget.update(Panel(table, border_style="green"))
+        panel_widget.update(Panel(table, border_style="#00e5ff", box=box.ROUNDED))

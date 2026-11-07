@@ -1,8 +1,8 @@
-/* NetworkingAgent Minimalist Enterprise Theme */
+/* NetworkingAgent Cyberpunk Mission Control Enterprise Theme */
 
 Screen {
-    background: #0d1117;
-    color: #e6edf3;
+    background: #080c14;
+    color: #e2e8f0;
 }
 
 /* Tabbed Navigation Layout */
@@ -36,7 +36,7 @@ TabPane {
     dock: top;
     height: 1;
     background: #080c14;
-    color: #e6edf3;
+    color: #e2e8f0;
     border: none;
     padding: 0 1;
 }
@@ -93,7 +93,7 @@ TabPane {
     width: 100%;
     padding: 0 1;
     overflow-y: auto;
-    background: #0a0e17;
+    background: #080c14;
 }
 
 #home-banner {
@@ -131,10 +131,15 @@ TabPane {
     width: 1fr;
     height: 100%;
     min-height: 7;
-    background: transparent;
+    background: #080c14;
     border: none;
     padding: 0;
     margin: 0 1;
+}
+
+.home-nav-card:hover {
+    background: #0f172a;
+    border: none;
 }
 
 .home-nav-card:focus {
@@ -142,57 +147,191 @@ TabPane {
     border: none;
 }
 
-.home-nav-card:hover {
+/* Global Interactive Button Styles with Cyberpunk Hover & Focus */
+Button {
     background: #0d1527;
-    border: none;
+    color: #e2e8f0;
+    border: round #00b4d8;
+    height: 3;
+    text-style: bold;
+}
+
+Button:hover {
+    background: #1e293b;
+    color: #ffffff;
+    border: round #00e5ff;
+    text-style: bold;
+}
+
+Button:focus {
+    background: #0f172a;
+    color: #00e5ff;
+    border: round #00e5ff;
+    text-style: bold;
+}
+
+/* Primary Action Buttons */
+Button.-primary,
+#btn-run-remediation,
+#btn-run-config,
+#btn-deploy-batch,
+#btn-save-vault,
+#btn-hitl-approve,
+#btn-inv-add,
+#btn-refresh-audit,
+#btn-add-device {
+    background: #0369a1;
+    color: #ffffff;
+    border: round #00e5ff;
+    text-style: bold;
+}
+
+Button.-primary:hover,
+#btn-run-remediation:hover,
+#btn-run-config:hover,
+#btn-deploy-batch:hover,
+#btn-save-vault:hover,
+#btn-hitl-approve:hover,
+#btn-inv-add:hover,
+#btn-refresh-audit:hover,
+#btn-add-device:hover {
+    background: #0284c7;
+    color: #ffffff;
+    border: round #38bdf8;
+    text-style: bold;
+}
+
+Button.-primary:focus,
+#btn-run-remediation:focus,
+#btn-run-config:focus,
+#btn-deploy-batch:focus,
+#btn-save-vault:focus,
+#btn-hitl-approve:focus,
+#btn-inv-add:focus,
+#btn-refresh-audit:focus,
+#btn-add-device:focus {
+    background: #0ea5e9;
+    border: round #a5f3fc;
+}
+
+/* Error / Destructive Action Buttons */
+Button.-error,
+#btn-hitl-reject,
+#btn-inv-delete {
+    background: #881337;
+    color: #ffe4e6;
+    border: round #f43f5e;
+    text-style: bold;
+}
+
+Button.-error:hover,
+#btn-hitl-reject:hover,
+#btn-inv-delete:hover {
+    background: #be123c;
+    color: #ffffff;
+    border: round #fb7185;
+    text-style: bold;
+}
+
+Button.-error:focus,
+#btn-hitl-reject:focus,
+#btn-inv-delete:focus {
+    background: #e11d48;
+    border: round #fda4af;
+}
+
+/* Secondary & Back Navigation Buttons */
+#btn-back-to-home,
+#btn-back-from-config,
+#btn-back-from-automation,
+#btn-back-from-inventory,
+#btn-back-from-audit,
+#btn-validate-script,
+#btn-inv-refresh,
+#btn-cancel {
+    background: #080c14;
+    color: #38bdf8;
+    border: round #00b4d8;
+    text-style: bold;
+}
+
+#btn-back-to-home:hover,
+#btn-back-from-config:hover,
+#btn-back-from-automation:hover,
+#btn-back-from-inventory:hover,
+#btn-back-from-audit:hover,
+#btn-validate-script:hover,
+#btn-inv-refresh:hover,
+#btn-cancel:hover {
+    background: #0f172a;
+    color: #00e5ff;
+    border: round #00e5ff;
+    text-style: bold;
+}
+
+#btn-back-to-home:focus,
+#btn-back-from-config:focus,
+#btn-back-from-automation:focus,
+#btn-back-from-inventory:focus,
+#btn-back-from-audit:focus,
+#btn-validate-script:focus,
+#btn-inv-refresh:focus,
+#btn-cancel:focus {
+    background: #1e293b;
+    border: round #38bdf8;
 }
 
 /* View Header Navigation Bars */
-#diagnostic-nav-bar, #config-nav-bar, #automation-top-bar, #inventory-top-bar, #audit-top-bar {
+#diagnostic-nav-bar,
+#config-nav-bar,
+#automation-top-bar,
+#inventory-top-bar,
+#audit-top-bar {
     height: 4;
     min-height: 4;
-    background: #161b22;
-    border-bottom: solid #30363d;
+    background: #080c14;
+    border-bottom: solid #00b4d8;
     padding: 0 1;
     margin-bottom: 1;
     align-vertical: middle;
 }
 
-#diagnostic-title, #config-title, #automation-title, #inventory-title, #lbl-audit-header {
+#diagnostic-title,
+#config-title,
+#automation-title,
+#inventory-title,
+#lbl-audit-header {
     width: 1fr;
     text-style: bold;
-    color: #38bdf8;
+    color: #00e5ff;
     content-align: left middle;
 }
 
-#btn-back-to-home, #btn-back-from-config, #btn-back-from-automation, #btn-back-from-inventory, #btn-back-from-audit {
+#btn-back-to-home,
+#btn-back-from-config,
+#btn-back-from-automation,
+#btn-back-from-inventory,
+#btn-back-from-audit {
     width: 24;
     height: 3;
-    background: #21262d;
-    color: #c9d1d9;
-    border: round #30363d;
     text-align: center;
     content-align: center middle;
 }
 
-#btn-back-to-home:hover, #btn-back-from-config:hover, #btn-back-from-automation:hover, #btn-back-from-inventory:hover, #btn-back-from-audit:hover {
-    background: #30363d;
-    color: #ffffff;
-    border: round #58a6ff;
-}
-
-/* Sidebar */
-#device-sidebar, #device-sidebar-config, .device-sidebar {
+/* Sidebar Styling */
+#device-sidebar,
+#device-sidebar-config,
+.device-sidebar {
     width: 32;
     height: 100%;
-    background: #161b22;
-    border-right: solid #30363d;
+    background: #080c14;
+    border-right: solid #00b4d8;
     padding: 1;
 }
 
 #sidebar-title {
     text-style: bold;
-    color: #38bdf8;
+    color: #00e5ff;
     margin-bottom: 1;
     text-align: center;
 }
@@ -207,63 +346,77 @@ TabPane {
     height: 3;
     padding: 0 1;
     margin-bottom: 1;
-    background: #21262d;
-    border-left: wide #484f58;
+    background: #0d1527;
+    border-left: wide #1e293b;
 }
 
 .device-item:hover {
-    background: #30363d;
-    border-left: wide #58a6ff;
+    background: #0f172a;
+    border-left: wide #00e5ff;
+    color: #ffffff;
 }
 
 .device-item.-selected {
-    background: #1c2b3e;
-    border-left: wide #388bfd;
-    color: #ffffff;
+    background: #1e293b;
+    border-left: wide #00e5ff;
+    color: #38bdf8;
     text-style: bold;
 }
 
 #btn-add-device {
     width: 100%;
     margin-top: 1;
-    background: #238636;
-    color: #ffffff;
-    text-style: bold;
-    border: round #2ea043;
 }
 
-/* Diagnostic View */
-#main-split, #config-split {
+/* Workspaces Layout */
+#main-split,
+#config-split {
     height: 100%;
     width: 100%;
 }
 
-#diagnostic-workspace, #troubleshooting-workspace, #configuration-workspace {
+#diagnostic-workspace,
+#troubleshooting-workspace,
+#configuration-workspace {
     height: 100%;
     width: 1fr;
     padding: 1;
+    background: #080c14;
 }
 
-#diagnostic-container {
+#diagnostic-container,
+#configuration-container,
+#automation-container,
+#inventory-container,
+#audit-container {
     height: 100%;
     width: 100%;
     overflow-y: auto;
+    background: #080c14;
+    padding: 1;
 }
 
+/* Section Panels & Target Cards */
 .section-panel {
-    background: #161b22;
-    border: round #30363d;
+    background: #0d1527;
+    border: round #00b4d8;
     padding: 0 1;
     margin-bottom: 1;
     align-vertical: middle;
 }
 
-#target-device-card {
+#target-device-card,
+#config-target-card {
     height: 3;
-    background: #161b22;
-    border-left: heavy #38bdf8;
+    background: #0d1527;
+    border-left: heavy #00e5ff;
+    border: round #1e293b;
     padding: 0 1;
     margin-bottom: 1;
+}
+
+#config-target-card {
+    border-left: heavy #4ade80;
 }
 
 #mode-selector-bar {
@@ -272,6 +425,20 @@ TabPane {
     padding: 0 1;
 }
 
+#lbl-mode,
+#lbl-config-proto,
+#lbl-quick-symptoms,
+#lbl-symptom,
+#lbl-config-prompt,
+#lbl-console,
+#lbl-config-console,
+#lbl-editor {
+    color: #38bdf8;
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+/* Radio Sets & Radio Buttons */
 #radio-mode {
     layout: horizontal;
     background: transparent;
@@ -280,8 +447,19 @@ TabPane {
 
 #radio-mode RadioButton {
     margin-right: 2;
+    color: #94a3b8;
 }
 
+#radio-mode RadioButton:hover {
+    color: #00e5ff;
+}
+
+#radio-mode RadioButton.-selected {
+    color: #38bdf8;
+    text-style: bold;
+}
+
+/* Symptom & Protocol Quick Chips */
 .symptom-chips {
     layout: horizontal;
     height: 3;
@@ -290,94 +468,283 @@ TabPane {
 
 .chip-btn {
     margin-right: 1;
-    background: #21262d;
-    color: #8b949e;
-    border: round #30363d;
+    background: #080c14;
+    color: #94a3b8;
+    border: round #1e293b;
     height: 3;
 }
 
 .chip-btn:hover {
-    background: #30363d;
-    color: #ffffff;
-    border: round #58a6ff;
-}
-
-#symptom-input {
-    height: 4;
-    background: #0d1117;
-    border: round #30363d;
-    color: #ffffff;
-    margin-bottom: 1;
-}
-
-#symptom-input:focus {
-    border: round #388bfd;
-}
-
-#btn-run-remediation {
-    width: 100%;
-    background: #238636;
-    color: #ffffff;
+    background: #0f172a;
+    color: #38bdf8;
+    border: round #00e5ff;
     text-style: bold;
-    height: 3;
+}
+
+.chip-btn:focus {
+    background: #1e293b;
+    color: #00e5ff;
+    border: round #00e5ff;
+}
+
+/* Text Inputs and TextAreas */
+Input,
+TextArea {
+    background: #080c14;
+    border: round #1e293b;
+    color: #e2e8f0;
+}
+
+Input:hover,
+TextArea:hover {
+    background: #0a0e1a;
+    border: round #00b4d8;
+}
+
+Input:focus,
+TextArea:focus {
+    background: #0f172a;
+    border: round #00e5ff;
+    color: #ffffff;
+}
+
+#symptom-input,
+#config-request-input {
+    height: 4;
     margin-bottom: 1;
-    border: round #2ea043;
 }
 
-#btn-run-remediation:hover {
-    background: #2ea043;
+#btn-run-remediation,
+#btn-run-config {
+    width: 100%;
+    margin-bottom: 1;
 }
 
-#diagnosis-result {
+/* Diagnosis & Plan Results */
+#diagnosis-result,
+#config-plan-result {
     height: auto;
     max-height: 14;
-    background: #161b22;
-    border: round #30363d;
+    background: #0d1527;
+    border: round #00b4d8;
     padding: 1;
     margin-bottom: 1;
 }
 
-#log-terminal {
+/* Terminals and Execution Logs */
+#log-terminal,
+#config-log-terminal,
+#automation-log-terminal {
     height: 1fr;
     min-height: 8;
-    background: #010409;
-    border: round #30363d;
-    color: #c9d1d9;
+    background: #050811;
+    border: round #00b4d8;
+    color: #a5f3fc;
     padding: 1;
 }
 
-/* Inventory & Audit Views */
-#inventory-widget, #audit-widget {
+/* Automation Suite */
+#automation-toolbar {
+    height: 5;
+    min-height: 5;
+    background: #0d1527;
+    border: round #00b4d8;
+    padding: 0 1;
+    align-vertical: middle;
+    margin-bottom: 1;
+}
+
+#automation-selectors {
+    width: 1fr;
+    height: 3;
+    align-vertical: middle;
+}
+
+#lbl-tpl-picker,
+#lbl-vendor-picker {
+    height: 3;
+    content-align: left middle;
+    margin-right: 1;
+    text-style: bold;
+    color: #00e5ff;
+}
+
+#lbl-vendor-picker {
+    margin-left: 2;
+}
+
+#select-template {
+    width: 36;
+    height: 3;
+}
+
+#select-vendor-auto {
+    width: 26;
+    height: 3;
+}
+
+#automation-actions {
+    width: auto;
+    height: 3;
+    align-vertical: middle;
+    align-horizontal: right;
+}
+
+#btn-validate-script {
+    width: 26;
+    height: 3;
+    margin-right: 1;
+    text-align: center;
+    content-align: center middle;
+}
+
+#btn-deploy-batch {
+    width: 24;
+    height: 3;
+    text-align: center;
+    content-align: center middle;
+}
+
+#automation-split {
+    height: 1fr;
+    min-height: 16;
+    width: 100%;
+    margin-bottom: 1;
+}
+
+#editor-col {
+    width: 65%;
+    height: 100%;
+    margin-right: 1;
+}
+
+#devices-and-status-col {
+    width: 35%;
+    height: 100%;
+}
+
+#automation-editor {
+    height: 1fr;
+    min-height: 12;
+    border: round #00b4d8;
+    background: #080c14;
+    color: #e2e8f0;
+}
+
+#automation-editor:focus {
+    border: round #00e5ff;
+}
+
+#device-selection-list {
+    height: 8;
+    border: round #00b4d8;
+    background: #080c14;
+    margin-bottom: 1;
+}
+
+#device-selection-list:hover {
+    border: round #00e5ff;
+}
+
+#syntax-status-card {
+    height: auto;
+    max-height: 8;
+    margin-bottom: 1;
+}
+
+/* DataTables for Inventory and Audit */
+#inventory-widget,
+#audit-widget {
     height: 1fr;
     width: 100%;
 }
 
-#inventory-container, #audit-container {
-    height: 100%;
-    width: 100%;
-    padding: 1;
-}
-
-#inventory-data-table, #audit-data-table {
+#inventory-data-table,
+#audit-data-table {
     height: 1fr;
     min-height: 10;
-    border: round #30363d;
+    border: round #00b4d8;
+    background: #080c14;
 }
 
-.inventory-actions, .audit-actions {
+DataTable > .datatable--header {
+    background: #0d1527;
+    color: #00e5ff;
+    text-style: bold;
+}
+
+DataTable > .datatable--cursor {
+    background: #1e293b;
+    color: #ffffff;
+    text-style: bold;
+}
+
+DataTable > .datatable--hover {
+    background: #0f172a;
+}
+
+.inventory-actions,
+.audit-actions {
     layout: horizontal;
     height: 3;
     margin-top: 1;
 }
 
-.inventory-actions Button, .audit-actions Button {
+.inventory-actions Button,
+.audit-actions Button {
     margin-right: 1;
-    border: round #30363d;
+}
+
+/* Select Dropdown & Overlays */
+Select {
+    background: #080c14;
+    border: round #1e293b;
+    color: #e2e8f0;
+}
+
+Select:hover {
+    border: round #00b4d8;
+}
+
+Select:focus {
+    border: round #00e5ff;
+}
+
+SelectCurrent {
+    background: #080c14;
+    color: #e2e8f0;
+    border: round #1e293b;
+}
+
+SelectCurrent:hover {
+    border: round #00e5ff;
+    color: #00e5ff;
+}
+
+SelectOverlay {
+    background: #080c14;
+    border: round #00e5ff;
+}
+
+OptionList {
+    background: #080c14;
+}
+
+OptionList > .option-list--option:hover {
+    background: #0f172a;
+    color: #00e5ff;
+    text-style: bold;
+}
+
+OptionList > .option-list--option.-selected {
+    background: #1e293b;
+    color: #38bdf8;
+    text-style: bold;
 }
 
 /* Modals */
 ModalScreen {
-    background: rgba(0, 0, 0, 0.70);
+    background: rgba(8, 12, 20, 0.85);
     align: center middle;
 }
 
@@ -385,8 +752,8 @@ ModalScreen {
     width: 78;
     height: auto;
     max-height: 90%;
-    background: #161b22;
-    border: round #388bfd;
+    background: #0a0e17;
+    border: round #00e5ff;
     padding: 1 2;
     overflow-y: auto;
 }
@@ -394,7 +761,7 @@ ModalScreen {
 .modal-title {
     text-style: bold;
     text-align: center;
-    color: #38bdf8;
+    color: #00e5ff;
     margin-bottom: 1;
 }
 
@@ -423,8 +790,8 @@ ModalScreen {
     width: 82;
     height: auto;
     max-height: 90%;
-    background: #161b22;
-    border: round #f85149;
+    background: #0a0e17;
+    border: round #f43f5e;
     padding: 1 2;
     overflow-y: auto;
 }
@@ -438,206 +805,28 @@ ModalScreen {
 
 .modal-actions Button {
     margin-left: 1;
-    border: round #30363d;
 }
 
 .provider-help-text {
-    color: #8b949e;
+    color: #38bdf8;
     text-style: italic;
     margin-top: 1;
     margin-bottom: 1;
 }
 
-/* Configuration View */
-#configuration-container {
-    height: 100%;
-    width: 100%;
-    padding: 1;
-    overflow-y: auto;
+Checkbox:hover {
+    color: #00e5ff;
 }
 
-#config-target-card {
-    height: 3;
-    background: #161b22;
-    border-left: heavy #3fb950;
-    padding: 0 1;
-    margin-bottom: 1;
+Checkbox.-on {
+    color: #4ade80;
 }
 
-#config-request-input {
-    height: 4;
-    background: #0d1117;
-    border: round #30363d;
-    color: #ffffff;
-    margin-bottom: 1;
-}
-
-#config-request-input:focus {
-    border: round #3fb950;
-}
-
-#btn-run-config {
-    width: 100%;
-    background: #238636;
-    color: #ffffff;
+.error-label {
+    color: #f43f5e;
     text-style: bold;
-    height: 3;
-    margin-bottom: 1;
-    border: round #2ea043;
+    margin-top: 1;
 }
-
-#btn-run-config:hover {
-    background: #2ea043;
-}
-
-#config-plan-result {
-    height: auto;
-    max-height: 14;
-    background: #161b22;
-    border: round #30363d;
-    padding: 1;
-    margin-bottom: 1;
-}
-
-#config-log-terminal {
-    height: 1fr;
-    min-height: 8;
-    background: #010409;
-    border: round #30363d;
-    color: #c9d1d9;
-    padding: 1;
-}
-
-/* Automation View */
-#automation-container {
-    height: 100%;
-    width: 100%;
-    padding: 1;
-    overflow-y: auto;
-}
-
-#automation-toolbar {
-    height: 5;
-    min-height: 5;
-    padding: 0 1;
-    align-vertical: middle;
-    margin-bottom: 1;
-}
-
-#automation-selectors {
-    width: 1fr;
-    height: 3;
-    align-vertical: middle;
-}
-
-#lbl-tpl-picker, #lbl-vendor-picker {
-    height: 3;
-    content-align: left middle;
-    margin-right: 1;
-    text-style: bold;
-    color: #e6edf3;
-}
-
-#lbl-vendor-picker {
-    margin-left: 2;
-}
-
-#select-template {
-    width: 36;
-    height: 3;
-}
-
-#select-vendor-auto {
-    width: 26;
-    height: 3;
-}
-
-#automation-actions {
-    width: auto;
-    height: 3;
-    align-vertical: middle;
-    align-horizontal: right;
-}
-
-#btn-validate-script {
-    width: 26;
-    height: 3;
-    background: #21262d;
-    color: #58a6ff;
-    border: round #388bfd;
-    margin-right: 1;
-    text-align: center;
-    content-align: center middle;
-}
-
-#btn-validate-script:hover {
-    background: #30363d;
-    color: #ffffff;
-}
-
-#btn-deploy-batch {
-    width: 24;
-    height: 3;
-    background: #238636;
-    color: #ffffff;
-    text-style: bold;
-    border: round #2ea043;
-    text-align: center;
-    content-align: center middle;
-}
-
-#btn-deploy-batch:hover {
-    background: #2ea043;
-}
-
-#automation-split {
-    height: 1fr;
-    min-height: 16;
-    width: 100%;
-    margin-bottom: 1;
-}
-
-#editor-col {
-    width: 65%;
-    height: 100%;
-    margin-right: 1;
-}
-
-#devices-and-status-col {
-    width: 35%;
-    height: 100%;
-}
-
-#automation-editor {
-    height: 1fr;
-    min-height: 12;
-    border: round #388bfd;
-    background: #0d1117;
-    color: #e6edf3;
-}
-
-#device-selection-list {
-    height: 8;
-    border: round #30363d;
-    background: #161b22;
-    margin-bottom: 1;
-}
-
-#syntax-status-card {
-    height: auto;
-    max-height: 8;
-    margin-bottom: 1;
-}
-
-#automation-log-terminal {
-    height: 1fr;
-    min-height: 8;
-    background: #010409;
-    border: round #30363d;
-    color: #c9d1d9;
-    padding: 1;
-}
-
 
 /* Sleek Cyberpunk Footer */
 Footer {

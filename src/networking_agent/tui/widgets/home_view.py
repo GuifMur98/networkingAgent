@@ -65,8 +65,8 @@ class HomeNavCard(Button):
         width = self.size.width if self.size.width > 20 else default_w
         inner_width = max(24, width - 4)
 
-        is_focused = self.has_focus
-        border_color = "#00e5ff" if is_focused else "#00b4d8"
+        is_active = self.has_focus or self.has_pseudo_class("hover")
+        border_color = "#00e5ff" if is_active else "#00b4d8"
 
         t = Text()
         # 1. Title line: [1] TROUBLESHOOTING

@@ -20,8 +20,8 @@ class DeviceSidebar(Widget):
     DeviceSidebar {
         width: 32;
         height: 100%;
-        background: #161b22;
-        border-right: solid #30363d;
+        background: #080c14;
+        border-right: solid #00b4d8;
         padding: 1;
     }
     """

@@ -2,6 +2,7 @@
 
 from typing import List
 
+from rich import box
 from rich.panel import Panel
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -62,7 +63,7 @@ class HitLModal(ModalScreen[bool]):
             panel = Panel(
                 info_text,
                 title="CONTROL DE SEGURIDAD OPERACIONAL",
-                border_style="red",
+                border_style="#f43f5e", box=box.ROUNDED,
             )
             yield Static(panel, id="hitl-panel")
 

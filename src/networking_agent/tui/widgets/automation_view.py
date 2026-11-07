@@ -2,6 +2,7 @@
 
 from typing import List
 
+from rich import box
 from rich.panel import Panel
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
@@ -153,7 +154,7 @@ class AutomationView(Widget):
                 f"  * Guardarraíles destructivos: 0 violaciones{warn_text}\n\n"
                 f"[dim]El script está listo para su inyección segura.[/dim]"
             )
-            panel = Panel(content, title="ANALISIS ESTATICO", border_style="green")
+            panel = Panel(content, title="ANALISIS ESTATICO", border_style="#4ade80", box=box.ROUNDED)
         else:
             err_text = "\n".join([f"  * {err}" for err in report.errors])
             content = (
@@ -161,7 +162,7 @@ class AutomationView(Widget):
                 f"{err_text}\n\n"
                 f"[dim]Corrija los errores en el editor antes de continuar.[/dim]"
             )
-            panel = Panel(content, title="BLOQUEO DE SEGURIDAD", border_style="red")
+            panel = Panel(content, title="BLOQUEO DE SEGURIDAD", border_style="#f43f5e", box=box.ROUNDED)
 
         status_card.update(panel)
 
