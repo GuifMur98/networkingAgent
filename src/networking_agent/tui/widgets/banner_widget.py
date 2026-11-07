@@ -13,19 +13,14 @@ R3 = "█ █ █ ███    █   █ █ █ █  █ ████ ██   
 R4 = "█  ██ █      █   ██ ██ █  █ █ █  █ █   █  █  ██ █  █   █  █ █  █ █    █  ██   █  "
 R5 = "█   █ ████   █   █   █ ████ █  █ █  █ ███ █   █ ████   █  █ ████ ████ █   █   █  "
 
-W = 96
-DASH_TOP = "─" * 89  # 96 - 7
-DASH_BOT = "─" * 88  # 96 - 8
-SPACES_DOT = " " * 86
-SPACES_MID = " " * 82
-
 VENDORS_PREFIX = "Cisco | Juniper | MikroTik  --  "
 VENDORS_OLLAMA = "Ollama"
 VENDORS_SUFFIX = " | Gemini | OpenAI | Claude"
+VENDORS_LEN = len(VENDORS_PREFIX) + len(VENDORS_OLLAMA) + len(VENDORS_SUFFIX)  # 65
 
 
 class BannerWidget(Static):
-    """Renders a futuristic Cyberpunk / Mission Control ASCII banner with sci-fi frame."""
+    """Renders a futuristic Cyberpunk / Mission Control ASCII banner with dynamic sci-fi frame."""
 
     DEFAULT_CSS = """
     BannerWidget {
@@ -35,24 +30,36 @@ class BannerWidget(Static):
     }
     """
 
-    def render(self) -> Align:
-        t = Text()
+    def on_resize(self) -> None:
+        self.refresh()
+
+    def render(self):
+        # Dynamically adapt frame width to match container / terminal width (min 96 cols)
+        w = max(96, self.size.width if self.size.width > 20 else 120)
+
+        t = Text(no_wrap=True)
 
         # 1. Top border: [--──────...──────[--]
         t.append("[--", style="bold #00e5ff")
-        t.append(DASH_TOP, style="dim #00e5ff")
-        t.append("[--]\n", style="bold #00e5ff")
+        t.append("─" * (w - 7), style="dim #00e5ff")
+        t.append("[--]", style="bold #00e5ff")
 
         # 2-4. Antenna / radar dot lines (. - o ... o - .)
-        dot_pairs = [(". ", "o  "), ("- ", "-  "), ("o ", ".  ")]
+        dot_pairs = [(".", "o"), ("-", "-"), ("o", ".")]
+        dot_spaces = " " * (w - 10)
         for d_l, d_r in dot_pairs:
+            t.append("\n")
             t.append("│  ", style="dim #00e5ff")
-            t.append(d_l, style="dim #00e5ff")
-            t.append(SPACES_DOT)
-            t.append(d_r, style="dim #00e5ff")
-            t.append("│\n", style="dim #00e5ff")
+            t.append(d_l + " ", style="dim #00e5ff")
+            t.append(dot_spaces)
+            t.append(" " + d_r, style="dim #00e5ff")
+            t.append("  │", style="dim #00e5ff")
 
-        # 5-9. Solid block 5-row gradient title (centered in 96 cols: 6 spaces left, 7 right)
+        # 5-9. Solid block 5-row gradient title (centered inside width w)
+        title_pad_total = w - 2 - 81
+        pad_left = " " * (title_pad_total // 2)
+        pad_right = " " * (title_pad_total - (title_pad_total // 2))
+
         rows = [
             (R1, "bold #a5f3fc"),
             (R2, "bold #67e8f9"),
@@ -61,30 +68,44 @@ class BannerWidget(Static):
             (R5, "bold #0369a1"),
         ]
         for r, style in rows:
-            t.append("│      ", style="dim #00e5ff")
+            t.append("\n")
+            t.append("│" + pad_left, style="dim #00e5ff")
             t.append(r, style=style)
-            t.append("       │\n", style="dim #00e5ff")
+            t.append(pad_right + "│", style="dim #00e5ff")
 
         # 10. Mid glyphs: (-; , _ ... _ , ;-)
+        mid_spaces = " " * (w - 14)
+        t.append("\n")
         t.append("(-; , _", style="dim #00e5ff")
-        t.append(SPACES_MID)
-        t.append("_ , ;-)\n", style="dim #00e5ff")
+        t.append(mid_spaces)
+        t.append("_ , ;-)", style="dim #00e5ff")
 
         # 11. Tagline: Enterprise Autonomous Closed-Loop Network Engineering Agent
-        t.append("│" + (" " * 17), style="dim #00e5ff")
+        tag_pad_total = w - 2 - len(BANNER_TAGLINE)
+        tag_left = " " * (tag_pad_total // 2)
+        tag_right = " " * (tag_pad_total - (tag_pad_total // 2))
+        t.append("\n")
+        t.append("│" + tag_left, style="dim #00e5ff")
         t.append(BANNER_TAGLINE, style="bold #f59e0b")
-        t.append((" " * 18) + "│\n", style="dim #00e5ff")
+        t.append(tag_right + "│", style="dim #00e5ff")
 
         # 12. Multi-vendor & Brain list
-        t.append("│" + (" " * 14), style="dim #00e5ff")
+        ven_pad_total = w - 2 - VENDORS_LEN
+        ven_left = " " * (ven_pad_total // 2)
+        ven_right = " " * (ven_pad_total - (ven_pad_total // 2))
+        t.append("\n")
+        t.append("│" + ven_left, style="dim #00e5ff")
         t.append(VENDORS_PREFIX, style="#94a3b8")
         t.append(VENDORS_OLLAMA, style="bold #38bdf8")
         t.append(VENDORS_SUFFIX, style="#64748b")
-        t.append((" " * 15) + "│\n", style="dim #00e5ff")
+        t.append(ven_right + "│", style="dim #00e5ff")
 
         # 13. Bottom border: [--]──────...──────[--]
+        t.append("\n")
         t.append("[--]", style="bold #00e5ff")
-        t.append(DASH_BOT, style="dim #00e5ff")
-        t.append("[--]\n", style="bold #00e5ff")
+        t.append("─" * (w - 8), style="dim #00e5ff")
+        t.append("[--]", style="bold #00e5ff")
 
-        return Align.center(t)
+        if self.size.width > w:
+            return Align.center(t)
+        return t
