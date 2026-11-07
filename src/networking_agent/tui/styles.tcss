@@ -380,7 +380,7 @@ Button.-error:focus,
 #configuration-workspace {
     height: 100%;
     width: 1fr;
-    padding: 1;
+    padding: 1 2 1 1;
     background: #080c14;
 }
 
@@ -394,6 +394,14 @@ Button.-error:focus,
     overflow-y: auto;
     background: #080c14;
     padding: 1;
+}
+
+.workspace-content-wrapper,
+#diagnostic-content-wrapper,
+#config-content-wrapper {
+    height: auto;
+    width: 100%;
+    padding-right: 2;
 }
 
 /* Section Panels & Target Cards */

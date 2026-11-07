@@ -38,42 +38,43 @@ class ConfigurationView(Widget):
 
     def compose(self) -> ComposeResult:
         with Vertical(id="configuration-container"):
-            # Navigation Header with Back button
-            with Horizontal(id="config-nav-bar"):
-                yield Label("CONFIGURACION // APROVISIONAMIENTO EN LENGUAJE NATURAL", id="config-title")
-                yield Button("Volver al Inicio", id="btn-back-from-config")
+            with Vertical(id="config-content-wrapper", classes="workspace-content-wrapper"):
+                # Navigation Header with Back button
+                with Horizontal(id="config-nav-bar"):
+                    yield Label("CONFIGURACION // APROVISIONAMIENTO EN LENGUAJE NATURAL", id="config-title")
+                    yield Button("Volver al Inicio", id="btn-back-from-config")
 
-            # Selected Device Card
-            yield Static(id="config-target-card")
+                # Selected Device Card
+                yield Static(id="config-target-card")
 
-            # Protocol Focus Quick Selectors
-            yield Label("Categoría de Protocolo / Servicio:", id="lbl-config-proto")
-            with Horizontal(classes="symptom-chips"):
-                yield Button("BGP", id="chip-proto-bgp", classes="chip-btn")
-                yield Button("OSPF", id="chip-proto-ospf", classes="chip-btn")
-                yield Button("EIGRP", id="chip-proto-eigrp", classes="chip-btn")
-                yield Button("STP", id="chip-proto-stp", classes="chip-btn")
-                yield Button("Port-Channel", id="chip-proto-channel", classes="chip-btn")
-                yield Button("VLAN", id="chip-proto-vlan", classes="chip-btn")
-                yield Button("ACL", id="chip-proto-acl", classes="chip-btn")
-                yield Button("Servicios", id="chip-proto-services", classes="chip-btn")
+                # Protocol Focus Quick Selectors
+                yield Label("Categoría de Protocolo / Servicio:", id="lbl-config-proto")
+                with Horizontal(classes="symptom-chips"):
+                    yield Button("BGP", id="chip-proto-bgp", classes="chip-btn")
+                    yield Button("OSPF", id="chip-proto-ospf", classes="chip-btn")
+                    yield Button("EIGRP", id="chip-proto-eigrp", classes="chip-btn")
+                    yield Button("STP", id="chip-proto-stp", classes="chip-btn")
+                    yield Button("Port-Channel", id="chip-proto-channel", classes="chip-btn")
+                    yield Button("VLAN", id="chip-proto-vlan", classes="chip-btn")
+                    yield Button("ACL", id="chip-proto-acl", classes="chip-btn")
+                    yield Button("Servicios", id="chip-proto-services", classes="chip-btn")
 
-            # Natural Language Requirement Input
-            yield Label("Instrucción de Configuración en Lenguaje Natural:", id="lbl-config-prompt")
-            yield TextArea(
-                id="config-request-input",
-                text="Crea la VLAN 100 llamada DATOS en modo access en Gi0/5 con su SVI 192.168.100.1/24.",
-            )
+                # Natural Language Requirement Input
+                yield Label("Instrucción de Configuración en Lenguaje Natural:", id="lbl-config-prompt")
+                yield TextArea(
+                    id="config-request-input",
+                    text="Crea la VLAN 100 llamada DATOS en modo access en Gi0/5 con su SVI 192.168.100.1/24.",
+                )
 
-            # Trigger Button
-            yield Button("Sintetizar y Aplicar Configuración", id="btn-run-config", variant="primary")
+                # Trigger Button
+                yield Button("Sintetizar y Aplicar Configuración", id="btn-run-config", variant="primary")
 
-            # Candidate Plan & Diff Preview Panel
-            yield Static(id="config-plan-result")
+                # Candidate Plan & Diff Preview Panel
+                yield Static(id="config-plan-result")
 
-            # Live Execution Console
-            yield Label("Consola de Despliegue y Verificación en Vivo:", id="lbl-config-console")
-            yield Log(id="config-log-terminal", highlight=True)
+                # Live Execution Console
+                yield Label("Consola de Despliegue y Verificación en Vivo:", id="lbl-config-console")
+                yield Log(id="config-log-terminal", highlight=True)
 
     def set_device(self, device: DeviceInventory) -> None:
         """Sets active target device for configuration."""

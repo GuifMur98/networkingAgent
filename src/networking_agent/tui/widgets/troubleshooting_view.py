@@ -53,62 +53,66 @@ class TroubleshootingWorkspace(Widget):
 
     def compose(self) -> ComposeResult:
         with Vertical(id="diagnostic-container"):
-            # Navigation Header with Back button
-            with Horizontal(id="diagnostic-nav-bar"):
-                yield Label("TROUBLESHOOTING // DIAGNOSTICO EN LENGUAJE NATURAL", id="diagnostic-title")
-                yield Button("Volver al Inicio", id="btn-back-to-home")
+            with Vertical(id="diagnostic-content-wrapper", classes="workspace-content-wrapper"):
+                # Navigation Header with Back button
+                with Horizontal(id="diagnostic-nav-bar"):
+                    yield Label("TROUBLESHOOTING // DIAGNOSTICO EN LENGUAJE NATURAL", id="diagnostic-title")
+                    yield Button("Volver al Inicio", id="btn-back-to-home")
 
-            # Selected Device Card
-            yield Static(id="target-device-card")
+                # Selected Device Card
+                yield Static(id="target-device-card")
 
-            # Mode Selector Container
-            with Vertical(id="mode-selector-container", classes="section-panel"):
-                with Horizontal(id="mode-selector-header"):
-                    yield Label("Modo de Interrogación:", id="lbl-mode")
-                    with RadioSet(id="radio-mode"):
-                        yield RadioButton("Proactivo (Comandos show en vivo)", value=True, id="mode-proactive")
-                        yield RadioButton("Reactivo (Análisis de Syslog/Logs)", value=False, id="mode-reactive")
-                yield Static(id="mode-description-banner")
+                # Mode Selector Container
+                with Vertical(id="mode-selector-container", classes="section-panel"):
+                    with Horizontal(id="mode-selector-header"):
+                        yield Label("Modo de Interrogación:", id="lbl-mode")
+                        with RadioSet(id="radio-mode"):
+                            yield RadioButton("Proactivo (Comandos show en vivo)", value=True, id="mode-proactive")
+                            yield RadioButton("Reactivo (Análisis de Syslog/Logs)", value=False, id="mode-reactive")
+                    yield Static(id="mode-description-banner")
 
-            # Quick Symptom Templates
-            yield Label("Atajos de Síntomas Comunes (Clic para autocompletar descripción):", id="lbl-quick-symptoms")
-            with Vertical(id="symptom-chips-container"):
-                with Horizontal(classes="symptom-chips-row"):
-                    yield Button("BGP Down / Idle", id="chip-bgp", classes="chip-btn")
-                    yield Button("Duplex Mismatch", id="chip-duplex", classes="chip-btn")
-                    yield Button("Pérdida de Paquetes", id="chip-packetloss", classes="chip-btn")
-                with Horizontal(classes="symptom-chips-row"):
-                    yield Button("OSPF MTU Mismatch", id="chip-ospf", classes="chip-btn")
-                    yield Button("VLAN Trunk Bloqueado", id="chip-vlan", classes="chip-btn")
-                    yield Button("Lentitud de Red", id="chip-slow", classes="chip-btn")
+                # Quick Symptom Templates
+                yield Label(
+                    "Atajos de Síntomas Comunes (Clic para autocompletar descripción):",
+                    id="lbl-quick-symptoms",
+                )
+                with Vertical(id="symptom-chips-container"):
+                    with Horizontal(classes="symptom-chips-row"):
+                        yield Button("BGP Down / Idle", id="chip-bgp", classes="chip-btn")
+                        yield Button("Duplex Mismatch", id="chip-duplex", classes="chip-btn")
+                        yield Button("Pérdida de Paquetes", id="chip-packetloss", classes="chip-btn")
+                    with Horizontal(classes="symptom-chips-row"):
+                        yield Button("OSPF MTU Mismatch", id="chip-ospf", classes="chip-btn")
+                        yield Button("VLAN Trunk Bloqueado", id="chip-vlan", classes="chip-btn")
+                        yield Button("Lentitud de Red", id="chip-slow", classes="chip-btn")
 
-            # Symptom / Telemetry Input
-            yield Label("Descripción del Síntoma Operacional (Obligatorio *):", id="lbl-symptom")
-            placeholder_msg = (
-                "Escribe el síntoma en lenguaje natural (ej: 'Vecino BGP 10.0.0.2 caído', "
-                "'Pérdida de paquetes en Gi0/1') o selecciona un atajo superior..."
-            )
-            yield TextArea(
-                id="symptom-input",
-                text="",
-                placeholder=placeholder_msg,
-            )
+                # Symptom / Telemetry Input
+                yield Label("Descripción del Síntoma Operacional (Obligatorio *):", id="lbl-symptom")
+                placeholder_msg = (
+                    "Escribe el síntoma en lenguaje natural (ej: 'Vecino BGP 10.0.0.2 caído', "
+                    "'Pérdida de paquetes en Gi0/1') o selecciona un atajo superior..."
+                )
+                yield TextArea(
+                    id="symptom-input",
+                    text="",
+                    placeholder=placeholder_msg,
+                )
 
-            # Trigger Button
-            yield Button("Ejecutar Troubleshooting Autónomo", id="btn-run-remediation", variant="primary")
+                # Trigger Button
+                yield Button("Ejecutar Troubleshooting Autónomo", id="btn-run-remediation", variant="primary")
 
-            # AI Diagnosis Summary Static Panel
-            yield Static(id="diagnosis-result")
+                # AI Diagnosis Summary Static Panel
+                yield Static(id="diagnosis-result")
 
-            # Real-time Execution Log Output & Live Progress Indicator
-            with Vertical(id="telemetry-progress-container"):
-                with Horizontal(id="telemetry-progress-header"):
-                    yield Label("Consola de Interrogación y Telemetría en Tiempo Real:", id="lbl-console")
-                    yield Label("[dim]Esperando ejecución[/dim]", id="lbl-telemetry-step")
-                    yield Label("[bold #00e5ff]0%[/]", id="lbl-telemetry-pct")
-                yield ProgressBar(id="telemetry-progress-bar", total=100, show_eta=False, show_percentage=False)
+                # Real-time Execution Log Output & Live Progress Indicator
+                with Vertical(id="telemetry-progress-container"):
+                    with Horizontal(id="telemetry-progress-header"):
+                        yield Label("Consola de Interrogación y Telemetría en Tiempo Real:", id="lbl-console")
+                        yield Label("[dim]Esperando ejecución[/dim]", id="lbl-telemetry-step")
+                        yield Label("[bold #00e5ff]0%[/]", id="lbl-telemetry-pct")
+                    yield ProgressBar(id="telemetry-progress-bar", total=100, show_eta=False, show_percentage=False)
 
-            yield Log(id="log-terminal", highlight=True)
+                yield Log(id="log-terminal", highlight=True)
 
     def on_mount(self) -> None:
         self.update_mode_description()

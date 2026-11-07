@@ -97,7 +97,9 @@ class ConsoleAgentObserver:
     ) -> bool:
         target_display = escape(str(intent.target_interface or intent.bgp_neighbor_ip or "N/A"))
         sev_color = "red" if intent.severity == "CRITICAL" else "yellow"
-        cli_preview = "\n".join([f"  [bold green]+[/bold green] [white]{escape(str(c))}[/white]" for c in candidate_cli])
+        cli_preview = "\n".join(
+            [f"  [bold green]+[/bold green] [white]{escape(str(c))}[/white]" for c in candidate_cli]
+        )
         approval_panel = Panel(
             f"[bold red][SEGURIDAD] SOLICITUD DE AUTORIZACION OBLIGATORIA (HUMAN-IN-THE-LOOP)[/bold red]\n\n"
             f"El motor de remediación autónoma propone aplicar cambios en la configuración activa.\n"
