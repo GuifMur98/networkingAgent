@@ -13,14 +13,15 @@ from networking_agent.models.intent import NetworkIntent
 class OllamaBrain(LLMBrain):
     """Local inference using Ollama (e.g., llama3.1, qwen2.5-coder)."""
 
-    def __init__(self, model_name: str = "llama3.1"):
+    def __init__(self, model_name: str = "llama3.1", host: Optional[str] = None):
         self.model_name = model_name
+        self.host = host or settings.ollama_host
 
     def analyze_event(self, telemetry_data: str) -> NetworkIntent:
         try:
             from ollama import Client
 
-            client = Client(host=settings.ollama_host)
+            client = Client(host=self.host)
             user_content = (
                 f"Analyze this network event and emit the remediation intent:\n"
                 f"<telemetry_event>\n{telemetry_data}\n</telemetry_event>"
@@ -42,7 +43,7 @@ class OllamaBrain(LLMBrain):
                 try:
                     from ollama import Client
 
-                    client = Client(host=settings.ollama_host)
+                    client = Client(host=self.host)
                     models_response = client.list()
                     available = [m.model for m in models_response.models if hasattr(m, "model")]
                     if available:
@@ -67,7 +68,7 @@ class OllamaBrain(LLMBrain):
         try:
             from ollama import Client
 
-            client = Client(host=settings.ollama_host)
+            client = Client(host=self.host)
             hint_str = f" [Protocol Focus: {protocol_hint}]" if protocol_hint else ""
             user_content = (
                 f"TARGET DEVICE: Host {device_host} | Operating System: {vendor_family}{hint_str}\n"

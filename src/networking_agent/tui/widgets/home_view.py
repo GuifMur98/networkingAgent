@@ -45,27 +45,27 @@ class HomeDashboard(Widget):
             # 5 Action Cards in Responsive Grid
             with Grid(id="home-action-grid"):
                 yield Button(
-                    "1. TROUBLESHOOTING\nDiagnóstico autónomo y análisis de causa raíz en lenguaje natural",
+                    "1. TROUBLESHOOTING\nDiagnóstico autónomo y análisis de causa raíz",
                     id="btn-nav-troubleshooting",
                     classes="home-nav-card card-troubleshooting",
                 )
                 yield Button(
-                    "2. CONFIGURACION\nAprovisionamiento de BGP, OSPF, VLAN, ACLs en lenguaje natural",
+                    "2. CONFIGURACION\nAprovisionamiento de BGP, OSPF, VLANs y ACLs",
                     id="btn-nav-configuration",
                     classes="home-nav-card card-configuration",
                 )
                 yield Button(
-                    "3. AUTOMATIZACION\nEditor de plantillas, validación sintáctica y despliegue masivo",
+                    "3. AUTOMATIZACION\nEditor Jinja2, validación sintáctica y despliegue",
                     id="btn-nav-automation",
                     classes="home-nav-card card-automation",
                 )
                 yield Button(
-                    "4. INVENTARIO DE EQUIPOS\nCatálogo de routers, alta y prueba de conectividad",
+                    "4. INVENTARIO DE EQUIPOS\nCatálogo de routers y prueba de conectividad",
                     id="btn-nav-inventory",
                     classes="home-nav-card card-inventory",
                 )
                 yield Button(
-                    "5. REGISTRO DE AUDITORIA\nBitácora inmutable de cambios, eventos y rollbacks",
+                    "5. REGISTRO DE AUDITORIA\nBitácora de cambios, eventos y rollbacks",
                     id="btn-nav-audit",
                     classes="home-nav-card card-audit",
                 )
@@ -88,11 +88,11 @@ class HomeDashboard(Widget):
         )
 
         status_text = (
-            f"[bold cyan]ESTADO DEL SISTEMA:[/bold cyan]\n"
-            f"  * Proveedor de IA: [bold white]{provider.upper()}[/] ([dim]{model}[/])\n"
-            f"  * Dispositivos Registrados: [bold white]{len(devices)} equipos en SQLite[/]\n"
-            f"  * Control Humano (HitL): {hitl_status}\n\n"
-            f"[dim]Seleccione una opción [1-5], use atajos de teclado o presione [S] para Ajustes de IA.[/dim]"
+            f"[bold cyan]ESTADO DEL SISTEMA:[/bold cyan] "
+            f"IA: [bold white]{provider.upper()}[/] ([dim]{model}[/])  |  "
+            f"Inventario: [bold white]{len(devices)} equipos[/]  |  "
+            f"HitL: {hitl_status}\n"
+            f"[dim]Atajos: [1-5] Seleccionar Módulo  |  [S] Ajustes IA  |  [D] Nuevo Equipo  |  [Q] Salir[/dim]"
         )
 
         panel = Panel(

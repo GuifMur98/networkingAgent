@@ -33,7 +33,7 @@ class TopStatusBar(Static):
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="top-bar-inner"):
-            yield Label("NETWORKINGAGENT // ENTERPRISE NOC", id="top-title")
+
             with Horizontal(id="top-badges"):
                 yield Label(f"BRAIN: {self.brain_info}", id="badge-brain", classes="status-badge badge-brain")
                 yield Label(f"EQUIPOS: {self.device_count}", id="badge-devs", classes="status-badge badge-device")

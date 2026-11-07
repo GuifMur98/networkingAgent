@@ -243,3 +243,36 @@ async def test_tui_evolution_5_pillars_navigation():
         app.action_go_home()
         await pilot.pause()
         assert tabs.active == "pane-home"
+
+
+@pytest.mark.anyio
+async def test_vault_modal_dynamic_provider_selection():
+    """Verify that switching AI provider dynamically changes labels, placeholders, and secret mode."""
+    from textual.widgets import Input, Label, Select
+
+    from networking_agent.tui.modals.vault_modal import VaultModal
+
+    app = NetworkingAgentTUIApp()
+    async with app.run_test() as pilot:
+        modal = VaultModal()
+        pilot.app.push_screen(modal)
+        await pilot.pause()
+
+        lbl_cred = modal.query_one("#lbl-credential", Label)
+        inp_cred = modal.query_one("#input-api-key", Input)
+        select_provider = modal.query_one("#select-provider", Select)
+
+        # Switch to Gemini
+        select_provider.value = "gemini"
+        await pilot.pause()
+
+        assert "Gemini" in str(lbl_cred.render())
+        assert inp_cred.password is True
+
+        # Switch to Ollama
+        select_provider.value = "ollama"
+        await pilot.pause()
+
+        assert "Ollama" in str(lbl_cred.render())
+        assert inp_cred.password is False
+        assert "http" in inp_cred.placeholder
