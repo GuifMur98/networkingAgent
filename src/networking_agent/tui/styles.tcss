@@ -34,45 +34,52 @@ TabPane {
 /* Header & Status Bar */
 #top-bar {
     dock: top;
-    height: 3;
-    background: #161b22;
+    height: 1;
+    background: #080c14;
     color: #e6edf3;
-    border-bottom: solid #30363d;
+    border: none;
     padding: 0 1;
 }
 
 #top-bar-inner {
     width: 100%;
-    height: 100%;
+    height: 1;
     align: center middle;
     content-align: center middle;
 }
 
 #top-badges {
     width: 100%;
-    height: 100%;
+    height: 1;
     align: center middle;
     content-align: center middle;
 }
 
 .status-badge {
     padding: 0 1;
-    margin: 0 1;
-    background: #21262d;
+    margin: 0;
+    background: transparent;
     border: none;
     text-style: bold;
 }
 
+.status-divider {
+    color: #38bdf8;
+    background: transparent;
+    text-style: dim;
+    padding: 0;
+}
+
 .badge-brain {
-    color: #bc8cff;
+    color: #c084fc;
 }
 
 .badge-device {
-    color: #58a6ff;
+    color: #38bdf8;
 }
 
 .badge-hitl {
-    color: #f2cc60;
+    color: #4ade80;
 }
 
 /* Home / Welcome Dashboard */
@@ -84,63 +91,60 @@ TabPane {
 #home-container {
     height: 100%;
     width: 100%;
-    padding: 0 2;
+    padding: 0 1;
     overflow-y: auto;
+    background: #0a0e17;
 }
 
-#home-status-card {
+#home-banner {
+    height: auto;
+    width: 100%;
     margin-bottom: 1;
 }
 
-#home-action-grid {
-    grid-size: 3;
-    grid-gutter: 1 2;
+#home-status-card {
     height: auto;
-    margin-top: 1;
+    width: 100%;
+    margin-bottom: 1;
+}
+
+#home-cards-container {
+    height: auto;
+    width: 100%;
+}
+
+#home-cards-row-top {
+    height: 8;
+    min-height: 8;
+    width: 100%;
+    margin-bottom: 1;
+}
+
+#home-cards-row-bottom {
+    height: 8;
+    min-height: 8;
+    width: 100%;
+    margin-bottom: 1;
 }
 
 .home-nav-card {
-    height: 5;
-    min-height: 5;
-    width: 100%;
-    text-style: bold;
-    text-align: center;
-    content-align: center middle;
-    border: round #30363d;
-    background: #161b22;
-    color: #e6edf3;
-    padding: 0 1;
+    width: 1fr;
+    height: 100%;
+    min-height: 8;
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0 1;
+}
+
+.home-nav-card:focus {
+    background: #0f172a;
+    border: none;
 }
 
 .home-nav-card:hover {
-    background: #21262d;
-    border: round #58a6ff;
-    color: #58a6ff;
-}
-
-.card-troubleshooting:focus, .card-troubleshooting:hover, .card-diagnostic:focus, .card-diagnostic:hover {
-    border: round #388bfd;
-    color: #58a6ff;
-}
-
-.card-configuration:focus, .card-configuration:hover {
-    border: round #3fb950;
-    color: #3fb950;
-}
-
-.card-automation:focus, .card-automation:hover {
-    border: round #bc8cff;
-    color: #bc8cff;
-}
-
-.card-inventory:focus, .card-inventory:hover {
-    border: round #d29922;
-    color: #d29922;
-}
-
-.card-audit:focus, .card-audit:hover {
-    border: round #f778ba;
-    color: #f778ba;
+    background: #0d1527;
+    border: none;
 }
 
 /* View Header Navigation Bars */
@@ -634,3 +638,20 @@ ModalScreen {
     padding: 1;
 }
 
+
+/* Sleek Cyberpunk Footer */
+Footer {
+    background: #080c14;
+    color: #cbd5e1;
+}
+
+Footer > .footer--key {
+    background: transparent;
+    color: #fbbf24;
+    text-style: bold;
+}
+
+Footer > .footer--description {
+    background: transparent;
+    color: #e2e8f0;
+}

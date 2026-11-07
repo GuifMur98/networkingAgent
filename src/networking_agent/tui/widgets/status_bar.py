@@ -6,15 +6,49 @@ from textual.widgets import Label, Static
 
 
 class TopStatusBar(Static):
-    """Top bar displaying brand, active brain model, inventory statistics, and guardrail mode."""
+    """Top bar displaying active brain model, inventory statistics, and guardrail mode."""
 
     DEFAULT_CSS = """
     TopStatusBar {
-        height: 3;
+        height: 1;
         dock: top;
-        background: #161b22;
-        border-bottom: heavy #388bfd;
+        background: #080c14;
+        color: #e6edf3;
+        border: none;
         padding: 0 1;
+    }
+    #top-bar-inner {
+        width: 100%;
+        height: 1;
+        align: center middle;
+        content-align: center middle;
+    }
+    #top-badges {
+        width: 100%;
+        height: 1;
+        align: center middle;
+        content-align: center middle;
+    }
+    .status-badge {
+        padding: 0 1;
+        background: transparent;
+        border: none;
+        text-style: bold;
+    }
+    .status-divider {
+        color: #38bdf8;
+        background: transparent;
+        text-style: dim;
+        padding: 0;
+    }
+    .badge-brain {
+        color: #c084fc;
+    }
+    .badge-device {
+        color: #38bdf8;
+    }
+    .badge-hitl {
+        color: #4ade80;
     }
     """
 
@@ -33,10 +67,11 @@ class TopStatusBar(Static):
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="top-bar-inner"):
-
             with Horizontal(id="top-badges"):
                 yield Label(f"BRAIN: {self.brain_info}", id="badge-brain", classes="status-badge badge-brain")
+                yield Label("|", classes="status-divider")
                 yield Label(f"EQUIPOS: {self.device_count}", id="badge-devs", classes="status-badge badge-device")
+                yield Label("|", classes="status-divider")
                 hitl_txt = "HITL: ACTIVO" if not self.auto_approve else "AUTO-APPROVE: ON"
                 yield Label(hitl_txt, id="badge-hitl", classes="status-badge badge-hitl")
 
