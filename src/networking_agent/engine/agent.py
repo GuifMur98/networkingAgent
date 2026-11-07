@@ -44,6 +44,7 @@ class NetworkAssistantAgent:
         mode: str = "REACTIVE",
     ) -> bool:
         """Executes the closed-loop remediation workflow."""
+        self.observer.on_progress(15, f"[{mode}] Ingestando telemetría de {device.host}...")
         self.observer.on_status_update(
             f"[{mode}] Ingesting telemetry for {device.host} ({device.device_type})..."
         )
@@ -54,6 +55,7 @@ class NetworkAssistantAgent:
             health_data = {}
 
             if mode == "PROACTIVE":
+                self.observer.on_progress(35, "Ejecutando interrogación de salud en vivo en el equipo...")
                 self.observer.on_status_update("[*] Running proactive diagnostic interrogation on device...")
                 try:
                     health_data = driver.run_health_check()
@@ -73,9 +75,11 @@ class NetworkAssistantAgent:
                     )
                     wan_interfaces = driver.discover_active_management_interfaces()
             else:
+                self.observer.on_progress(35, "Analizando eventos de Syslog/Logs reportados...")
                 wan_interfaces = driver.discover_active_management_interfaces()
 
             # 1. AI Diagnosis -> Neutral Intent
+            self.observer.on_progress(55, "Correlacionando anomalías y consultando Cerebro IA...")
             intent: NetworkIntent = self.brain.analyze_event(analysis_payload)
 
             # Display Diagnosis Panel via Observer
@@ -83,6 +87,7 @@ class NetworkAssistantAgent:
 
             # 2. Check if configuration change is needed
             if not intent.requires_config_change or intent.action == "none":
+                self.observer.on_progress(100, f"Diagnóstico completado: Equipo {device.host} operacionalmente sano.")
                 self.observer.on_no_op_required(device, intent)
                 logger.info("[green]No configuration changes required. Incident logged.[/green]")
                 audit_logger.record_event(
@@ -96,9 +101,11 @@ class NetworkAssistantAgent:
                 return True
 
             # 3. Security Guardrails Verification (Blast Radius & Command Validation)
+            self.observer.on_progress(70, "Verificando guardarraíles de seguridad y radio de impacto...")
             try:
                 self.blast_guard.verify_intent(intent, wan_interfaces=wan_interfaces)
             except BlastRadiusViolationError as e:
+                self.observer.on_progress(100, "Operación bloqueada por guardarraíl de protección WAN.")
                 self.observer.on_guardrail_blocked(intent, str(e))
                 audit_logger.record_event(
                     event_type="SECURITY_REJECTED",
@@ -111,6 +118,7 @@ class NetworkAssistantAgent:
                 return False
 
             # 4. Driver translation to candidate CLI
+            self.observer.on_progress(80, "Sintetizando y validando comandos de configuración...")
             candidate_cli = driver.build_candidate_commands(intent)
 
             if not candidate_cli:
@@ -133,6 +141,7 @@ class NetworkAssistantAgent:
 
             # 5. Human-in-the-Loop (HitL) Approval Gate
             rollback_info = driver.get_rollback_description()
+            self.observer.on_progress(85, "Esperando confirmación humana (HitL)...")
             approved = False
             if self.auto_approve:
                 logger.warning(
@@ -148,6 +157,7 @@ class NetworkAssistantAgent:
                 )
 
             if not approved:
+                self.observer.on_progress(100, "Operación rechazada por el operador.")
                 logger.info("[bold yellow][X] Operation rejected by operator. Device was NOT modified.[/bold yellow]")
                 audit_logger.record_event(
                     event_type="OPERATOR_REJECTED",
@@ -159,6 +169,7 @@ class NetworkAssistantAgent:
                 return False
 
             # 6. Pre-Check & Snapshot Backup
+            self.observer.on_progress(90, f"Tomando snapshot de respaldo en {device.host}...")
             self.observer.on_execution_progress("[*] Executing pre-change health snapshot...")
             backup_path = None
             pre_health = {}
@@ -171,6 +182,7 @@ class NetworkAssistantAgent:
                 return False
 
             # 7. Apply Configuration
+            self.observer.on_progress(95, "Aplicando comandos validados en el dispositivo...")
             self.observer.on_execution_progress("[*] Applying validated commands on device...")
             execution_output = ""
             try:
@@ -228,6 +240,7 @@ class NetworkAssistantAgent:
             logger.info(
                 "[bold green][OK] Configuration successfully applied and verified in closed-loop.[/bold green]"
             )
+            self.observer.on_progress(100, f"Remediación completada y verificada en {device.host}.")
             self.observer.on_completion(
                 True, "Configuration successfully applied and verified in closed-loop."
             )
@@ -249,8 +262,10 @@ class NetworkAssistantAgent:
         """Executes full autonomous troubleshooting interrogation with live telemetry correlation."""
         driver = get_os_driver(device)
         try:
+            self.observer.on_progress(10, f"Iniciando conexión SSH con {device.host} ({device.device_type})...")
             self.observer.on_status_update(f"[*] Recopilando telemetría especializada para: '{symptom}'...")
             diag_cmds = driver.get_troubleshooting_commands(symptom)
+            self.observer.on_progress(25, f"Ejecutando interrogación ({len(diag_cmds)} comandos show en vivo)...")
             telemetry_data = driver.run_diagnostic_interrogation(diag_cmds)
             telemetry_str = "\n".join([f"=== {cmd} ===\n{out}" for cmd, out in telemetry_data.items()])
 
@@ -264,11 +279,13 @@ class NetworkAssistantAgent:
             )
 
             # 1. AI Diagnosis -> Neutral Intent
+            self.observer.on_progress(50, "Telemetría obtenida. Analizando causa raíz con Cerebro IA...")
             intent: NetworkIntent = self.brain.analyze_event(analysis_payload)
             self.observer.on_diagnosis_ready(intent)
 
             # 2. Check if configuration change is needed
             if not intent.requires_config_change or intent.action == "none":
+                self.observer.on_progress(100, f"Diagnóstico completado: Equipo {device.host} operacionalmente sano.")
                 self.observer.on_no_op_required(device, intent)
                 audit_logger.record_event(
                     event_type="TROUBLESHOOTING_RESOLVED",
@@ -281,17 +298,21 @@ class NetworkAssistantAgent:
                 return True
 
             # 3. Guardrails & Blast Radius
+            self.observer.on_progress(70, "Evaluando políticas de seguridad y radio de impacto (Blast Radius)...")
             try:
                 self.blast_guard.verify_intent(intent, wan_interfaces=wan_interfaces)
             except BlastRadiusViolationError as e:
+                self.observer.on_progress(100, "Operación bloqueada por guardarraíl de protección WAN.")
                 self.observer.on_guardrail_blocked(intent, str(e))
                 return False
 
+            self.observer.on_progress(80, "Sintetizando y validando comandos CLI candidatos...")
             candidate_cli = driver.build_candidate_commands(intent)
             candidate_cli = CommandValidator.validate_command_list(candidate_cli)
 
             # 4. HitL Approval Gate
             rollback_info = driver.get_rollback_description()
+            self.observer.on_progress(85, "Esperando autorización del operador (Human-in-the-Loop)...")
             approved = self.auto_approve or self.observer.on_hitl_approval_required(
                 device=device,
                 intent=intent,
@@ -300,12 +321,15 @@ class NetworkAssistantAgent:
             )
 
             if not approved:
+                self.observer.on_progress(100, "Remediación rechazada por el operador.")
                 self.observer.on_status_update("[yellow]Remediación rechazada por el operador.[/yellow]")
                 return False
 
             # 5. Transactional Execution
+            self.observer.on_progress(90, f"Creando snapshot de respaldo y aplicando cambios en {device.host}...")
             backup_file = driver.backup_running_config()
             driver.execute_commands(candidate_cli)
+            self.observer.on_progress(100, f"Remediación aplicada exitosamente en {device.host}.")
             self.observer.on_completion(True, "Remediación aplicada exitosamente.")
             audit_logger.record_event(
                 event_type="TROUBLESHOOTING_REMEDIATED",
@@ -317,6 +341,7 @@ class NetworkAssistantAgent:
             )
             return True
         except Exception as e:
+            self.observer.on_progress(100, f"Error durante troubleshooting: {e}")
             self.observer.on_completion(False, f"Error durante troubleshooting en {device.host}: {e}")
             return False
         finally:

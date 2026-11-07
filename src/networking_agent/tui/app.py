@@ -111,6 +111,10 @@ class TextualAgentObserver(AgentObserver):
         if self.workspace and hasattr(self.workspace, "append_log"):
             self._safe_call(self.workspace.append_log, step)
 
+    def on_progress(self, percentage: int, step: str) -> None:
+        if self.workspace and hasattr(self.workspace, "update_progress"):
+            self._safe_call(self.workspace.update_progress, percentage, step)
+
     def on_completion(self, success: bool, message: str) -> None:
         color = "bold green" if success else "bold red"
         if self.workspace and hasattr(self.workspace, "append_log"):
@@ -426,6 +430,8 @@ class NetworkingAgentTUIApp(App):
     def _execute_troubleshooting_worker(self, device: DeviceInventory, symptom: str, mode: str) -> None:
         self.is_busy = True
         workspace = self.query_one("#troubleshooting-workspace", TroubleshootingWorkspace)
+        self.call_from_thread(workspace.set_busy_state, True)
+        self.call_from_thread(workspace.reset_progress, f"Iniciando sesión en {device.host}...")
         workspace.append_log(f"[bold cyan][>] Iniciando troubleshooting en {device.host}...[/]")
 
         try:
@@ -454,9 +460,11 @@ class NetworkingAgentTUIApp(App):
                 telemetry = TelemetryEvent(raw_text=symptom, source_host=device.host)
                 agent.process_telemetry(device=device, telemetry=telemetry, mode=mode)
         except Exception as e:
+            self.call_from_thread(workspace.update_progress, 100, f"Error: {e}")
             self.call_from_thread(workspace.append_log, f"[bold red]Error fatal en troubleshooting: {e}[/]")
         finally:
             self.is_busy = False
+            self.call_from_thread(workspace.set_busy_state, False)
             self.call_from_thread(self._refresh_audit)
 
     def on_configuration_view_run_configuration_requested(

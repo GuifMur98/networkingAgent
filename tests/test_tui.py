@@ -142,6 +142,14 @@ async def test_tui_observer_updates_workspace_methods():
         observer.on_guardrail_blocked(intent, "Interface ether1 is protected")
         await pilot.pause()
 
+        # Progress update
+        observer.on_progress(50, "Analizando causa raíz...")
+        await pilot.pause()
+        bar = workspace.query_one("#telemetry-progress-bar")
+        assert bar.progress == 50
+        lbl_pct = workspace.query_one("#lbl-telemetry-pct")
+        assert "50%" in str(lbl_pct.render())
+
         # Completion
         observer.on_completion(True, "All operations completed.")
         await pilot.pause()
@@ -162,6 +170,7 @@ def test_console_observer_fallback():
     observer.on_no_op_required(dev, intent)
     observer.on_guardrail_blocked(intent, "Blocked for test")
     observer.on_execution_progress("Step 1")
+    observer.on_progress(50, "Testing progress")
     observer.on_completion(True, "Success")
 
 

@@ -10,7 +10,7 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.message import Message
 from textual.widget import Widget
-from textual.widgets import Button, Label, Log, RadioButton, RadioSet, Static, TextArea
+from textual.widgets import Button, Label, Log, ProgressBar, RadioButton, RadioSet, Static, TextArea
 
 from networking_agent.models.device import DeviceInventory
 from networking_agent.models.intent import NetworkIntent
@@ -100,8 +100,14 @@ class TroubleshootingWorkspace(Widget):
             # AI Diagnosis Summary Static Panel
             yield Static(id="diagnosis-result")
 
-            # Real-time Execution Log Output
-            yield Label("Consola de Interrogación y Telemetría en Tiempo Real:", id="lbl-console")
+            # Real-time Execution Log Output & Live Progress Indicator
+            with Vertical(id="telemetry-progress-container"):
+                with Horizontal(id="telemetry-progress-header"):
+                    yield Label("Consola de Interrogación y Telemetría en Tiempo Real:", id="lbl-console")
+                    yield Label("[dim]Esperando ejecución[/dim]", id="lbl-telemetry-step")
+                    yield Label("[bold #00e5ff]0%[/]", id="lbl-telemetry-pct")
+                yield ProgressBar(id="telemetry-progress-bar", total=100, show_eta=False, show_percentage=False)
+
             yield Log(id="log-terminal", highlight=True)
 
     def on_mount(self) -> None:
@@ -201,6 +207,43 @@ class TroubleshootingWorkspace(Widget):
             log.write_line(Text.from_markup(text))
         except Exception:
             log.write_line(text)
+
+    def reset_progress(self, step: str = "En espera de diagnóstico") -> None:
+        """Reset progress bar and percentage display to 0%."""
+        try:
+            bar = self.query_one("#telemetry-progress-bar", ProgressBar)
+            bar.update(total=100, progress=0)
+            lbl_pct = self.query_one("#lbl-telemetry-pct", Label)
+            lbl_pct.update("[bold #00e5ff]0%[/]")
+            lbl_step = self.query_one("#lbl-telemetry-step", Label)
+            lbl_step.update(f"[dim]{step}[/dim]")
+        except Exception:
+            pass
+
+    def update_progress(self, percentage: int, step: str) -> None:
+        """Update live progress bar, percentage, and current phase description."""
+        try:
+            percentage = max(0, min(100, int(percentage)))
+            bar = self.query_one("#telemetry-progress-bar", ProgressBar)
+            bar.update(progress=percentage)
+
+            lbl_pct = self.query_one("#lbl-telemetry-pct", Label)
+            pct_color = "#4ade80" if percentage >= 100 else "#00e5ff"
+            lbl_pct.update(f"[bold {pct_color}]{percentage}%[/]")
+
+            lbl_step = self.query_one("#lbl-telemetry-step", Label)
+            lbl_step.update(f"[dim cyan]●[/dim cyan] [white]{step}[/white]")
+        except Exception:
+            pass
+
+    def set_busy_state(self, is_busy: bool) -> None:
+        """Toggle action button state and label during live execution."""
+        try:
+            btn = self.query_one("#btn-run-remediation", Button)
+            btn.disabled = is_busy
+            btn.label = "Analizando Equipo..." if is_busy else "Ejecutar Troubleshooting Autónomo"
+        except Exception:
+            pass
 
     def display_diagnosis(self, intent: NetworkIntent) -> None:
         """Renders the AI root-cause analysis panel."""

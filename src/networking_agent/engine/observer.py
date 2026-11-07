@@ -33,6 +33,8 @@ class AgentObserver(Protocol):
 
     def on_execution_progress(self, step: str) -> None: ...
 
+    def on_progress(self, percentage: int, step: str) -> None: ...
+
     def on_completion(self, success: bool, message: str) -> None: ...
 
 
@@ -93,42 +95,45 @@ class ConsoleAgentObserver:
         candidate_cli: List[str],
         rollback_info: str,
     ) -> bool:
-        target_display = escape(intent.target_interface or intent.bgp_neighbor_ip or "N/A")
+        target_display = escape(str(intent.target_interface or intent.bgp_neighbor_ip or "N/A"))
         sev_color = "red" if intent.severity == "CRITICAL" else "yellow"
-        cli_preview = "\n".join([f"  [bold green]+[/bold green] [white]{escape(c)}[/white]" for c in candidate_cli])
+        cli_preview = "\n".join([f"  [bold green]+[/bold green] [white]{escape(str(c))}[/white]" for c in candidate_cli])
         approval_panel = Panel(
             f"[bold red][SEGURIDAD] SOLICITUD DE AUTORIZACION OBLIGATORIA (HUMAN-IN-THE-LOOP)[/bold red]\n\n"
-            f"[bold]Dispositivo Destino:[/bold] [cyan]{device.host}[/cyan] ({device.device_type})  |  "
-            f"[bold]Operador:[/bold] [cyan]{device.username}[/cyan]\n"
-            f"[bold]Acción Propuesta:[/bold] [yellow]{intent.action}[/yellow]  |  "
-            f"[bold]Objetivo:[/bold] [yellow]{target_display}[/yellow]\n"
-            f"[bold]Severidad:[/bold] [{sev_color}]{intent.severity}[/]\n\n"
-            f"[bold cyan]Diagnóstico Técnico Justificativo:[/bold cyan]\n"
-            f"{intent.diagnosis}\n\n"
-            f"[bold yellow]Comandos exactos a inyectar en el equipo:[/bold yellow]\n{cli_preview}\n\n"
-            f"[bold green]Garantía de Resiliencia y Rollback:[/bold green]\n"
-            f"• Se tomará un snapshot de configuración previa antes de inyectar cambios.\n"
-            f"• Mecanismo de reversión disponible: [italic]{rollback_info}[/italic]",
-            title="PUERTA DE CONTROL Y APROBACION HUMANA",
+            f"El motor de remediación autónoma propone aplicar cambios en la configuración activa.\n"
+            f"• [bold cyan]Equipo Destino:[/] {escape(str(device.host))} ({escape(str(device.device_type))})\n"
+            f"• [bold cyan]Diagnóstico:[/bold cyan] {escape(str(intent.diagnosis))}\n"
+            f"• [bold cyan]Severidad:[/] [{sev_color}]{intent.severity}[/{sev_color}]\n"
+            f"• [bold cyan]Acción Solicitada:[/] [bold]{escape(str(intent.action))}[/bold]\n"
+            f"• [bold cyan]Parámetro Afectado:[/] {target_display}\n\n"
+            f"[bold yellow]Comandos CLI candidatos a inyectar:[/bold yellow]\n{cli_preview}\n\n"
+            f"[bold blue]Estrategia de Rollback / Reversión:[/bold blue]\n{escape(str(rollback_info))}",
+            title="HITL APPROVAL GATE",
             border_style="bold red",
         )
         console.print(approval_panel)
-        approved = prompt_hitl_approval()
-        if not approved:
-            cancel_panel = Panel(
-                f"[yellow]Operación CANCELADA por el operador.[/yellow]\n"
-                f"El equipo [bold]{device.host}[/bold] NO ha sido modificado y permanece 100% en su estado original.",
-                title="OPERACION RECHAZADA - DISPOSITIVO INTACTO",
-                border_style="yellow",
-            )
-            console.print(cancel_panel)
-        return approved
+        return prompt_hitl_approval()
 
     def on_execution_progress(self, step: str) -> None:
         logger.info(step)
 
+    def on_progress(self, percentage: int, step: str) -> None:
+        logger.info(f"[{percentage}%] {step}")
+
     def on_completion(self, success: bool, message: str) -> None:
         if success:
-            logger.info(f"[bold green]{message}[/bold green]")
+            console.print(
+                Panel(
+                    f"[bold green]{message}[/bold green]",
+                    title="OPERACION EXITOSA",
+                    border_style="green",
+                )
+            )
         else:
-            logger.error(f"[bold red]{message}[/bold red]")
+            console.print(
+                Panel(
+                    f"[bold red]{message}[/bold red]",
+                    title="FALLO EN LA OPERACION",
+                    border_style="red",
+                )
+            )
