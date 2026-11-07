@@ -146,6 +146,10 @@ class ConfigurationView(Widget):
             self.append_log("[bold red][!] Escribe los requerimientos de configuración antes de sintetizar.[/]")
             return
 
+        panel_widget = self.query_one("#config-plan-result", Static)
+        panel_widget.styles.display = "none"
+        panel_widget.update("")
+
         self.post_message(
             self.RunConfigurationRequested(
                 device=self.current_device,
@@ -157,11 +161,16 @@ class ConfigurationView(Widget):
     def append_log(self, text: str) -> None:
         """Appends log lines to the configuration terminal pane."""
         log = self.query_one("#config-log-terminal", Log)
-        log.write_line(text)
+        try:
+            from rich.text import Text
+            log.write_line(Text.from_markup(text))
+        except Exception:
+            log.write_line(text)
 
     def display_plan(self, config_intent: ConfigurationIntent) -> None:
         """Renders the synthesized configuration plan and candidate diff."""
         panel_widget = self.query_one("#config-plan-result", Static)
+        panel_widget.styles.display = "block"
         table = Table(
             title=f"PLAN DE CONFIGURACION: {config_intent.protocol_type.value.upper()}",
             show_header=True,

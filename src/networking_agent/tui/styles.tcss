@@ -589,11 +589,11 @@ TextArea:focus {
 /* Diagnosis & Plan Results */
 #diagnosis-result,
 #config-plan-result {
+    display: none;
     height: auto;
-    max-height: 14;
-    background: #0d1527;
-    border: round #00b4d8;
-    padding: 1;
+    max-height: 18;
+    border: none;
+    padding: 0;
     margin-bottom: 1;
 }
 
@@ -601,12 +601,13 @@ TextArea:focus {
 #log-terminal,
 #config-log-terminal,
 #automation-log-terminal {
-    height: 1fr;
-    min-height: 8;
+    height: 15;
+    min-height: 12;
     background: #050811;
     border: round #00b4d8;
     color: #a5f3fc;
     padding: 1;
+    margin-bottom: 1;
 }
 
 /* Automation Suite */

@@ -181,6 +181,11 @@ class TroubleshootingWorkspace(Widget):
             self.query_one("#symptom-input", TextArea).focus()
             return
 
+        # Hide previous diagnosis while new analysis runs
+        panel_widget = self.query_one("#diagnosis-result", Static)
+        panel_widget.styles.display = "none"
+        panel_widget.update("")
+
         self.post_message(
             self.RunDiagnosisRequested(
                 device=self.current_device,
@@ -192,11 +197,15 @@ class TroubleshootingWorkspace(Widget):
     def append_log(self, text: str) -> None:
         """Appends log lines to the terminal pane."""
         log = self.query_one("#log-terminal", Log)
-        log.write_line(text)
+        try:
+            log.write_line(Text.from_markup(text))
+        except Exception:
+            log.write_line(text)
 
     def display_diagnosis(self, intent: NetworkIntent) -> None:
         """Renders the AI root-cause analysis panel."""
         panel_widget = self.query_one("#diagnosis-result", Static)
+        panel_widget.styles.display = "block"
         table = Table(title="DICTAMEN TECNICO Y ANALISIS DE CAUSA RAIZ", show_header=True, header_style="bold #00e5ff")
         table.add_column("Propiedad", style="dim", width=22)
         table.add_column("Detalle Diagnosticado", style="bold white")
@@ -220,6 +229,7 @@ class TroubleshootingWorkspace(Widget):
 
     def display_no_op(self, device: DeviceInventory, intent: NetworkIntent) -> None:
         panel_widget = self.query_one("#diagnosis-result", Static)
+        panel_widget.styles.display = "block"
         content = (
             f"[bold green]DIAGNOSTICO FINALIZADO: EQUIPO OPERACIONALMENTE SANO[/bold green]\n\n"
             f"El asistente determinó que [bold cyan]{device.host}[/bold cyan] no presenta fallas que requieran "
@@ -231,6 +241,7 @@ class TroubleshootingWorkspace(Widget):
 
     def display_guardrail_block(self, intent: NetworkIntent, reason: str) -> None:
         panel_widget = self.query_one("#diagnosis-result", Static)
+        panel_widget.styles.display = "block"
         content = (
             f"[bold red]ACCION BLOQUEADA POR GUARDARRAIL DE SEGURIDAD OPERACIONAL[/bold red]\n\n"
             f"La acción propuesta fue interceptada para proteger la infraestructura crítica.\n\n"

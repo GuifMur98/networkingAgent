@@ -196,4 +196,8 @@ class AutomationView(Widget):
     def append_log(self, text: str) -> None:
         """Appends log lines to the batch log pane."""
         log = self.query_one("#automation-log-terminal", Log)
-        log.write_line(text)
+        try:
+            from rich.text import Text
+            log.write_line(Text.from_markup(text))
+        except Exception:
+            log.write_line(text)
