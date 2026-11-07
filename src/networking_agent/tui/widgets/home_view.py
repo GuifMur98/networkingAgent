@@ -241,9 +241,9 @@ class HomeDashboard(Widget):
         devices = db.list_devices()
         auto_approve = db.get_setting("auto_approve") == "true" or settings.auto_approve
 
-        # Truncate model name if long to keep on 1 line
-        if len(model) > 16:
-            model_display = f"{model[:6]}..{model[-4:]}"
+        # Truncate model name only if extremely long (> 32 chars) to keep on 1 line
+        if len(model) > 32:
+            model_display = f"{model[:18]}...{model[-10:]}"
         else:
             model_display = model
 
