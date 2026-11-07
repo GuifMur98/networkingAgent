@@ -181,8 +181,21 @@ class NetworkingAgentTUIApp(App):
 
     def on_mount(self) -> None:
         """Trigger initial device sync across sidebars and views."""
+        first_dev = None
         for sidebar in self.query(DeviceSidebar):
             sidebar.reload_devices()
+            if not first_dev and sidebar.devices:
+                first_dev = sidebar.devices[0]
+
+        if first_dev:
+            try:
+                self.query_one("#troubleshooting-workspace", TroubleshootingWorkspace).set_device(first_dev)
+            except Exception:
+                pass
+            try:
+                self.query_one("#configuration-workspace", ConfigurationView).set_device(first_dev)
+            except Exception:
+                pass
 
     def action_go_home(self) -> None:
         """Switch navigation back to the Home Dashboard."""

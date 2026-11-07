@@ -34,7 +34,7 @@ class DeviceInventoryView(Widget):
                 yield Button("Registrar Equipo", id="btn-inv-add", variant="primary")
                 yield Button("Eliminar", id="btn-inv-delete", variant="error")
                 yield Button("Recargar", id="btn-inv-refresh")
-                yield Button("Volver al Inicio", id="btn-inv-home")
+
 
     def on_mount(self) -> None:
         table = self.query_one("#inventory-data-table", DataTable)

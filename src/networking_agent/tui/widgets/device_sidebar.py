@@ -16,6 +16,16 @@ from networking_agent.models.device import DeviceInventory
 class DeviceSidebar(Widget):
     """Sidebar widget managing the device inventory navigation."""
 
+    DEFAULT_CSS = """
+    DeviceSidebar {
+        width: 32;
+        height: 100%;
+        background: #161b22;
+        border-right: solid #30363d;
+        padding: 1;
+    }
+    """
+
     class DeviceSelected(Message):
         """Emitted when the operator chooses a device."""
 

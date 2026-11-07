@@ -30,7 +30,7 @@ class AuditTableWidget(Widget):
 
             with Horizontal(classes="audit-actions"):
                 yield Button("Recargar Registro", id="btn-refresh-audit", variant="primary")
-                yield Button("Volver al Inicio", id="btn-audit-home")
+
 
     def on_mount(self) -> None:
         table = self.query_one("#audit-data-table", DataTable)

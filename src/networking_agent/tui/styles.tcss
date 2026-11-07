@@ -145,7 +145,8 @@ TabPane {
 
 /* View Header Navigation Bars */
 #diagnostic-nav-bar, #config-nav-bar, #automation-top-bar, #inventory-top-bar, #audit-top-bar {
-    height: 3;
+    height: 4;
+    min-height: 4;
     background: #161b22;
     border-bottom: solid #30363d;
     padding: 0 1;
@@ -154,16 +155,20 @@ TabPane {
 }
 
 #diagnostic-title, #config-title, #automation-title, #inventory-title, #lbl-audit-header {
-    width: 70%;
+    width: 1fr;
     text-style: bold;
     color: #38bdf8;
+    content-align: left middle;
 }
 
 #btn-back-to-home, #btn-back-from-config, #btn-back-from-automation, #btn-back-from-inventory, #btn-back-from-audit {
-    width: 30%;
+    width: 24;
+    height: 3;
     background: #21262d;
     color: #c9d1d9;
     border: round #30363d;
+    text-align: center;
+    content-align: center middle;
 }
 
 #btn-back-to-home:hover, #btn-back-from-config:hover, #btn-back-from-automation:hover, #btn-back-from-inventory:hover, #btn-back-from-audit:hover {
@@ -173,7 +178,7 @@ TabPane {
 }
 
 /* Sidebar */
-#device-sidebar {
+#device-sidebar, #device-sidebar-config, .device-sidebar {
     width: 32;
     height: 100%;
     background: #161b22;
