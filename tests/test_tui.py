@@ -251,3 +251,42 @@ async def test_tui_home_dashboard_navigation_and_banner():
         assert tabs.active == "pane-home"
 
 
+
+
+@pytest.mark.anyio
+async def test_tui_troubleshooting_workspace_validation_and_modes():
+    """Verify empty symptom validation, mode explanation banner, and chip autocompletion."""
+    app = NetworkingAgentTUIApp()
+    async with app.run_test() as pilot:
+        workspace = pilot.app.query_one(DiagnosticWorkspace)
+
+        # 1. Input starts empty
+        symptom_input = workspace.query_one("#symptom-input")
+        assert symptom_input.text == ""
+
+        # 2. Triggering run with empty input blocks execution and logs validation warning
+        btn_run = workspace.query_one("#btn-run-remediation")
+        btn_run.press()
+        await pilot.pause()
+        log_terminal = workspace.query_one("#log-terminal")
+        assert any(
+            "Validación rechazada" in line or "Describe el síntoma" in line or "Selecciona primero" in line
+            for line in log_terminal.lines
+        )
+
+        # 3. Check mode explanation banner for PROACTIVE
+        banner = workspace.query_one("#mode-description-banner")
+        assert "PROACTIVO" in str(banner.render())
+
+        # 4. Switch to REACTIVE and verify banner updates
+        mode_reactive = workspace.query_one("#mode-reactive")
+        mode_reactive.value = True
+        await pilot.pause()
+        assert workspace.selected_mode == "REACTIVE"
+        assert "REACTIVO" in str(banner.render())
+
+        # 5. Click chip and verify input populates
+        chip_bgp = workspace.query_one("#chip-bgp")
+        chip_bgp.press()
+        await pilot.pause()
+        assert "BGP" in symptom_input.text

@@ -419,10 +419,32 @@ Button.-error:focus,
     border-left: heavy #4ade80;
 }
 
+#mode-selector-container {
+    height: auto;
+    background: #0d1527;
+    border: round #00b4d8;
+    padding: 1;
+    margin-bottom: 1;
+}
+
+#mode-selector-header {
+    height: auto;
+    align-vertical: middle;
+    margin-bottom: 1;
+}
+
 #mode-selector-bar {
     height: auto;
-    min-height: 4;
+    min-height: 3;
     padding: 0 1;
+}
+
+#mode-description-banner {
+    height: auto;
+    background: #080c14;
+    border-left: thick #00e5ff;
+    padding: 1;
+    color: #94a3b8;
 }
 
 #lbl-mode,
@@ -460,6 +482,46 @@ Button.-error:focus,
 }
 
 /* Symptom & Protocol Quick Chips */
+#symptom-chips-container {
+    height: auto;
+    width: 100%;
+    margin-bottom: 1;
+}
+
+.symptom-chips-row {
+    height: 3;
+    width: 100%;
+    margin-bottom: 1;
+}
+
+.symptom-chips-row .chip-btn {
+    width: 1fr;
+    height: 3;
+    margin-right: 1;
+    background: #080c14;
+    color: #94a3b8;
+    border: round #1e293b;
+    text-align: center;
+    content-align: center middle;
+}
+
+.symptom-chips-row .chip-btn:last-child {
+    margin-right: 0;
+}
+
+.symptom-chips-row .chip-btn:hover {
+    background: #0f172a;
+    color: #00e5ff;
+    border: round #00e5ff;
+    text-style: bold;
+}
+
+.symptom-chips-row .chip-btn:focus {
+    background: #1e293b;
+    color: #00e5ff;
+    border: round #00e5ff;
+}
+
 .symptom-chips {
     layout: horizontal;
     height: 3;
@@ -508,7 +570,11 @@ TextArea:focus {
     color: #ffffff;
 }
 
-#symptom-input,
+#symptom-input {
+    height: 6;
+    margin-bottom: 1;
+}
+
 #config-request-input {
     height: 4;
     margin-bottom: 1;

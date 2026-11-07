@@ -19,6 +19,21 @@ from networking_agent.models.intent import NetworkIntent
 class TroubleshootingWorkspace(Widget):
     """Operational troubleshooting workspace combining live interrogation and natural language symptoms."""
 
+    MODE_DESCRIPTIONS = {
+        "PROACTIVE": (
+            "[bold #00e5ff]MODO PROACTIVO (RECOMENDADO PARA FALLAS ACTIVAS):[/] "
+            "El agente se conectará vía SSH en tiempo real al equipo y ejecutará "
+            "comandos de telemetría y salud ([#38bdf8]show interfaces, show ip route, show bgp, etc.[/]), "
+            "combinando la salida viva con tu descripción para diagnosticar la causa raíz."
+        ),
+        "REACTIVE": (
+            "[bold #fbbf24]MODO REACTIVO (FORENSE / HISTORICO):[/] "
+            "El agente [bold underline]NO[/] enviará comandos ni tráfico al router. "
+            "Analizará únicamente el texto o eventos de Syslog que ingreses en el campo "
+            "inferior para correlacionar anomalías de incidentes ya ocurridos."
+        ),
+    }
+
     class RunDiagnosisRequested(Message):
         """Emitted when the operator triggers the troubleshooting workflow."""
 
@@ -46,28 +61,37 @@ class TroubleshootingWorkspace(Widget):
             # Selected Device Card
             yield Static(id="target-device-card")
 
-            # Mode Selector
-            with Horizontal(id="mode-selector-bar", classes="section-panel"):
-                yield Label("Modo de Interrogación:", id="lbl-mode")
-                with RadioSet(id="radio-mode"):
-                    yield RadioButton("Proactivo (Comandos show en vivo)", value=True, id="mode-proactive")
-                    yield RadioButton("Reactivo (Análisis de Syslog/Logs)", value=False, id="mode-reactive")
+            # Mode Selector Container
+            with Vertical(id="mode-selector-container", classes="section-panel"):
+                with Horizontal(id="mode-selector-header"):
+                    yield Label("Modo de Interrogación:", id="lbl-mode")
+                    with RadioSet(id="radio-mode"):
+                        yield RadioButton("Proactivo (Comandos show en vivo)", value=True, id="mode-proactive")
+                        yield RadioButton("Reactivo (Análisis de Syslog/Logs)", value=False, id="mode-reactive")
+                yield Static(id="mode-description-banner")
 
             # Quick Symptom Templates
-            yield Label("Atajos de Síntomas Comunes:", id="lbl-quick-symptoms")
-            with Horizontal(classes="symptom-chips"):
-                yield Button("BGP Down / Idle", id="chip-bgp", classes="chip-btn")
-                yield Button("Duplex Mismatch", id="chip-duplex", classes="chip-btn")
-                yield Button("Pérdida de Paquetes", id="chip-packetloss", classes="chip-btn")
-                yield Button("OSPF MTU Mismatch", id="chip-ospf", classes="chip-btn")
-                yield Button("VLAN Trunk Bloqueado", id="chip-vlan", classes="chip-btn")
-                yield Button("Lentitud de Red", id="chip-slow", classes="chip-btn")
+            yield Label("Atajos de Síntomas Comunes (Clic para autocompletar descripción):", id="lbl-quick-symptoms")
+            with Vertical(id="symptom-chips-container"):
+                with Horizontal(classes="symptom-chips-row"):
+                    yield Button("BGP Down / Idle", id="chip-bgp", classes="chip-btn")
+                    yield Button("Duplex Mismatch", id="chip-duplex", classes="chip-btn")
+                    yield Button("Pérdida de Paquetes", id="chip-packetloss", classes="chip-btn")
+                with Horizontal(classes="symptom-chips-row"):
+                    yield Button("OSPF MTU Mismatch", id="chip-ospf", classes="chip-btn")
+                    yield Button("VLAN Trunk Bloqueado", id="chip-vlan", classes="chip-btn")
+                    yield Button("Lentitud de Red", id="chip-slow", classes="chip-btn")
 
             # Symptom / Telemetry Input
-            yield Label("Descripción del Síntoma Operacional (Lenguaje Natural):", id="lbl-symptom")
+            yield Label("Descripción del Síntoma Operacional (Obligatorio *):", id="lbl-symptom")
+            placeholder_msg = (
+                "Escribe el síntoma en lenguaje natural (ej: 'Vecino BGP 10.0.0.2 caído', "
+                "'Pérdida de paquetes en Gi0/1') o selecciona un atajo superior..."
+            )
             yield TextArea(
                 id="symptom-input",
-                text="Los usuarios de la VLAN 20 reportan pérdida intermitente de paquetes hacia el gateway.",
+                text="",
+                placeholder=placeholder_msg,
             )
 
             # Trigger Button
@@ -79,6 +103,18 @@ class TroubleshootingWorkspace(Widget):
             # Real-time Execution Log Output
             yield Label("Consola de Interrogación y Telemetría en Tiempo Real:", id="lbl-console")
             yield Log(id="log-terminal", highlight=True)
+
+    def on_mount(self) -> None:
+        self.update_mode_description()
+
+    def update_mode_description(self) -> None:
+        """Update explanatory banner based on active interrogation mode."""
+        try:
+            desc_widget = self.query_one("#mode-description-banner", Static)
+            text = self.MODE_DESCRIPTIONS.get(self.selected_mode, "")
+            desc_widget.update(Text.from_markup(text))
+        except Exception:
+            pass
 
     def set_device(self, device: DeviceInventory) -> None:
         """Update target device display."""
@@ -97,6 +133,7 @@ class TroubleshootingWorkspace(Widget):
                 self.selected_mode = "PROACTIVE"
             else:
                 self.selected_mode = "REACTIVE"
+            self.update_mode_description()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "btn-back-to-home":
@@ -119,15 +156,29 @@ class TroubleshootingWorkspace(Widget):
     def _fill_symptom(self, text: str) -> None:
         symptom_box = self.query_one("#symptom-input", TextArea)
         symptom_box.text = text
+        symptom_box.focus()
 
     def _trigger_run(self) -> None:
         if not self.current_device:
+            self.notify(
+                "Selecciona primero un equipo de la barra lateral izquierda antes de iniciar el diagnóstico.",
+                title="Equipo Requerido",
+                severity="warning",
+            )
             self.append_log("[bold red][!] Selecciona primero un equipo de la barra lateral izquierda.[/]")
             return
 
         symptom = self.query_one("#symptom-input", TextArea).text.strip()
         if not symptom:
-            self.append_log("[bold red][!] Describe el síntoma operacional antes de ejecutar el análisis.[/]")
+            self.notify(
+                "La descripción del síntoma operacional es obligatoria.",
+                title="Campo Obligatorio",
+                severity="warning",
+            )
+            self.append_log(
+                "[bold red][!] Validación rechazada: Debes ingresar el síntoma antes de ejecutar.[/]"
+            )
+            self.query_one("#symptom-input", TextArea).focus()
             return
 
         self.post_message(
@@ -182,7 +233,7 @@ class TroubleshootingWorkspace(Widget):
         panel_widget = self.query_one("#diagnosis-result", Static)
         content = (
             f"[bold red]ACCION BLOQUEADA POR GUARDARRAIL DE SEGURIDAD OPERACIONAL[/bold red]\n\n"
-            f"La acción propuesta fue interceptada para proteger la infraestructura crítica.\n"
+            f"La acción propuesta fue interceptada para proteger la infraestructura crítica.\n\n"
             f"[bold]Motivo:[/bold] [yellow]{reason}[/yellow]\n"
             f"[dim]No se inyectaron comandos en el dispositivo.[/dim]"
         )
