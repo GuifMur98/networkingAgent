@@ -1,14 +1,19 @@
 """Modal screen for AI brain provider, model, and cryptographic settings configuration."""
 
-from typing import Dict, List, Optional, Tuple
+import asyncio
+from typing import Dict, List, Optional, Set, Tuple
 
+from textual import work
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Checkbox, Input, Label, Select
 
-from networking_agent.brains.discovery import discover_provider_models, get_installed_ollama_models
+from networking_agent.brains.discovery import (
+    discover_provider_models,
+    get_cached_ollama_models,
+)
 from networking_agent.core.config import settings
 from networking_agent.core.crypto import vault
 from networking_agent.core.db import db
@@ -67,6 +72,10 @@ class VaultModal(ModalScreen[Optional[Dict[str, str]]]):
         },
     }
 
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._installed_model_names: Set[str] = set()
+
     def compose(self) -> ComposeResult:
         with Vertical(classes="modal-dialog"):
             yield Label("CONFIGURACION DE INTELIGENCIA ARTIFICIAL", classes="modal-title")
@@ -75,9 +84,12 @@ class VaultModal(ModalScreen[Optional[Dict[str, str]]]):
             current_model = db.get_setting("ai_model") or settings.ai_model or "qwen2.5-coder:14b"
             meta = self.PROVIDER_METADATA.get(current_provider, self.PROVIDER_METADATA["ollama"])
 
-            # 1. Discover models for initial provider
+            # 1. Discover models without blocking the UI thread (allow_network=False)
             initial_choices, initial_val, status_msg = self._build_model_choices(
-                current_provider, current_model, host=db.get_setting("ollama_host") or settings.ollama_host
+                current_provider,
+                current_model,
+                host=db.get_setting("ollama_host") or settings.ollama_host,
+                allow_network=False,
             )
 
             with Horizontal(classes="modal-row"):
@@ -134,20 +146,89 @@ class VaultModal(ModalScreen[Optional[Dict[str, str]]]):
                 yield Button("Guardar Cambios", id="btn-save-vault", variant="primary")
                 yield Button("Cerrar", id="btn-cancel")
 
-    def _build_model_choices(
+    def on_mount(self) -> None:
+        """Trigger background scan for Ollama models if not already cached."""
+        provider = str(self.query_one("#select-provider", Select).value)
+        if provider == "ollama":
+            host = self.query_one("#input-api-key", Input).value.strip() or None
+            # If not already in cache, scan in background thread without freezing UI
+            if get_cached_ollama_models(host=host) is None:
+                self.run_background_scan(is_manual=False)
+
+    @work(exclusive=True)
+    async def run_background_scan(self, is_manual: bool = False) -> None:
+        """Scan Ollama models asynchronously in background thread without freezing UI."""
+        try:
+            btn_scan = self.query_one("#btn-scan-models", Button)
+            lbl_status = self.query_one("#lbl-model-status", Label)
+            sel_model = self.query_one("#select-model", Select)
+            inp_model = self.query_one("#input-model", Input)
+            sel_provider = self.query_one("#select-provider", Select)
+        except Exception:
+            return
+
+        provider = str(sel_provider.value)
+        host = self.query_one("#input-api-key", Input).value.strip() or None
+
+        if is_manual:
+            btn_scan.disabled = True
+            btn_scan.label = "Buscando..."
+            lbl_status.update("[bold cyan][>] Consultando modelos en Ollama...[/bold cyan]")
+
+        # Run query asynchronously in worker thread without blocking the UI
+        discovered = await asyncio.to_thread(
+            discover_provider_models,
+            provider,
+            host=host,
+            force_refresh=is_manual,
+            allow_network=True,
+        )
+
+        try:
+            self._installed_model_names = {m_id for _, m_id in discovered}
+            choices, sel_val, status_msg = self._format_choices_and_status(
+                provider, inp_model.value.strip(), discovered
+            )
+            sel_model.set_options(choices)
+            if sel_val:
+                sel_model.value = sel_val
+            lbl_status.update(status_msg)
+
+            if is_manual:
+                btn_scan.disabled = False
+                btn_scan.label = "Escanear"
+                count = len(self._installed_model_names)
+                if provider == "ollama":
+                    if count > 0:
+                        self.notify(
+                            f"Detectados {count} modelos en Ollama local.",
+                            title="Escaneo Exitoso",
+                            severity="information",
+                        )
+                    else:
+                        self.notify(
+                            "No se detectaron modelos en Ollama local.",
+                            title="Sin Modelos",
+                            severity="warning",
+                        )
+                else:
+                    self.notify(
+                        f"Catálogo de modelos actualizado para {provider.upper()}.",
+                        title="Catálogo Actualizado",
+                    )
+        except Exception:
+            pass
+
+    def _format_choices_and_status(
         self,
         provider: str,
         current_model: str,
-        host: Optional[str] = None,
-        force_refresh: bool = False,
+        discovered: List[Tuple[str, str]],
     ) -> Tuple[List[Tuple[str, str]], str, str]:
-        """Build choices for Select dropdown, determine initial selection and status message."""
-        discovered = discover_provider_models(provider, host=host, force_refresh=force_refresh)
+        """Format dropdown choices and status label from discovered list."""
         installed_ids = {m_id for _, m_id in discovered}
-
         choices: List[Tuple[str, str]] = list(discovered)
 
-        # Check if current_model is in the discovered list
         if current_model and current_model not in installed_ids:
             if provider == "ollama":
                 choices.insert(0, (f"[!] {current_model} (No instalado en Ollama)", current_model))
@@ -156,16 +237,13 @@ class VaultModal(ModalScreen[Optional[Dict[str, str]]]):
 
         choices.append(("Personalizado / Otro...", "__custom__"))
 
-        # Determine selected value
         valid_values = {val for _, val in choices}
         selected_val = current_model if current_model in valid_values else (discovered[0][1] if discovered else "")
 
-        # Formulate status message
         if provider == "ollama":
-            installed_ollama = get_installed_ollama_models(host=host, force_refresh=False)
-            if installed_ollama:
-                count = len(installed_ollama)
-                if current_model and current_model not in {m["model"] for m in installed_ollama}:
+            if self._installed_model_names:
+                count = len(self._installed_model_names)
+                if current_model and current_model not in self._installed_model_names:
                     status = (
                         f"[bold yellow][!] El modelo '{current_model}' no está instalado en Ollama. "
                         f"Selecciona uno de los {count} modelos detectados arriba.[/]"
@@ -178,6 +256,21 @@ class VaultModal(ModalScreen[Optional[Dict[str, str]]]):
             status = f"[dim]Catálogo oficial de modelos recomendados para {provider.upper()}.[/dim]"
 
         return choices, selected_val, status
+
+    def _build_model_choices(
+        self,
+        provider: str,
+        current_model: str,
+        host: Optional[str] = None,
+        force_refresh: bool = False,
+        allow_network: bool = True,
+    ) -> Tuple[List[Tuple[str, str]], str, str]:
+        """Build choices for Select dropdown, determine initial selection and status message."""
+        discovered = discover_provider_models(
+            provider, host=host, force_refresh=force_refresh, allow_network=allow_network
+        )
+        self._installed_model_names = {m_id for _, m_id in discovered}
+        return self._format_choices_and_status(provider, current_model, discovered)
 
     def on_select_changed(self, event: Select.Changed) -> None:
         """Dynamically update input labels, password masking, and models when provider changes."""
@@ -196,9 +289,7 @@ class VaultModal(ModalScreen[Optional[Dict[str, str]]]):
     def _update_status_for_model(self, provider: str, model_id: str) -> None:
         lbl_status = self.query_one("#lbl-model-status", Label)
         if provider == "ollama":
-            host = self.query_one("#input-api-key", Input).value.strip() or None
-            installed = get_installed_ollama_models(host=host, force_refresh=False)
-            if any(m["model"] == model_id for m in installed):
+            if model_id in self._installed_model_names:
                 lbl_status.update(f"[bold green][✓] Modelo instalado seleccionado: {model_id}[/]")
             else:
                 lbl_status.update(f"[bold yellow][!] Modelo seleccionado no verificado en Ollama: {model_id}[/]")
@@ -225,16 +316,20 @@ class VaultModal(ModalScreen[Optional[Dict[str, str]]]):
             stored = db.get_setting(meta["setting_key"]) or meta["default_val"]
         inp_cred.value = stored
 
-        # Refresh model options for new provider
+        # Refresh model options with ZERO LAG (allow_network=False)
         host = stored if provider == "ollama" else None
         choices, sel_val, status_msg = self._build_model_choices(
-            provider, inp_model.value.strip(), host=host, force_refresh=True
+            provider, inp_model.value.strip(), host=host, allow_network=False
         )
         sel_model.set_options(choices)
         if sel_val:
             sel_model.value = sel_val
             inp_model.value = sel_val
         lbl_status.update(status_msg)
+
+        # If switching to Ollama and not yet cached, scan in background
+        if provider == "ollama" and get_cached_ollama_models(host=host) is None:
+            self.run_background_scan(is_manual=False)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "btn-save-vault":
@@ -245,42 +340,8 @@ class VaultModal(ModalScreen[Optional[Dict[str, str]]]):
             self.action_scan_models()
 
     def action_scan_models(self) -> None:
-        """Scan models on the configured host or reload catalog."""
-        provider = str(self.query_one("#select-provider", Select).value)
-        host = self.query_one("#input-api-key", Input).value.strip() or None
-        inp_model = self.query_one("#input-model", Input)
-        sel_model = self.query_one("#select-model", Select)
-        lbl_status = self.query_one("#lbl-model-status", Label)
-
-        choices, sel_val, status_msg = self._build_model_choices(
-            provider, inp_model.value.strip(), host=host, force_refresh=True
-        )
-        sel_model.set_options(choices)
-        if sel_val:
-            sel_model.value = sel_val
-            inp_model.value = sel_val
-        lbl_status.update(status_msg)
-
-        if provider == "ollama":
-            installed = get_installed_ollama_models(host=host, force_refresh=False)
-            count = len(installed)
-            if count > 0:
-                self.notify(
-                    f"Detectados {count} modelos en Ollama local.",
-                    title="Escaneo Exitoso",
-                    severity="information",
-                )
-            else:
-                self.notify(
-                    "No se detectaron modelos en Ollama local.",
-                    title="Sin Modelos",
-                    severity="warning",
-                )
-        else:
-            self.notify(
-                f"Catálogo de modelos actualizado para {provider.upper()}.",
-                title="Catálogo Actualizado",
-            )
+        """Scan models on the configured host or reload catalog asynchronously."""
+        self.run_background_scan(is_manual=True)
 
     def action_save(self) -> None:
         provider = str(self.query_one("#select-provider", Select).value)

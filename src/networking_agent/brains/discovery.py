@@ -9,23 +9,39 @@ from networking_agent.core.logging import logger
 
 # In-memory cache for discovered Ollama models: {host: (timestamp, models)}
 _OLLAMA_CACHE: Dict[str, Tuple[float, List[Dict[str, Any]]]] = {}
-_CACHE_TTL_SECONDS = 60.0
+_CACHE_TTL_SECONDS = 300.0  # 5 minutes TTL for discovered models
+
+
+def _normalize_host(host: Optional[str]) -> str:
+    """Normalize target host string by trimming whitespace and trailing slashes."""
+    target = (host or db.get_setting("ollama_host") or settings.ollama_host or "http://localhost:11434").strip()
+    return target.rstrip("/")
+
+
+def get_cached_ollama_models(host: Optional[str] = None) -> Optional[List[Dict[str, Any]]]:
+    """Return in-memory cached Ollama models if valid, otherwise None without any network I/O."""
+    target_host = _normalize_host(host)
+    if target_host in _OLLAMA_CACHE:
+        cached_time, cached_models = _OLLAMA_CACHE[target_host]
+        if time.time() - cached_time < _CACHE_TTL_SECONDS:
+            return cached_models
+    return None
 
 
 def get_installed_ollama_models(host: Optional[str] = None, force_refresh: bool = False) -> List[Dict[str, Any]]:
     """Query live Ollama instance for locally installed models with memory caching."""
-    target_host = host or db.get_setting("ollama_host") or settings.ollama_host
+    target_host = _normalize_host(host)
 
     # Return cached results if valid and not forcing refresh
-    if not force_refresh and target_host in _OLLAMA_CACHE:
-        cached_time, cached_models = _OLLAMA_CACHE[target_host]
-        if time.time() - cached_time < _CACHE_TTL_SECONDS:
-            return cached_models
+    if not force_refresh:
+        cached = get_cached_ollama_models(target_host)
+        if cached is not None:
+            return cached
 
     try:
         from ollama import Client
 
-        client = Client(host=target_host, timeout=2.5)
+        client = Client(host=target_host, timeout=2.0)
         resp = client.list()
         results = []
         for m in getattr(resp, "models", []):
@@ -51,20 +67,33 @@ def discover_provider_models(
     host: Optional[str] = None,
     api_key: Optional[str] = None,
     force_refresh: bool = False,
+    allow_network: bool = True,
 ) -> List[Tuple[str, str]]:
     """Return discovered live models or recommended official catalog for the given provider."""
     provider = provider.lower()
 
     if provider == "ollama":
-        installed = get_installed_ollama_models(host=host, force_refresh=force_refresh)
-        if installed:
+        target_host = _normalize_host(host)
+        # Check cache first
+        cached = get_cached_ollama_models(target_host)
+        if cached is not None and not force_refresh:
             choices = []
-            for item in installed:
+            for item in cached:
                 size_suffix = f" [{item['param_size']}]" if item["param_size"] else ""
                 choices.append((f"{item['model']}{size_suffix} (Instalado)", item["model"]))
             return choices
 
-        # Fallback catalog when Ollama is offline or has no local models
+        # If network calls are permitted and (force_refresh or not cached)
+        if allow_network:
+            installed = get_installed_ollama_models(host=target_host, force_refresh=force_refresh)
+            if installed:
+                choices = []
+                for item in installed:
+                    size_suffix = f" [{item['param_size']}]" if item["param_size"] else ""
+                    choices.append((f"{item['model']}{size_suffix} (Instalado)", item["model"]))
+                return choices
+
+        # Fallback catalog when Ollama is offline, not yet cached, or allow_network=False
         return [
             ("qwen2.5-coder:14b (Recomendado)", "qwen2.5-coder:14b"),
             ("qwen3-coder:30b", "qwen3-coder:30b"),

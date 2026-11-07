@@ -197,6 +197,17 @@ class NetworkingAgentTUIApp(App):
             except Exception:
                 pass
 
+        self._prewarm_ai_cache()
+
+    @work(thread=True)
+    def _prewarm_ai_cache(self) -> None:
+        """Silently pre-warm local Ollama models cache in background thread so opening modal is instantaneous."""
+        try:
+            from networking_agent.brains.discovery import get_installed_ollama_models
+            get_installed_ollama_models(force_refresh=True)
+        except Exception:
+            pass
+
     def action_go_home(self) -> None:
         """Switch navigation back to the Home Dashboard."""
         self.set_focus(None)
