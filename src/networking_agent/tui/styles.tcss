@@ -576,11 +576,17 @@ TextArea:focus {
 #select-template {
     width: 36;
     height: 3;
+    border: none;
+    padding: 0;
+    margin: 0;
 }
 
 #select-vendor-auto {
     width: 26;
     height: 3;
+    border: none;
+    padding: 0;
+    margin: 0;
 }
 
 #automation-actions {
@@ -697,28 +703,33 @@ DataTable > .datatable--hover {
 
 /* Select Dropdown & Overlays */
 Select {
-    background: #080c14;
-    border: round #1e293b;
-    color: #e2e8f0;
+    height: 3;
+    border: none;
+    background: transparent;
+    padding: 0;
+    margin: 0;
 }
 
-Select:hover {
-    border: round #00b4d8;
-}
-
+Select:hover,
 Select:focus {
-    border: round #00e5ff;
+    border: none;
 }
 
 SelectCurrent {
+    border: round #00b4d8;
     background: #080c14;
     color: #e2e8f0;
-    border: round #1e293b;
+    height: 3;
+    padding: 0 1;
 }
 
 SelectCurrent:hover {
     border: round #00e5ff;
     color: #00e5ff;
+}
+
+SelectCurrent:focus {
+    border: round #00e5ff;
 }
 
 SelectOverlay {

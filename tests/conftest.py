@@ -3,8 +3,21 @@
 import pytest
 from pydantic import SecretStr
 
+from networking_agent.core.db import db
 from networking_agent.models.device import DeviceInventory
 from networking_agent.models.intent import NetworkIntent
+
+
+@pytest.fixture(autouse=True)
+def isolate_database_for_tests(tmp_path):
+    """Ensure all tests run with an isolated temporary SQLite database, protecting data/networking_agent.db."""
+    original_path = db.db_path
+    db.db_path = tmp_path / "test_isolated.db"
+    db._init_db()
+    try:
+        yield
+    finally:
+        db.db_path = original_path
 
 
 @pytest.fixture

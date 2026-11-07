@@ -39,9 +39,9 @@ class BannerWidget(Static):
 
         t = Text(no_wrap=True)
 
-        # 1. Top border: [--──────...──────[--]
-        t.append("[--", style="bold #00e5ff")
-        t.append("─" * (w - 7), style="dim #00e5ff")
+        # 1. Top border: [--]──────...──────[--]
+        t.append("[--]", style="bold #00e5ff")
+        t.append("─" * (w - 8), style="dim #00e5ff")
         t.append("[--]", style="bold #00e5ff")
 
         # 2-4. Antenna / radar dot lines (. - o ... o - .)
