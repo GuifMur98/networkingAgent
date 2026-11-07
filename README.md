@@ -1,10 +1,10 @@
-# 🌐 NetworkingAgent Enterprise
+# 🌐 NetworkingAgent Enterprise v2.0
 
 <div align="center">
 
 [![Python 3.14](https://img.shields.io/badge/python-3.14-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org/)
-[![UI: Textual TUI](https://img.shields.io/badge/ui-Textual%20TUI%20&%20Rich-00e5ff.svg?style=flat&logo=gnometerminal)](https://textual.textualize.io/)
-[![Tests](https://img.shields.io/badge/tests-113%20passed-brightgreen.svg?style=flat&logo=pytest&logoColor=white)]()
+[![UI: Textual TUI](https://img.shields.io/badge/ui-Textual%20TUI%20v2.0-00e5ff.svg?style=flat&logo=gnometerminal)](https://textual.textualize.io/)
+[![Tests](https://img.shields.io/badge/tests-125%20passed-brightgreen.svg?style=flat&logo=pytest&logoColor=white)]()
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg?style=flat&logo=ruff&logoColor=white)](https://github.com/astral-sh/ruff)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=flat)](LICENSE)
 [![Security: Hardened](https://img.shields.io/badge/security-hardened%20defense--in--depth-red.svg?style=flat&logo=shield)]()
@@ -12,7 +12,17 @@
 
 **Asistente Autónomo de Ingeniería de Redes en Bucle Cerrado (*Closed-Loop Automation*) con IA Multi-Cerebro**
 
-*Traduce telemetría no confiable y síntomas operativos en intenciones neutrales, verifica radio de impacto (Blast Radius), descubre dinámicamente interfaces de gestión para evitar pérdida de acceso, realiza snapshots de configuración reales y ejecuta cambios transaccionales con aprobación humana (HitL) y rollback automático.*
+```text
+  _   _      _                      _     _               _                    _   
+ | \ | | ___| |___      _____  _ __| | __(_)_ __   __ _  / \   __ _  ___ _ __ | |_ 
+ |  \| |/ _ \ __\ \ /\ / / _ \| '__| |/ /| | '_ \ / _` |/ _ \ / _` |/ _ \ '_ \| __|
+ | |\  |  __/ |_ \ V  V / (_) | |  |   < | | | | | (_| / ___ \ (_| |  __/ | | | |_ 
+ |_| \_|\___|\__| \_/\_/ \___/|_|  |_|\_\|_|_| |_|\__, /_/   \_\__, |\___|_| |_|\__|
+                                                   |___/        |___/                
+                       Enterprise Autonomous Closed-Loop Network Agent                
+```
+
+*Diagnóstico de causa raíz autónomo (L1-L7), aprovisionamiento declarativo multi-protocolo en lenguaje natural, editor de plantillas Jinja2 con validación sintáctica pre-vuelo, despliegue masivo transaccional, blindaje de interfaces de gestión y rollback automático con Human-in-the-Loop.*
 
 [📖 Guía de Uso](docs/USAGE_GUIDE.md) • [🏛️ Arquitectura](docs/ARCHITECTURE.md) • [🛡️ Seguridad](docs/SECURITY.md) • [🖧 Hardware Soportado](docs/SUPPORTED_HARDWARE.md)
 
@@ -20,124 +30,157 @@
 
 ---
 
-## 🚀 Capacidades Principales
+## 🚀 Pilares Operacionales de la Versión 2.0
 
-- **🧠 Multi-Cerebro de IA Desacoplado:** Inferencia local y privada sin fuga de datos mediante **Ollama** (`netexpert:latest`, `llama3.1`) o modelos frontera en la nube con **Google Gemini** (`gemini-2.5-pro` / `gemini-2.5-flash`), **OpenAI** y **Anthropic**.
-- **🔌 Soporte Multi-Fabricante de Producción:** Drivers nativos para **Cisco IOS/IOS-XE**, **Cisco NX-OS** (sesiones atómicas y checkpoints), **Cisco IOS-XR** (`commit confirmed`), **Juniper Junos** (`commit confirmed 3`), y **MikroTik RouterOS** (v6 y v7 con `/system backup`).
-- **🔍 Diagnóstico Proactivo & Reactivo:**
-  - **Proactivo:** El operador reporta síntomas en lenguaje natural (*"siento lento el internet"*, *"pérdidas en ether2"*); el agente interroga en vivo el router, analiza uso de CPU, descartes de paquetes y enlace físico, determinando con precisión técnica si se requiere o no modificación.
-  - **Reactivo:** Ingesta y análisis automático de syslogs o eventos de monitorización.
-- **🛡️ Blindaje de Gestión y Blast Radius:** Descubrimiento dinámico de la interfaz que sostiene la sesión SSH o la ruta por defecto (`discover_active_management_interfaces`), bloqueando de forma incondicional cualquier intento de apagar o reiniciar interfaces WAN/uplinks.
-- **⚡ Optimización de Rendimiento (SSH Pooling):** Mantiene y reutiliza una única sesión SSH activa a lo largo del diagnóstico, pre-check, inyección y post-verificación, reduciendo tiempos de respuesta de 15 segundos a menos de 2 segundos.
-- **🔒 Bóveda Criptográfica en SQLite:** Claves de API y contraseñas de red cifradas simétricamente con Fernet (AES-128-CBC) en `data/networking_agent.db`, blindada con permisos `0600`.
-- **🛑 Human-in-the-Loop con Repregunta Continua:** Previsualización exacta de comandos CLI a inyectar con diff visual. Si el operador comete un error tipográfico, el sistema no cancela abruptamente ni ejecuta accidentalmente.
-- **🔄 Rollback Automático y Snapshots Reales:** Si la post-verificación detecta que el problema no se resolvió o se degradó el servicio, se activa de inmediato el rollback hacia el snapshot previo.
-- **📜 Auditoría Inmutable:** Registro estructurado en formato JSONL (`logs/audit.jsonl`).
+NetworkingAgent v2.0 estructura las operaciones de ingeniería de redes en **tres modos operacionales especializados**, gestionados a través de una consola de terminal reactiva (`Textual TUI`) de nivel empresarial:
+
+### 1. 🔍 Modo Troubleshooting (Diagnóstico Autónomo en Lenguaje Natural)
+- **Interrogación Autónoma Multi-Capa (L1-L7):** El operador describe el síntoma operacional en lenguaje natural (*"Vecindad OSPF en Gi0/1 estancada en EXSTART"* o *"Pérdida intermitente de paquetes en enlace de distribución"*).
+- **Inspección Técnica en Vivo:** El asistente interroga de manera autónoma capas físicas, enlaces troncales, tablas de enrutamiento y logs (`show interfaces`, `show ip route`, `show ip bgp summary`, `show log`).
+- **Dictamen Causa-Raíz y Blast Radius:** El cerebro de IA diagnostica el problema, verifica que no comprometa interfaces de gestión ni enlaces troncales críticos (*Blast Radius Guard*), y propone la remediación exacta antes de inyectar cualquier comando.
+
+### 2. ⚙️ Modo Configuración (Aprovisionamiento Declarativo Multi-Vendor)
+- **Generación Declarativa:** Solicitud de cambios de red en lenguaje natural (*"Configura BGP ASN 65100 con vecino 10.0.0.2 en AS 65200 anunciando la red 192.168.10.0/24"*).
+- **Chips de Protocolo Especializados:** Selectores rápidos para **BGP**, **OSPF**, **EIGRP**, **STP**, **Port-Channel (LACP)**, **VLANs**, **ACLs** y **Servicios**.
+- **Previsualización Diff & Human-in-the-Loop:** Síntesis multi-vendor (Cisco IOS/IOS-XE, Cisco NX-OS, Juniper Junos, MikroTik RouterOS) con tabla comparativa de cambios, cálculo automático de comandos de compensación reversa (*Rollback Plan*) y compuerta obligatoria de aprobación humana.
+
+### 3. ⚡ Modo Automatización (Editor Jinja2 & Despliegue Masivo)
+- **Editor de Plantillas Integrado:** Widget `TextArea` interactivo a pantalla completa con soporte de números de línea, navegación fluida y atajos.
+- **Catálogo de Plantillas Incorporado:** Plantillas Jinja2 parametrizadas listas para producción (*Hardening Base Cisco*, *OSPF Multi-Area*, *Expansión de Troncales VLAN*, *BGP Peering*).
+- **Validador Sintáctico Pre-Vuelo (`ConfigSyntaxValidator`):** Dry-run en tiempo real que intercepta comandos destructivos (`reload`, `write erase`, `format`, `/system reset-configuration`), verifica el balanceo de bloques jerárquicos (Junos `{ ... }`) y detecta variables Jinja2 no renderizadas (`{{ var }}`).
+- **Despliegue Masivo Multi-Equipo:** Selección múltiple mediante lista interactiva (`SelectionList`), ejecución transaccional con snapshots de configuración previos por equipo y rollback individualizado ante anomalías.
 
 ---
 
-## 🏛️ Diagrama de Arquitectura y Flujo Closed-Loop
+## 🏛️ Diagrama de Arquitectura Closed-Loop v2.0
 
 ```mermaid
 flowchart TD
-    A["Síntoma del Operador o Syslog"] --> B["AI Brain Factory"]
-    subgraph Brains ["Capa de Inferencia Neutral"]
-        B -->|Local / On-Premise| B1["Ollama Brain"]
-        B -->|Google Cloud| B2["Google Gemini Brain"]
-        B -->|Cloud APIs| B3["OpenAI / Anthropic"]
-    end
-    B1 --> C["Structured Output: NetworkIntent"]
-    B2 --> C
-    B3 --> C
-
-    subgraph Security ["Capa de Seguridad & Guardrails"]
-        C --> D{"Blast Radius Guard"}
-        D -->|WAN / Uplink / Mgmt Port| D1["🛑 BLOQUEO ACTIVO: Acceso Prohibido"]
-        D -->|Safe Target| E{"Command Validator"}
-        E -->|CLI Injection / Prohibited| E1["🛑 BLOQUEO ACTIVO: Injection Detected"]
-        E -->|Sanitized CLI| F["🛡️ Compuerta Human-in-the-Loop"]
+    subgraph InputLayer ["1. Capa de Entrada y Modos Operacionales"]
+        A1["Troubleshooting: Síntoma Natural"] 
+        A2["Configuración: Intención Declarativa"]
+        A3["Automatización: Plantilla Jinja2 / Script"]
     end
 
-    subgraph Execution ["Capa de Ejecución en Bucle Cerrado"]
+    subgraph CognitiveLayer ["2. Capa Cognitiva & Inferencia Neutral"]
+        A1 --> B["AI Brain Factory"]
+        A2 --> B
+        B -->|Local / Soberano| B1["Ollama (Qwen2.5-Coder / Llama 3.1)"]
+        B -->|Google Cloud| B2["Google Gemini (2.5 Pro / Flash)"]
+        B -->|Cloud APIs| B3["OpenAI (GPT-4o) / Anthropic (Claude 3.5)"]
+        B1 --> C1["NetworkIntent (Troubleshooting)"]
+        B2 --> C1
+        B3 --> C2["ConfigurationIntent (Configuración)"]
+    end
+
+    subgraph GuardrailLayer ["3. Guardarraíles de Seguridad & Pre-Flight"]
+        C1 --> D{"Blast Radius Guard"}
+        D -->|Puerto WAN / Enlace Crítico| D1["🛑 BLOQUEO ACTIVO: Acceso Prohibido"]
+        D -->|Interfaz Segura| E{"Command Validator"}
+        
+        A3 --> SV{"ConfigSyntaxValidator"}
+        SV -->|Comando Destructivo / Error Jinja2| SV1["🛑 BLOQUEO PRE-VUELO: Rechazado"]
+        SV -->|Sintaxis Válida| BD["BatchDeployer Engine"]
+
+        C2 --> E
+        E -->|Inyección / Comandos Prohibidos| E1["🛑 BLOQUEO: Injection Detected"]
+        E -->|CLI Seguro| F["🛡️ Compuerta Human-in-the-Loop (HitL)"]
+    end
+
+    subgraph ExecutionLayer ["4. Capa de Ejecución y Bucle Cerrado"]
         F -->|Operador Rechaza| G1["Abortar & Auditar"]
-        F -->|Operador Autoriza| G2["📸 Pre-Check Snapshot & Checkpoint"]
-        G2 --> H["⚡ Inyección Transaccional (SSH Pooling)"]
-        H --> I["🔍 Post-Check de Verificación de Telemetría"]
-        I -->|Saludable / Resuelto| J["✅ Commit Definitivo & Auditoría Exitosa"]
-        I -->|Fallo / Anomalía| K["🔄 Rollback Automático Inmediato"]
+        F -->|Operador Aprueba| G2["📸 Snapshot Pre-Cambio & Checkpoint"]
+        BD --> G2
+        G2 --> H["⚡ Inyección Transaccional (SSH Connection Pooling)"]
+        H --> I["🔍 Post-Verificación de Telemetría"]
+        I -->|Saludable / Resuelto| J["✅ Commit Definitivo & Registro en Auditoría"]
+        I -->|Fallo / Degeneración| K["🔄 Rollback Automático Inmediato"]
     end
 ```
 
 ---
 
-## 📁 Estructura del Proyecto
+## 📁 Estructura del Repositorio
 
 ```
 networkingAgent/
-├── pyproject.toml              # Metadatos, dependencias, ruff y pytest
-├── uv.lock                     # Lockfile determinista de dependencias
+├── pyproject.toml              # Dependencias (Jinja2, Textual, Netmiko, Pydantic, etc.)
+├── uv.lock                     # Lockfile determinista
 ├── README.md                   # Documentación principal
 ├── LICENSE                     # Licencia Apache 2.0
 ├── .env.example                # Plantilla de variables de entorno
-├── main.py                     # Entrypoint interactivo y CLI
+├── main.py                     # Entrypoint TUI / CLI
 ├── data/                       # Almacenamiento local SQLite cifrado (0600)
 ├── backups/                    # Snapshots y configuraciones de respaldo
-├── logs/                       # Trazas de ejecución y auditoría (audit.jsonl)
-├── docs/                       # Documentación técnica profunda
-│   ├── USAGE_GUIDE.md          # Manual completo de uso y casos de prueba
+├── logs/                       # Bitácora inmutable de auditoría (audit.jsonl)
+├── docs/                       # Documentación técnica completa
+│   ├── USAGE_GUIDE.md          # Manual de operación detallado y ejemplos
 │   ├── ARCHITECTURE.md         # Diseño hexagonal, componentes y diagramas
-│   ├── SECURITY.md             # Modelo de amenazas y hardening anti-hacking
-│   └── SUPPORTED_HARDWARE.md   # Matriz de compatibilidad y comandos multi-vendor
+│   ├── SECURITY.md             # Modelo de amenazas, guardarraíles y hardening
+│   └── SUPPORTED_HARDWARE.md   # Matriz de soporte de hardware y sintaxis CLI
 ├── src/
 │   └── networking_agent/
-│       ├── core/               # Bóveda criptográfica, base de datos, config, auditoría
-│       │   ├── crypto.py       # SecretVault con cifrado Fernet (AES-128)
+│       ├── core/               # Criptografía, SQLite, config y auditoría
+│       │   ├── crypto.py       # SecretVault cifrado con Fernet (AES-128-CBC)
 │       │   ├── db.py           # DatabaseManager SQLite en modo WAL
 │       │   ├── config.py       # Pydantic Settings
 │       │   ├── logging.py      # Rich logging estructurado
 │       │   ├── exceptions.py   # Excepciones de dominio y seguridad
 │       │   └── audit.py        # Registro inmutable en audit.jsonl
-│       ├── models/             # Esquemas estrictos de Pydantic
-│       │   ├── intent.py       # NetworkIntent neutral con regex multi-vendor
-│       │   ├── device.py       # DeviceInventory con validación de host anti-traversal
-│       │   └── telemetry.py    # TelemetryEvent saneado con límite de DoS
-│       ├── guardrails/         # Capa de seguridad y blast radius
+│       ├── models/             # Modelos de datos validados con Pydantic
+│       │   ├── intent.py       # NetworkIntent neutral para troubleshooting
+│       │   ├── config_intent.py# ConfigurationIntent, plantillas y batch results
+│       │   ├── device.py       # DeviceInventory con validación anti-traversal
+│       │   └── telemetry.py    # TelemetryEvent saneado contra DoS
+│       ├── guardrails/         # Capa de seguridad y contención de impacto
 │       │   ├── blast_radius.py # Protección incondicional de WAN y gestión
-│       │   └── validator.py    # CommandValidator contra inyecciones y persistencia
-│       ├── brains/             # Proveedores de inferencia neutral
-│       │   ├── base.py         # Abstracción y HARDENED_SYSTEM_PROMPT
-│       │   ├── ollama.py       # Inferencia local privada
+│       │   ├── validator.py    # CommandValidator contra inyecciones y persistencia
+│       │   └── syntax_validator.py # Pre-flight validator para scripts y Jinja2
+│       ├── brains/             # Inferencia cognitivo-estructurada desacoplada
+│       │   ├── base.py         # LLMBrain y prompts endurecidos del sistema
+│       │   ├── ollama.py       # Inferencia local privada y soberana
 │       │   ├── gemini.py       # Integración oficial Google GenAI
 │       │   ├── openai.py       # Integración OpenAI GPT-4o
 │       │   ├── anthropic.py    # Integración Anthropic Claude 3.5 Sonnet
-│       │   └── factory.py      # Selector dinámico de proveedor
-│       ├── drivers/            # Automatización multi-vendor con SSH pooling
-│       │   ├── base.py         # NetworkOSDriver (agrupación SSH y dynamic discovery)
+│       │   └── factory.py      # Selector dinámico de proveedor con bóveda SQLite
+│       ├── drivers/            # Drivers multi-vendor con pooling SSH
+│       │   ├── base.py         # NetworkOSDriver, interrogación de protocolos y discovery
 │       │   ├── cisco_ios.py    # Driver Cisco IOS / IOS-XE
 │       │   ├── cisco_nxos.py   # Driver Cisco NX-OS (checkpoints nativos)
 │       │   ├── cisco_xr.py     # Driver Cisco IOS-XR (commit confirmed)
 │       │   ├── juniper.py      # Driver Juniper Junos (commit confirmed 3)
 │       │   ├── mikrotik.py     # Driver MikroTik RouterOS v6/v7
-│       │   └── factory.py      # Factory de drivers
-│       ├── engine/             # Orquestador del bucle cerrado
-│       │   ├── agent.py        # NetworkAssistantAgent
+│       │   └── factory.py      # Factoría de drivers
+│       ├── engine/             # Orquestación del bucle cerrado y automatización
+│       │   ├── agent.py        # NetworkAssistantAgent (Troubleshooting & Config)
+│       │   ├── automation.py   # TemplateEngine (Jinja2) y BatchDeployer multi-host
 │       │   ├── observer.py     # Protocolo de observabilidad desacoplado
-│       │   └── verification.py # VerificationEngine (pre vs post)
+│       │   └── verification.py # Motor de verificación pre vs post
 │       ├── tui/                # Interfaz Gráfica de Terminal (Textual TUI)
-│       │   ├── app.py          # Aplicación reactiva multihilo
-│       │   ├── styles.tcss     # Estilos modernos Cyberpunk/Nord
-│       │   ├── widgets/        # Banner ASCII, dashboard de inicio, workspace, inventario y auditoría
-│       │   └── modals/         # Modales de aprobación HitL, equipos y bóveda de IA
-│       └── cli/                # Interfaz clásica por consola
-│           ├── main.py         # Controlador de flujo y continuidad
-│           ├── interactive.py  # Menús ricos, banner ASCII y autodescubrimiento
-│           └── prompts.py      # Validadores interactivos de repregunta
-└── tests/                      # Suite de 114 pruebas unitarias automatizadas
+│       │   ├── app.py          # Aplicación reactiva con 5 pilares operacionales
+│       │   ├── styles.tcss     # Estilos enterprise oscuros (NOC Theme)
+│       │   ├── widgets/        # Componentes visuales especializados
+│       │   │   ├── banner_widget.py       # Banner ASCII con protección de ajuste
+│       │   │   ├── home_view.py           # Dashboard de bienvenida y 5 cards
+│       │   │   ├── troubleshooting_view.py# Workspace de diagnóstico interactivo
+│       │   │   ├── configuration_view.py  # Workspace de aprovisionamiento declarativo
+│       │   │   ├── automation_view.py     # Editor de plantillas, dry-run y batch
+│       │   │   ├── device_sidebar.py      # Catálogo lateral con badges de OS
+│       │   │   ├── device_inventory_view.py# Tabla completa de gestión de equipos
+│       │   │   ├── audit_table.py         # Visor del historial JSONL de auditoría
+│       │   │   └── status_bar.py          # Barra superior con telemetría en vivo
+│       │   └── modals/         # Modales flotantes translúcidos
+│       │       ├── hitl_modal.py          # Aprobación humana con diff visual
+│       │       ├── device_modal.py        # Alta de equipo cifrada
+│       │       └── vault_modal.py         # Ajustes de IA dinámicos por proveedor
+│       └── cli/                # Modo consola clásico interactivo y por lotes
+└── tests/                      # Suite de 125 pruebas automatizadas
     ├── test_brains.py
     ├── test_crypto.py
     ├── test_db.py
     ├── test_drivers.py
     ├── test_engine.py
+    ├── test_evolution_v2.py    # Pruebas v2 (plantillas, batch, TUI 5 pilares)
     ├── test_guardrails.py
     ├── test_models.py
     ├── test_prompts.py
@@ -148,130 +191,71 @@ networkingAgent/
 
 ## ⚡ Guía de Inicio Rápido
 
-### 1. Requisitos Previos
+### 1. Requisitos del Sistema
+- Python `>= 3.12` (Certificado en Python `3.14`).
+- [`uv`](https://github.com/astral-sh/uv) (Recomendado para gestión ultrarrápida de dependencias).
 
-- Python `>= 3.12` (Probado en Python 3.14).
-- [`uv`](https://github.com/astral-sh/uv) instalado.
-
-### 2. Instalación
+### 2. Instalación en 3 Pasos
 
 ```bash
-# Clonar el proyecto
-git clone <url-del-repositorio>
+# 1. Clonar el repositorio
+git clone https://github.com/GuifMur98/networkingAgent.git
 cd networkingAgent
 
-# Sincronizar dependencias
+# 2. Sincronizar el entorno virtual
 uv sync --extra dev
-```
 
-### 3. Configuración
-
-Copia la plantilla de variables:
-
-```bash
-cp .env.example .env
-```
-
-*(Opcional: Si deseas utilizar Google Gemini, configura `GEMINI_API_KEY=tu_clave` o agrégala desde el menú interactivo).*
-
-### 4. Modos de Ejecución
-
-#### 🚀 Modo A: Interfaz Gráfica de Terminal Reactiva (Textual TUI - Predeterminado)
-Inicia la experiencia interactiva moderna con navegación visual por pestañas, catálogo lateral de equipos, historial de auditoría y diálogos modales de autorización HitL:
-
-```bash
-# Iniciar TUI moderna (por defecto en terminales interactivos)
+# 3. Lanzar la aplicación
 uv run python main.py
-
-# O explícitamente con la bandera:
-uv run networking-agent --tui
 ```
 
-*Atajos de teclado en la TUI:*
-- `q`: Salir de la aplicación.
-- `d`: Registrar nuevo equipo de red (Abre modal cifrado).
-- `s`: Ajustes del Cerebro de IA y Bóveda criptográfica.
-- `r`: Recargar inventario y tabla de auditoría.
-- `y` / `n`: Autorizar o Rechazar cambios en el diálogo HitL.
+### 3. Navegación en la Interfaz Textual (TUI)
 
-#### 📟 Modo B: Asistente Interactivo de Consola Clásico (Rich Wizard)
-Si prefieres el menú paso a paso secuencial en la consola:
+Al iniciar, se presenta el panel de control operacional con navegación por teclado y ratón:
 
-```bash
-uv run networking-agent --cli
-# o versión corta:
-uv run python main.py -c
-```
-
-#### 🤖 Modo C: Ejecución Automatizada / CI/CD (Sin Intervención)
-Para pipelines de monitoreo o ejecución por lotes:
-
-```bash
-uv run networking-agent \
-  --provider ollama \
-  --model netexpert:latest \
-  --device-host 192.168.1.1 \
-  --device-type cisco_ios \
-  --mode PROACTIVE \
-  --log-message "Pérdida de paquetes en GigabitEthernet0/1"
-```
+| Atajo | Acción / Destino |
+|:---:|---|
+| `1` | Ir a **Troubleshooting** (Diagnóstico en lenguaje natural) |
+| `2` | Ir a **Configuración** (Aprovisionamiento declarativo) |
+| `3` | Ir a **Automatización** (Editor Jinja2 y despliegue masivo) |
+| `4` | Ir a **Inventario de Equipos** (Alta, baja y prueba de conexión) |
+| `5` | Ir a **Registro de Auditoría** (Historial JSONL inmutable) |
+| `h` | **Volver al Inicio** desde cualquier vista |
+| `s` | Abrir modal de **Ajustes de IA y Bóveda Criptográfica** |
+| `d` | Abrir modal de **Registrar Nuevo Equipo** |
+| `r` | **Recargar** inventario y bitácora de auditoría |
+| `q` | **Salir** de la aplicación de forma segura |
 
 ---
 
-## 🖥️ Demostración del Flujo Interactivo
+## 🧪 Pruebas Automatizadas y Calidad
 
-Al iniciar, se presenta el panel de control:
-
-```
-  _   _      _                      _     _               _                    _   
- | \ | | ___| |___      _____  _ __| | __(_)_ __   __ _  / \   __ _  ___ _ __ | |_ 
- |  \| |/ _ \ __\ \ /\ / / _ \| '__| |/ /| | '_ \ / _` |/ _ \ / _` |/ _ \ '_ \| __|
- | |\  |  __/ |_ \ V  V / (_) | |  |   < | | | | | (_| / ___ \ (_| |  __/ | | | |_ 
- |_| \_|\___|\__| \_/\_/ \___/|_|  |_|\_\|_|_| |_|\__, /_/   \_\__, |\___|_| |_|\__|
-                                                   |___/        |___/                
-                       Enterprise Autonomous Closed-Loop Network Agent                
-```
-
-### Opciones del Menú Principal:
-- **`[1] 🚀 Iniciar Diagnóstico y Remediación Asistida`**: Selección de equipo, modo proactivo (síntomas) o reactivo (telemetría), análisis de IA y autorización humana HitL.
-- **`[2] 🖥️ Gestionar Inventario de Dispositivos`**: Registro, prueba de conectividad SSH y eliminación de routers Cisco, Juniper y MikroTik con credenciales cifradas.
-- **`[3] 🧠 Configurar Proveedor de IA y Bóveda Criptográfica`**: Configuración de proveedores (Ollama, Gemini, OpenAI, Claude), modelos y llaves criptográficas.
-- **`[4] 📋 Historial de Auditoría Criptográfica (audit.jsonl)`**: Visualización formateada de registros de auditoría inmutables.
-- **`[5] 🚪 Salir del Sistema`**.
-- *(En cualquier submenú, ingrese `[0]` para cancelar y regresar al Menú Principal sin reiniciar)*.
-
-En el modo TUI (`--tui`), dispone de la pestaña inicial **`[Inicio]`** con accesos directos, botones explícitos `[⬅️ Volver al Menú Principal]` en cada vista y la tecla rápida `h` para retornar al inicio en cualquier momento.
-
----
-
-## 🧪 Pruebas Automatizadas y Calidad de Código
-
-El repositorio cuenta con **114 pruebas unitarias** pasando al 100%, validando modelos, validadores de inyección, blindaje WAN, criptografía, base de datos SQLite, interfaces TUI, navegación y pooling SSH:
+El proyecto cuenta con **125 pruebas automatizadas** con cobertura exhaustiva en:
+- Validación de sintaxis CLI y detección de inyecciones maliciosas.
+- Aislamiento y blindaje de interfaces WAN/gestión (*Blast Radius Guard*).
+- Síntesis de configuración declarativa multi-vendor (Cisco, Juniper, MikroTik).
+- Renderizado de plantillas Jinja2 y despliegue masivo por lotes con rollback.
+- Navegación, modales y eventos reactivos en la TUI Textual.
 
 ```bash
-# Ejecutar todas las pruebas unitarias
+# Ejecutar toda la suite de pruebas
 uv run --no-sync pytest
 
-# Ejecutar el linter estático (0 advertencias)
+# Validar formateo y linter estático (0 errores)
 uv run --no-sync ruff check .
-
-# Formatear el código
-uv run --no-sync ruff format .
 ```
 
 ---
 
-## 📚 Documentación Técnica Detallada
+## 📚 Documentación Técnica
 
-Para guías específicas, consulta la carpeta [`docs/`](docs/):
-
-1. **[Guía de Uso y Operaciones (`docs/USAGE_GUIDE.md`)](docs/USAGE_GUIDE.md)**: Manual paso a paso, configuración de equipos, resolución de problemas y preguntas frecuentes.
-2. **[Arquitectura y Diseño (`docs/ARCHITECTURE.md`)](docs/ARCHITECTURE.md)**: Patrones de diseño hexagonal, diagramas de secuencia e interacciones internas.
-3. **[Manual de Ciberseguridad (`docs/SECURITY.md`)](docs/SECURITY.md)**: Modelo de amenazas, análisis de vectores de inyección y defensas implementadas.
-4. **[Matriz de Hardware Soportado (`docs/SUPPORTED_HARDWARE.md`)](docs/SUPPORTED_HARDWARE.md)**: Lista detallada de equipos certificados (Cisco, Juniper, MikroTik), comandos de diagnóstico y sintaxis CLI.
+- **[📖 Manual de Uso y Operaciones (`docs/USAGE_GUIDE.md`)](docs/USAGE_GUIDE.md)**: Flujos paso a paso para Troubleshooting, Configuración y Automatización.
+- **[🏛️ Arquitectura del Sistema (`docs/ARCHITECTURE.md`)](docs/ARCHITECTURE.md)**: Diseño hexagonal, diagramas de secuencia transaccionales y motores internos.
+- **[🛡️ Manual de Ciberseguridad (`docs/SECURITY.md`)](docs/SECURITY.md)**: Modelo de amenazas, contención de radio de impacto y guardarraíles pre-vuelo.
+- **[🖧 Matriz de Hardware Soportado (`docs/SUPPORTED_HARDWARE.md`)](docs/SUPPORTED_HARDWARE.md)**: Comandos de diagnóstico por protocolo, acciones soportadas y sintaxis por fabricante.
 
 ---
 
 ## 📄 Licencia
 
-Este proyecto está distribuido bajo los términos de la licencia [Apache 2.0](LICENSE).
+Este proyecto está licenciado bajo los términos de la licencia [Apache 2.0](LICENSE).

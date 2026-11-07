@@ -7,6 +7,37 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [2.0.0] - 2026-11-06
+
+### 🚀 Evolución Mayor de Arquitectura y Modos Operativos (Added)
+- **Tres Pilares Operativos de Ingeniería de Red:**
+  - **Pilar 1: Modo Troubleshooting:** Diagnóstico autónomo y análisis de causa raíz en lenguaje natural con interrogación de telemetría multi-fabricante en vivo, correlación L1-L7, guardarraíl de blast radius y compuerta Human-in-the-Loop (HitL).
+  - **Pilar 2: Modo Configuración Declarativa:** Aprovisionamiento asistido en lenguaje natural para protocolos críticos (BGP, OSPF, EIGRP, STP, Port-Channel, VLANs, ACLs, Servicios NTP/DNS/Syslog). Síntesis estructurada mediante `ConfigurationIntent`, cálculo de previsualización diferencial (*candidate CLI diff*), comandos de verificación post-despliegue y reversión atómica.
+  - **Pilar 3: Modo Automatización & Despliegue en Lote:** Editor de texto integrado `TextArea` con numeración de líneas, catálogo de plantillas Jinja2 parametrizadas, validador de sintaxis en seco (*dry-run*) `ConfigSyntaxValidator` y orquestador multi-dispositivo `BatchDeployer` con snapshots previos y rollback automático individualizado por equipo.
+- **Modernización y Rediseño Completo de la TUI (Textual):**
+  - Acceso directo a los 5 pilares operativos mediante botones numéricos `[1-5]` y atajos de teclado globales (`1-5`, `h` Inicio, `q` Salir, `d` Nuevo Equipo, `s` Ajustes IA, `r` Recargar).
+  - Encabezado ultra-limpio con insignias de telemetría en tiempo real (`BRAIN`, `EQUIPOS`, `HITL`), eliminando títulos redundantes y pestañas que restaban espacio vertical.
+  - Modal dinámico de Configuración de IA (`AIOptionsModal`): actualización en tiempo real de campos, etiquetas, enmascaramiento y modelos sugeridos según el proveedor seleccionado (Ollama, Gemini, OpenAI, Claude).
+  - Solución total de recorte (*clipping*) en barras de botones y contenedores de herramientas mediante alturas CSS adaptativas (`height: 4` en barras de navegación, `height: 5` en barra de automatización).
+  - Ancho de barra lateral garantizado (`width: 32`) en inventarios y selectores de equipo, evitando desplazamientos involuntarios fuera de la pantalla.
+  - Eliminación de botones redundantes de retorno en las vistas secundarias.
+- **Guardarraíles de Sintaxis y Seguridad Pre-Flight (`ConfigSyntaxValidator`):**
+  - Análisis estático preventivo antes de tocar cualquier socket SSH.
+  - Detección y bloqueo estricto de comandos destructivos (`reload`, `reboot`, `erase startup-config`, `write erase`, `zeroize`, `reset-configuration`).
+  - Detección de variables Jinja2 sin renderizar (`{{...}}`, `{%...%}`) para prevenir inyección de texto malformado en terminales de producción.
+  - Validación de paridad y balance de bloques jerárquicos en Juniper Junos (`{...}`).
+  - Verificación de formato y prefijos obligatorios en MikroTik RouterOS (`/` o `:`).
+- **Controladores de Red Multi-Fabricante Ampliados:**
+  - Métodos de diagnóstico dinámico por síntoma (`get_troubleshooting_commands`).
+  - Interrogación especializada por protocolo (`_bgp_diag_commands`, `_ospf_diag_commands`, `_vlan_diag_commands`, `_stp_diag_commands`, `_channel_diag_commands`, `_acl_diag_commands`) en Cisco IOS/XE, Cisco NX-OS, Juniper Junos y MikroTik RouterOS.
+  - Verificación post-despliegue automatizada (`get_protocol_verification_commands`).
+- **Pruebas y Calidad de Código:**
+  - Suite de pruebas unitarias ampliada de 105 a **125 pruebas automatizadas**, con 100% de éxito (`pytest`).
+  - Cobertura de tests para validación de sintaxis, modelos de configuración, plantillas Jinja2, orquestador en lote y componentes de la TUI.
+  - Cero advertencias de linting (`ruff check`).
+
+---
+
 ## [0.1.0] - 2026-11-05
 
 ### ✨ Características Nuevas (Added)
