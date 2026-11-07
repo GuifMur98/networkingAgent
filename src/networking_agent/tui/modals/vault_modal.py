@@ -1,6 +1,6 @@
 """Modal screen for AI brain provider, model, and cryptographic settings configuration."""
 
-from typing import Dict, Optional
+from typing import Dict, List, Optional, Tuple
 
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -8,6 +8,7 @@ from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Checkbox, Input, Label, Select
 
+from networking_agent.brains.discovery import discover_provider_models, get_installed_ollama_models
 from networking_agent.core.config import settings
 from networking_agent.core.crypto import vault
 from networking_agent.core.db import db
@@ -74,6 +75,11 @@ class VaultModal(ModalScreen[Optional[Dict[str, str]]]):
             current_model = db.get_setting("ai_model") or settings.ai_model or "qwen2.5-coder:14b"
             meta = self.PROVIDER_METADATA.get(current_provider, self.PROVIDER_METADATA["ollama"])
 
+            # 1. Discover models for initial provider
+            initial_choices, initial_val, status_msg = self._build_model_choices(
+                current_provider, current_model, host=db.get_setting("ollama_host") or settings.ollama_host
+            )
+
             with Horizontal(classes="modal-row"):
                 with Vertical(classes="modal-col"):
                     yield Label("Proveedor de IA:")
@@ -84,8 +90,23 @@ class VaultModal(ModalScreen[Optional[Dict[str, str]]]):
                         allow_blank=False,
                     )
                 with Vertical(classes="modal-col"):
-                    yield Label("Modelo LLM:")
-                    yield Input(value=current_model, id="input-model")
+                    yield Label("Modelos Disponibles:")
+                    yield Select(
+                        initial_choices,
+                        value=initial_val,
+                        id="select-model",
+                        allow_blank=False,
+                    )
+
+            with Horizontal(classes="modal-row"):
+                with Vertical(classes="modal-col-large"):
+                    yield Label("Modelo LLM Seleccionado / Personalizado:")
+                    yield Input(value=current_model, id="input-model", placeholder="ej: qwen3.8:27b, gpt-4o...")
+                with Vertical(classes="modal-col-small"):
+                    yield Label("Acción:")
+                    yield Button("Escanear", id="btn-scan-models")
+
+            yield Label(status_msg, id="lbl-model-status", classes="model-status-text")
 
             # Dynamic Credential / Host section
             yield Label(meta["label"], id="lbl-credential")
@@ -113,10 +134,75 @@ class VaultModal(ModalScreen[Optional[Dict[str, str]]]):
                 yield Button("Guardar Cambios", id="btn-save-vault", variant="primary")
                 yield Button("Cerrar", id="btn-cancel")
 
+    def _build_model_choices(
+        self,
+        provider: str,
+        current_model: str,
+        host: Optional[str] = None,
+    ) -> Tuple[List[Tuple[str, str]], str, str]:
+        """Build choices for Select dropdown, determine initial selection and status message."""
+        discovered = discover_provider_models(provider, host=host)
+        installed_ids = {m_id for _, m_id in discovered}
+
+        choices: List[Tuple[str, str]] = list(discovered)
+
+        # Check if current_model is in the discovered list
+        if current_model and current_model not in installed_ids:
+            if provider == "ollama":
+                choices.insert(0, (f"[!] {current_model} (No instalado en Ollama)", current_model))
+            else:
+                choices.insert(0, (f"{current_model} (Actual)", current_model))
+
+        choices.append(("Personalizado / Otro...", "__custom__"))
+
+        # Determine selected value
+        valid_values = {val for _, val in choices}
+        selected_val = current_model if current_model in valid_values else (discovered[0][1] if discovered else "")
+
+        # Formulate status message
+        if provider == "ollama":
+            installed_ollama = get_installed_ollama_models(host=host)
+            if installed_ollama:
+                count = len(installed_ollama)
+                if current_model and current_model not in {m["model"] for m in installed_ollama}:
+                    status = (
+                        f"[bold yellow][!] El modelo '{current_model}' no está instalado en Ollama. "
+                        f"Selecciona uno de los {count} modelos detectados arriba.[/]"
+                    )
+                else:
+                    status = f"[bold green][✓] {count} modelos instalados detectados en Ollama local.[/]"
+            else:
+                status = "[dim yellow]Ollama no respondió en el host; mostrando catálogo sugerido.[/]"
+        else:
+            status = f"[dim]Catálogo oficial de modelos recomendados para {provider.upper()}.[/dim]"
+
+        return choices, selected_val, status
+
     def on_select_changed(self, event: Select.Changed) -> None:
         """Dynamically update input labels, password masking, and models when provider changes."""
         if event.select.id == "select-provider" and event.value != Select.BLANK:
             self._update_provider_fields(str(event.value))
+        elif event.select.id == "select-model" and event.value != Select.BLANK:
+            val = str(event.value)
+            inp_model = self.query_one("#input-model", Input)
+            if val != "__custom__":
+                inp_model.value = val
+                provider = str(self.query_one("#select-provider", Select).value)
+                self._update_status_for_model(provider, val)
+            else:
+                inp_model.focus()
+
+    def _update_status_for_model(self, provider: str, model_id: str) -> None:
+        lbl_status = self.query_one("#lbl-model-status", Label)
+        if provider == "ollama":
+            host = self.query_one("#input-api-key", Input).value.strip() or None
+            installed = get_installed_ollama_models(host=host)
+            if any(m["model"] == model_id for m in installed):
+                lbl_status.update(f"[bold green][✓] Modelo instalado seleccionado: {model_id}[/]")
+            else:
+                lbl_status.update(f"[bold yellow][!] Modelo seleccionado no verificado en Ollama: {model_id}[/]")
+        else:
+            lbl_status.update(f"[dim]Modelo seleccionado: {model_id}[/dim]")
 
     def _update_provider_fields(self, provider: str) -> None:
         meta = self.PROVIDER_METADATA.get(provider, self.PROVIDER_METADATA["ollama"])
@@ -124,6 +210,8 @@ class VaultModal(ModalScreen[Optional[Dict[str, str]]]):
         inp_cred = self.query_one("#input-api-key", Input)
         lbl_help = self.query_one("#lbl-provider-help", Label)
         inp_model = self.query_one("#input-model", Input)
+        sel_model = self.query_one("#select-model", Select)
+        lbl_status = self.query_one("#lbl-model-status", Label)
 
         lbl_cred.update(meta["label"])
         lbl_help.update(meta["help"])
@@ -136,23 +224,70 @@ class VaultModal(ModalScreen[Optional[Dict[str, str]]]):
             stored = db.get_setting(meta["setting_key"]) or meta["default_val"]
         inp_cred.value = stored
 
-        # Switch to recommended default model if empty or currently at a default of another provider
-        curr_m = inp_model.value.strip()
-        all_defaults = {m["default_model"] for m in self.PROVIDER_METADATA.values()}
-        if not curr_m or curr_m in all_defaults:
-            inp_model.value = meta["default_model"]
+        # Refresh model options for new provider
+        host = stored if provider == "ollama" else None
+        choices, sel_val, status_msg = self._build_model_choices(provider, inp_model.value.strip(), host=host)
+        sel_model.set_options(choices)
+        if sel_val:
+            sel_model.value = sel_val
+            inp_model.value = sel_val
+        lbl_status.update(status_msg)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "btn-save-vault":
             self.action_save()
         elif event.button.id == "btn-cancel":
             self.action_cancel()
+        elif event.button.id == "btn-scan-models":
+            self.action_scan_models()
+
+    def action_scan_models(self) -> None:
+        """Scan models on the configured host or reload catalog."""
+        provider = str(self.query_one("#select-provider", Select).value)
+        host = self.query_one("#input-api-key", Input).value.strip() or None
+        inp_model = self.query_one("#input-model", Input)
+        sel_model = self.query_one("#select-model", Select)
+        lbl_status = self.query_one("#lbl-model-status", Label)
+
+        choices, sel_val, status_msg = self._build_model_choices(provider, inp_model.value.strip(), host=host)
+        sel_model.set_options(choices)
+        if sel_val:
+            sel_model.value = sel_val
+            inp_model.value = sel_val
+        lbl_status.update(status_msg)
+
+        if provider == "ollama":
+            installed = get_installed_ollama_models(host=host)
+            count = len(installed)
+            if count > 0:
+                self.notify(
+                    f"Detectados {count} modelos en Ollama local.",
+                    title="Escaneo Exitoso",
+                    severity="information",
+                )
+            else:
+                self.notify(
+                    "No se detectaron modelos en Ollama local.",
+                    title="Sin Modelos",
+                    severity="warning",
+                )
+        else:
+            self.notify(
+                f"Catálogo de modelos actualizado para {provider.upper()}.",
+                title="Catálogo Actualizado",
+            )
 
     def action_save(self) -> None:
         provider = str(self.query_one("#select-provider", Select).value)
         model = self.query_one("#input-model", Input).value.strip()
         cred_val = self.query_one("#input-api-key", Input).value.strip()
         auto_approve = self.query_one("#chk-auto", Checkbox).value
+
+        # Fallback to select-model if input-model is empty
+        if not model:
+            sel_val = str(self.query_one("#select-model", Select).value)
+            if sel_val and sel_val != "__custom__":
+                model = sel_val
 
         meta = self.PROVIDER_METADATA.get(provider, self.PROVIDER_METADATA["ollama"])
 

@@ -290,3 +290,50 @@ async def test_tui_troubleshooting_workspace_validation_and_modes():
         chip_bgp.press()
         await pilot.pause()
         assert "BGP" in symptom_input.text
+
+
+@pytest.mark.anyio
+async def test_tui_vault_modal_model_scanning_and_selection():
+    """Verify VaultModal scans models, updates select-model, and binds to input-model."""
+    from textual.widgets import Button, Input, Label, Select
+
+    app = NetworkingAgentTUIApp()
+    async with app.run_test() as pilot:
+        modal = VaultModal()
+        saved = []
+        pilot.app.push_screen(modal, callback=saved.append)
+        await pilot.pause()
+
+        # Elements exist
+        sel_model = modal.query_one("#select-model", Select)
+        inp_model = modal.query_one("#input-model", Input)
+        btn_scan = modal.query_one("#btn-scan-models", Button)
+        lbl_status = modal.query_one("#lbl-model-status", Label)
+        assert sel_model is not None
+        assert btn_scan is not None
+        assert lbl_status is not None
+
+        # Press scan button
+        btn_scan.press()
+        await pilot.pause()
+
+        # Switch to Gemini and verify models updated to Gemini catalog
+        sel_provider = modal.query_one("#select-provider", Select)
+        sel_provider.value = "gemini"
+        await pilot.pause()
+
+        # Check options contain gemini
+        gemini_opts = [val for _, val in sel_model._options]
+        assert any("gemini" in opt for opt in gemini_opts)
+
+        # Select a model in select-model updates input-model
+        sel_model.value = "gemini-2.5-flash"
+        await pilot.pause()
+        assert inp_model.value == "gemini-2.5-flash"
+
+        # Save and verify
+        modal.action_save()
+        await pilot.pause()
+        assert len(saved) == 1
+        assert saved[0]["model"] == "gemini-2.5-flash"
+        assert saved[0]["provider"] == "gemini"
