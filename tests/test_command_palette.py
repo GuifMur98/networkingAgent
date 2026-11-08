@@ -172,6 +172,7 @@ async def test_footer_palette_position_and_module_filtering(tmp_path, monkeypatc
             "pane-audit",
         ]:
             tabs.active = mod
+            app.screen.refresh_bindings()
             await pilot.pause()
             mod_keys = [c.key for c in footer.query("FooterKey") if "-command-palette" not in c.classes]
             mod_palette = [c.key for c in footer.query("FooterKey") if "-command-palette" in c.classes]
