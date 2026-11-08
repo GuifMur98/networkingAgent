@@ -85,6 +85,9 @@ class JuniperJunosDriver(NetworkOSDriver):
             logger.error(f"[bold red]Junos rollback failed:[/bold red] {e}")
             return False
 
+    def get_running_config_command(self) -> str:
+        return "show configuration"
+
     def _bgp_diag_commands(self) -> List[str]:
         return ["show bgp summary", "show bgp neighbor"]
 

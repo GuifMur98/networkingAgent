@@ -3,6 +3,7 @@
 import pytest
 
 from networking_agent.engine.observer import ConsoleAgentObserver
+from networking_agent.models.config_intent import ConfigurationIntent, ProtocolConfigType
 from networking_agent.models.device import DeviceInventory
 from networking_agent.models.intent import NetworkIntent
 from networking_agent.tui.app import NetworkingAgentTUIApp, TextualAgentObserver
@@ -11,6 +12,7 @@ from networking_agent.tui.modals.hitl_modal import HitLModal
 from networking_agent.tui.modals.vault_modal import VaultModal
 from networking_agent.tui.widgets.audit_table import AuditTableWidget
 from networking_agent.tui.widgets.banner_widget import BannerWidget
+from networking_agent.tui.widgets.configuration_view import ConfigurationView
 from networking_agent.tui.widgets.device_sidebar import DeviceSidebar
 from networking_agent.tui.widgets.diagnostic_view import DiagnosticWorkspace
 from networking_agent.tui.widgets.home_view import HomeDashboard
@@ -346,3 +348,58 @@ async def test_tui_vault_modal_model_scanning_and_selection():
         assert len(saved) == 1
         assert saved[0]["model"] == "gemini-2.5-flash"
         assert saved[0]["provider"] == "gemini"
+
+
+@pytest.mark.anyio
+async def test_tui_configuration_workspace_validation_and_progress():
+    """Verify ConfigurationView input validation, dynamic routing chips, progress bar, and plan display."""
+    from textual.widgets import ProgressBar, TabbedContent, TextArea
+
+    app = NetworkingAgentTUIApp()
+    async with app.run_test() as pilot:
+        tabs = pilot.app.query_one("#main-tabs", TabbedContent)
+        tabs.active = "pane-configuration"
+        await pilot.pause()
+
+        workspace = pilot.app.query_one(ConfigurationView)
+        assert workspace is not None
+
+        # 1. Input starts empty
+        input_box = workspace.query_one("#config-request-input", TextArea)
+        assert input_box.text == ""
+
+        # 2. Triggering run with empty input blocks execution and logs warning
+        btn_run = workspace.query_one("#btn-run-config")
+        btn_run.press()
+        await pilot.pause()
+        log_terminal = workspace.query_one("#config-log-terminal")
+        assert any("obligatorio" in line or "Selecciona primero" in line for line in log_terminal.lines)
+
+        # 3. Progress bar exists and update_progress works
+        bar = workspace.query_one("#config-progress-bar", ProgressBar)
+        assert bar is not None
+        workspace.update_progress(50, "Sintetizando configuración...")
+        assert bar.progress == 50
+
+        # 4. Clicking dynamic routing chip populates input
+        chip_dynamic = workspace.query_one("#chip-proto-dynamic")
+        chip_dynamic.press()
+        await pilot.pause()
+        assert "enrutamiento dinámico" in input_box.text
+
+        # 5. Display plan renders plan table with conflict analysis
+        plan_intent = ConfigurationIntent(
+            protocol_type=ProtocolConfigType.OSPF,
+            description="Nueva red en OSPF",
+            target_host="192.168.1.1",
+            candidate_commands=["router ospf 1", "network 10.50.0.0 0.0.0.255 area 0"],
+            verification_commands=["show ip ospf neighbor"],
+            rollback_commands=["router ospf 1", "no network 10.50.0.0 0.0.0.255 area 0"],
+            conflict_analysis="[OK] Sin conflictos detectados con la configuración activa.",
+            existing_state_summary="OSPF (1) | VLANs: 1, 10 | 2 interfaces",
+        )
+        workspace.display_plan(plan_intent)
+        await pilot.pause()
+        plan_panel = workspace.query_one("#config-plan-result")
+        assert plan_panel.styles.display == "block"
+

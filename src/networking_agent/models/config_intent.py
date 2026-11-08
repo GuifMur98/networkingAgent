@@ -56,6 +56,14 @@ class ConfigurationIntent(BaseModel):
         default="No critical service impact identified.",
         description="Observations regarding operational impact, maintenance window requirement, or caveats.",
     )
+    conflict_analysis: str = Field(
+        default="[OK] Sin conflictos detectados con la configuración activa.",
+        description="Evaluación de colisiones (subredes, VLANs, protocolos) y preservación de la configuración activa.",
+    )
+    existing_state_summary: Optional[str] = Field(
+        default=None,
+        description="Resumen de la configuración y protocolos activos detectados en el equipo.",
+    )
 
     @field_validator("candidate_commands", "verification_commands", "rollback_commands")
     @classmethod

@@ -3,6 +3,7 @@
 import pytest
 
 from networking_agent.engine.agent import NetworkAssistantAgent
+from networking_agent.models.config_intent import ConfigurationIntent, ProtocolConfigType
 from networking_agent.models.device import DeviceInventory
 from networking_agent.models.intent import NetworkIntent
 from networking_agent.models.telemetry import TelemetryEvent
@@ -191,5 +192,81 @@ def test_agent_hitl_operator_rejection_protects_device(mocker):
     result = agent.process_telemetry(device=dev, telemetry=event)
     assert result is False
     assert not mock_driver.execute_commands.called
+
+
+def test_agent_execute_configuration_with_running_config_and_conflict_check(mocker, tmp_path):
+    mock_brain = mocker.MagicMock()
+    mock_brain.synthesize_configuration.return_value = ConfigurationIntent(
+        protocol_type=ProtocolConfigType.OSPF,
+        description="Integración de subred en proceso OSPF 1",
+        target_host="192.168.1.1",
+        candidate_commands=["router ospf 1", "network 10.50.0.0 0.0.0.255 area 0"],
+        verification_commands=["show ip ospf neighbor"],
+        rollback_commands=["router ospf 1", "no network 10.50.0.0 0.0.0.255 area 0"],
+    )
+    mocker.patch("networking_agent.engine.agent.get_ai_brain", return_value=mock_brain)
+
+    mock_driver = mocker.MagicMock()
+    mock_driver.get_running_config.return_value = (
+        "router ospf 1\n network 192.168.1.0 0.0.0.255 area 0\ninterface Gi0/1\n ip address 192.168.1.1 255.255.255.0\n"
+    )
+    mock_driver.backup_running_config.return_value = tmp_path / "pre_change_backup.cfg"
+    mock_driver.execute_commands.return_value = "Applied OK"
+    mock_driver.get_rollback_description.return_value = "Rollback available"
+    mocker.patch("networking_agent.engine.agent.get_os_driver", return_value=mock_driver)
+
+    mock_observer = mocker.MagicMock()
+    agent = NetworkAssistantAgent(ai_provider="ollama", auto_approve=True, observer=mock_observer)
+    dev = DeviceInventory(host="192.168.1.1", device_type="cisco_ios")
+
+    intent = agent.execute_configuration(
+        device=dev,
+        natural_request="agrega la red 10.50.0.0/24 al enrutamiento dinamico",
+    )
+    assert intent is not None
+    assert intent.protocol_type == ProtocolConfigType.OSPF
+    assert "[OK]" in intent.conflict_analysis
+    assert "OSPF" in intent.conflict_analysis
+    assert mock_driver.get_running_config.called
+    assert mock_driver.execute_commands.called
+    assert mock_observer.on_progress.called
+
+
+def test_agent_execute_configuration_detects_ip_overlap(mocker, tmp_path):
+    mock_brain = mocker.MagicMock()
+    mock_brain.synthesize_configuration.return_value = ConfigurationIntent(
+        protocol_type=ProtocolConfigType.CUSTOM,
+        description="Asignación de IP en interfaz Gi0/2",
+        target_host="192.168.1.1",
+        candidate_commands=[
+            "interface GigabitEthernet0/2",
+            "ip address 192.168.1.50 255.255.255.0",
+        ],
+        verification_commands=["show ip interface brief"],
+        rollback_commands=["interface GigabitEthernet0/2", "no ip address"],
+    )
+    mocker.patch("networking_agent.engine.agent.get_ai_brain", return_value=mock_brain)
+
+    mock_driver = mocker.MagicMock()
+    # Running config already has 192.168.1.1/24 on Gi0/1
+    mock_driver.get_running_config.return_value = (
+        "interface GigabitEthernet0/1\n ip address 192.168.1.1 255.255.255.0\n"
+    )
+    mock_driver.backup_running_config.return_value = tmp_path / "pre_change_backup.cfg"
+    mock_driver.execute_commands.return_value = "Applied OK"
+    mock_driver.get_rollback_description.return_value = "Rollback available"
+    mocker.patch("networking_agent.engine.agent.get_os_driver", return_value=mock_driver)
+
+    mock_observer = mocker.MagicMock()
+    agent = NetworkAssistantAgent(ai_provider="ollama", auto_approve=True, observer=mock_observer)
+    dev = DeviceInventory(host="192.168.1.1", device_type="cisco_ios")
+
+    intent = agent.execute_configuration(
+        device=dev,
+        natural_request="asigna la ip 192.168.1.50 a Gi0/2",
+    )
+    assert intent is not None
+    assert "[!] Conflicto detectado" in intent.conflict_analysis
+    assert "GigabitEthernet0/1" in intent.conflict_analysis
 
 

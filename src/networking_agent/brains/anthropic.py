@@ -56,6 +56,7 @@ class AnthropicBrain(LLMBrain):
         vendor_family: str,
         natural_request: str,
         protocol_hint: Optional[str] = None,
+        existing_config: Optional[str] = None,
     ) -> ConfigurationIntent:
         try:
             hint_str = f" [Protocol Focus: {protocol_hint}]" if protocol_hint else ""
@@ -63,7 +64,15 @@ class AnthropicBrain(LLMBrain):
                 f"TARGET DEVICE: Host {device_host} | Operating System: {vendor_family}{hint_str}\n"
                 f"OPERATOR CONFIGURATION REQUEST IN NATURAL LANGUAGE:\n"
                 f"<configuration_request>\n{natural_request}\n</configuration_request>\n\n"
-                f"Synthesize the complete, secure configuration change and emit ConfigurationIntent JSON."
+            )
+            if existing_config:
+                user_content += (
+                    f"EXISTING RUNNING CONFIGURATION (INSPECT TO PRESERVE ACTIVE SERVICES & PREVENT COLLISIONS):\n"
+                    f"<running_configuration>\n{existing_config}\n</running_configuration>\n\n"
+                )
+            user_content += (
+                "Analyze existing state, perform conflict checks, synthesize the complete non-destructive "
+                "configuration change, and emit ConfigurationIntent JSON."
             )
             response = self.client.messages.create(
                 model=self.model_name,

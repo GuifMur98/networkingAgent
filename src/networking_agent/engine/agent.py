@@ -11,6 +11,7 @@ from networking_agent.core.exceptions import (
 )
 from networking_agent.core.logging import logger
 from networking_agent.drivers.factory import get_os_driver
+from networking_agent.engine.conflict_analyzer import ConfigConflictAnalyzer
 from networking_agent.engine.observer import AgentObserver, ConsoleAgentObserver
 from networking_agent.engine.verification import VerificationEngine
 from networking_agent.guardrails.blast_radius import BlastRadiusGuard
@@ -353,19 +354,72 @@ class NetworkAssistantAgent:
         natural_request: str,
         protocol_hint: Optional[str] = None,
     ) -> Optional[ConfigurationIntent]:
-        """Synthesizes, validates, and deploys declarative multi-protocol network configurations."""
+        """Synthesizes, validates, and deploys declarative multi-protocol network configurations,
+
+        guaranteeing the Zero-Damage Principle through active state inspection and conflict analysis.
+        """
+        self.observer.on_progress(10, f"Conectando a {device.host} para inspeccionar configuración activa...")
         self.observer.on_status_update(
-            f"[CONFIG] Generando configuración multi-protocolo para {device.host} ({device.device_type})..."
+            f"[CONFIG] Iniciando análisis no destructivo para {device.host} ({device.device_type})..."
         )
-        # 1. Synthesize configuration via AI Brain
+        driver = get_os_driver(device)
+
+        # 1. Active State Inspection: Retrieve running config without modifying anything
+        existing_config = ""
+        try:
+            self.observer.on_progress(25, "Recopilando running-config y telemetría de protocolos...")
+            existing_config = driver.get_running_config()
+            self.observer.on_execution_progress(
+                f"[*] Configuración activa recuperada de {device.host} ({len(existing_config)} bytes)."
+            )
+        except Exception as e:
+            logger.warning(f"Could not read running-config directly ({e}); proceeding with local state analysis.")
+            self.observer.on_execution_progress(
+                f"[yellow][!] Lectura directa de running-config no disponible ({e}); "
+                "aplicando análisis conservador.[/yellow]"
+            )
+
+        # 2. Dynamic Routing Disambiguation & Pre-Flight State Analysis
+        self.observer.on_progress(40, "Analizando protocolos activos y detectando posibles colisiones...")
+        state_summary = ConfigConflictAnalyzer.analyze_running_state(existing_config, device.device_type)
+        self.observer.on_execution_progress(f"[cyan][i] Estado detectado: {state_summary.raw_summary}[/cyan]")
+
+        disambig_proto, disambig_exp = ConfigConflictAnalyzer.resolve_dynamic_routing_disambiguation(
+            natural_request, existing_config, device.device_type
+        )
+        effective_protocol_hint = disambig_proto or protocol_hint
+        if disambig_exp:
+            self.observer.on_execution_progress(f"[bold cyan][>] Disambiguación: {disambig_exp}[/bold cyan]")
+
+        # 3. AI Brain Configuration Synthesis with Active Config Context
+        self.observer.on_progress(55, "Sintetizando configuración no destructiva con IA...")
         config_intent: ConfigurationIntent = self.brain.synthesize_configuration(
             device_host=device.host,
             vendor_family=device.device_type,
             natural_request=natural_request,
-            protocol_hint=protocol_hint,
+            protocol_hint=effective_protocol_hint,
+            existing_config=existing_config,
         )
 
-        # 2. Syntax & Command Validation
+        # 4. Deterministic Conflict Analysis & Intent Enrichment
+        config_intent = ConfigConflictAnalyzer.enrich_intent(
+            intent=config_intent,
+            request_text=natural_request,
+            running_config=existing_config,
+            vendor_family=device.device_type,
+            device_host=device.host,
+        )
+        if "[!]" in config_intent.conflict_analysis:
+            self.observer.on_execution_progress(
+                f"[bold yellow]{config_intent.conflict_analysis}[/bold yellow]"
+            )
+        else:
+            self.observer.on_execution_progress(
+                f"[bold green]{config_intent.conflict_analysis}[/bold green]"
+            )
+
+        # 5. Syntax & Command Validation
+        self.observer.on_progress(70, "Validando sintaxis de comandos y salvaguardas operacionales...")
         validation = ConfigSyntaxValidator.validate_script(
             "\n".join(config_intent.candidate_commands),
             vendor_family=device.device_type,
@@ -375,12 +429,16 @@ class NetworkAssistantAgent:
             self.observer.on_status_update(f"[bold red][!] Configuración rechazada por sintaxis: {error_msg}[/]")
             return None
 
-        # 3. HitL Approval Gate
-        driver = get_os_driver(device)
+        # 6. HitL Approval Gate
+        self.observer.on_progress(80, "Esperando autorización obligatoria Human-in-the-Loop...")
         rollback_info = driver.get_rollback_description()
 
+        diag_text = config_intent.description
+        if config_intent.conflict_analysis:
+            diag_text = f"{config_intent.description}\n\n[Análisis de Conflictos: {config_intent.conflict_analysis}]"
+
         fake_intent = NetworkIntent(
-            diagnosis=config_intent.description,
+            diagnosis=diag_text,
             severity="MEDIUM",
             requires_config_change=True,
             action="none",
@@ -396,18 +454,23 @@ class NetworkAssistantAgent:
             self.observer.on_status_update("[yellow]Operación de configuración cancelada por el operador.[/yellow]")
             return None
 
-        # 4. Transactional Execution
+        # 7. Transactional Execution & Pre-Change Snapshot
         try:
+            self.observer.on_progress(85, "Creando snapshot de respaldo previo al cambio...")
             self.observer.on_execution_progress(f"[*] Tomando snapshot de respaldo de {device.host}...")
             backup_file = driver.backup_running_config()
             self.observer.on_execution_progress(f"[green][OK] Snapshot guardado en {backup_file.name}[/green]")
 
+            self.observer.on_progress(
+                90, f"Inyectando {len(config_intent.candidate_commands)} comandos transaccionales..."
+            )
             self.observer.on_execution_progress(f"[*] Inyectando {len(config_intent.candidate_commands)} comandos...")
             driver.execute_commands(config_intent.candidate_commands)
             self.observer.on_execution_progress("[green][OK] Comandos aplicados exitosamente.[/green]")
 
             # Run verification commands if present
             if config_intent.verification_commands:
+                self.observer.on_progress(95, "Ejecutando verificación post-despliegue...")
                 self.observer.on_execution_progress("[*] Ejecutando comandos de verificación post-despliegue...")
                 for v_cmd in config_intent.verification_commands:
                     try:
@@ -422,8 +485,13 @@ class NetworkAssistantAgent:
                 action=config_intent.protocol_type.value,
                 commands=config_intent.candidate_commands,
                 approved=True,
-                extra={"description": config_intent.description, "backup": str(backup_file)},
+                extra={
+                    "description": config_intent.description,
+                    "backup": str(backup_file),
+                    "conflict_analysis": config_intent.conflict_analysis,
+                },
             )
+            self.observer.on_progress(100, "Configuración completada y verificada exitosamente.")
             self.observer.on_completion(True, "Configuración completada y verificada exitosamente.")
             return config_intent
         except Exception as e:

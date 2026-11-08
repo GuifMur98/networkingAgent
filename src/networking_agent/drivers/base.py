@@ -114,6 +114,11 @@ class NetworkOSDriver(ABC):
         """Command to retrieve the full active configuration."""
         return "show running-config"
 
+    def get_running_config(self) -> str:
+        """Retrieves active running configuration from the device."""
+        conn = self.get_connection()
+        return conn.send_command(self.get_running_config_command())
+
     def backup_running_config(self) -> Path:
         """Fetches the complete running-configuration from the device and persists it locally."""
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
