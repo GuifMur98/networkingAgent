@@ -48,12 +48,12 @@ class TemplateModal(ModalScreen[Optional[AutomationTemplate]]):
         with Vertical(classes="modal-dialog", id="template-modal-dialog"):
             yield Label(title_text, classes="modal-title")
 
-            with Horizontal(classes="modal-row"):
-                with Vertical(classes="modal-col modal-col-large"):
+            with Horizontal(classes="tpl-modal-row-split"):
+                with Vertical(classes="tpl-modal-col-name"):
                     yield Label("Nombre de la Plantilla:")
                     init_name = self.editing_template.name if self.editing_template else ""
                     yield Input(placeholder="Ej: OSPF Multi-Área LAN", value=init_name, id="input-tpl-name")
-                with Vertical(classes="modal-col modal-col-small"):
+                with Vertical(classes="tpl-modal-col-vendor"):
                     yield Label("Fabricante / Sistema Operativo:")
                     yield Select(
                         self.VENDOR_CHOICES,
@@ -73,8 +73,8 @@ class TemplateModal(ModalScreen[Optional[AutomationTemplate]]):
 
             with Vertical(classes="modal-row-full", id="modal-editor-row"):
                 with Horizontal(id="modal-editor-header"):
-                    yield Label("Contenido CLI con Variables Jinja2 (ej: {{ vlan_id }}):")
-                    yield Button("Auto-detectar Variables", id="btn-detect-vars", classes="chip-btn")
+                    yield Label("Contenido CLI con Sintaxis Jinja2:", id="lbl-modal-editor")
+                    yield Button("Detectar Variables", id="btn-detect-vars", classes="chip-btn")
 
                 yield TextArea(
                     text=self.initial_content,
@@ -89,6 +89,15 @@ class TemplateModal(ModalScreen[Optional[AutomationTemplate]]):
                 yield Button("Guardar Plantilla", id="btn-save-tpl", variant="primary")
                 yield Button("Cancelar", id="btn-cancel-tpl")
 
+    def on_mount(self) -> None:
+        """Trigger initial variable scan if initial content is present."""
+        self.action_detect_variables()
+
+    def on_text_area_changed(self, event: TextArea.Changed) -> None:
+        """Live updates variable detection as the user edits the template content."""
+        if event.text_area.id == "input-tpl-content":
+            self.action_detect_variables()
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "btn-save-tpl":
             self.action_save()
@@ -98,14 +107,26 @@ class TemplateModal(ModalScreen[Optional[AutomationTemplate]]):
             self.action_detect_variables()
 
     def action_detect_variables(self) -> None:
-        """Parses the text area content and reports variables found."""
-        editor = self.query_one("#input-tpl-content", TextArea)
+        """Parses the text area content and reports variables found in real time."""
+        try:
+            editor = self.query_one("#input-tpl-content", TextArea)
+            feedback = self.query_one("#lbl-tpl-feedback", Label)
+        except Exception:
+            return
+
         vars_found = TemplateEngine.extract_variables(editor.text)
-        feedback = self.query_one("#lbl-tpl-feedback", Label)
         if vars_found:
-            feedback.update(f"[bold cyan]Variables detectadas ({len(vars_found)}):[/bold cyan] {', '.join(vars_found)}")
+            vars_str = ", ".join(vars_found)
+            feedback.update(
+                f"[bold cyan]Variables detectadas ({len(vars_found)}):[/bold cyan] [bold white]{vars_str}[/bold white]"
+            )
         else:
-            feedback.update("[yellow]No se detectaron variables {{ variable }} en el contenido.[/yellow]")
+            if editor.text.strip():
+                feedback.update(
+                    "[dim cyan]Script directo (sin variables). Usa {{ variable }} para parametrizar.[/dim cyan]"
+                )
+            else:
+                feedback.update("")
 
     def action_save(self) -> None:
         """Validates and persists the template."""

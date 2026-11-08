@@ -90,7 +90,7 @@ class AutomationView(Widget):
                     with Horizontal(id="tpl-vars-header"):
                         yield Label("PARÁMETROS DINÁMICOS DE LA PLANTILLA (JINJA2):", id="lbl-tpl-vars")
                         yield Button(
-                            "⚡ Renderizar a Editor",
+                            "Renderizar a Editor",
                             id="btn-render-variables",
                             variant="primary",
                         )
@@ -127,7 +127,7 @@ class AutomationView(Widget):
                 # 5. Action Trigger Row
                 with Horizontal(id="automation-actions"):
                     yield Button("Validar Sintaxis (Dry-Run)", id="btn-validate-script")
-                    yield Button("🚀 Ejecutar Despliegue en Lote", id="btn-deploy-batch", variant="primary")
+                    yield Button("Ejecutar Despliegue en Lote", id="btn-deploy-batch", variant="primary")
 
                 # 6. Live Telemetry & Execution Log Terminal (Unified progress header)
                 with Vertical(id="auto-progress-container"):

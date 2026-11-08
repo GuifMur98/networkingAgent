@@ -968,17 +968,40 @@ TextArea:focus {
 
 /* Template Modal Dialog */
 #template-modal-dialog {
-    width: 82;
+    width: 94;
     height: auto;
     max-height: 90%;
-    background: #080c14;
-    border: double #00e5ff;
+    background: #0a0e17;
+    border: round #00e5ff;
     padding: 1 2;
     overflow-y: auto;
 }
 
+.tpl-modal-row-split {
+    layout: horizontal;
+    height: auto;
+    margin-bottom: 1;
+}
+
+.tpl-modal-col-name {
+    width: 3fr;
+    height: auto;
+    margin-right: 2;
+}
+
+.tpl-modal-col-vendor {
+    width: 2fr;
+    height: auto;
+}
+
+#select-tpl-vendor {
+    width: 100%;
+    height: 3;
+}
+
 #modal-editor-row {
-    height: 14;
+    height: auto;
+    width: 100%;
     margin-bottom: 1;
 }
 
@@ -987,20 +1010,23 @@ TextArea:focus {
     align-vertical: middle;
 }
 
-#modal-editor-header Label {
+#lbl-modal-editor {
     width: 1fr;
     color: #00e5ff;
     text-style: bold;
+    content-align: left middle;
 }
 
 #btn-detect-vars {
-    width: 24;
+    width: 22;
     height: 3;
     margin-left: 1;
+    text-align: center;
+    content-align: center middle;
 }
 
 #input-tpl-content {
-    height: 10;
+    height: 11;
     border: round #00b4d8;
     background: #050811;
     color: #e2e8f0;
@@ -1008,6 +1034,25 @@ TextArea:focus {
 
 #input-tpl-content:focus {
     border: round #00e5ff;
+}
+
+#lbl-tpl-feedback {
+    height: auto;
+    min-height: 2;
+    padding: 0 1;
+    margin-top: 0;
+    margin-bottom: 1;
+    content-align: left middle;
+}
+
+#btn-save-tpl {
+    width: 22;
+    height: 3;
+}
+
+#btn-cancel-tpl {
+    width: 14;
+    height: 3;
 }
 
 /* DataTables for Inventory and Audit */
