@@ -4,13 +4,13 @@
 **Etiqueta de Versión:** `v2.1.1`  
 **Licencia:** Apache 2.0  
 **Certificación:** Python 3.14 / Textual TUI v2.1  
-**Estado de Pruebas:** 189/189 aprobadas (100% passing)  
+**Estado de Pruebas:** 193/193 aprobadas (100% passing)  
 
 ---
 
 ## 🌟 Resumen Ejecutivo
 
-**NetworkingAgent Enterprise v2.1.1** es una actualización de estabilidad, seguridad y ergonomía visual que consolida el asistente autónomo de ingeniería de redes. Esta versión incorpora la remediación completa de los **8 hallazgos identificados en la auditoría ética de ciberseguridad**, el rediseño ergonómico del **Modo Claro Suave (`agent-light`)**, la corrección definitiva del renderizado de fondo en tarjetas de navegación, y la ampliación de la suite de pruebas a **189 tests automatizados** (100% aprobados).
+**NetworkingAgent Enterprise v2.1.1** es una actualización de estabilidad, seguridad y ergonomía visual que consolida el asistente autónomo de ingeniería de redes. Esta versión incorpora la remediación completa de los **8 hallazgos identificados en la auditoría ética de ciberseguridad**, el rediseño ergonómico del **Modo Claro Suave (`agent-light`)**, la corrección definitiva del renderizado de fondo en tarjetas de navegación, y la ampliación de la suite de pruebas a **193 tests automatizados** (100% aprobados).
 
 ---
 
@@ -52,7 +52,7 @@ Tras someter el sistema a un test de penetración exhaustivo, se resolvieron e i
 
 ## 📊 Métricas de Calidad
 
-- **Total de Pruebas Automatizadas:** **189 pruebas** (`pytest tests/`) con 100% de éxito.
+- **Total de Pruebas Automatizadas:** **193 pruebas** (`pytest tests/`) con 100% de éxito.
 - **Linter y Formato:** 0 errores con `ruff check .`
 - **Compatibilidad de Plataformas:** Windows 10/11 x64, Linux x64 (Ubuntu, Debian, RHEL, Arch), macOS (Apple Silicon e Intel).
 

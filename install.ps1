@@ -73,12 +73,24 @@ if ($StandaloneExe) {
     Write-Step "Instalando ejecutable en $DestExe..."
     Copy-Item -Path $StandaloneExe -Destination $DestExe -Force
 
-    # Copy docs if present
+    # Copy docs and assets if present
     foreach ($doc in @("README.md", "LICENSE")) {
         $docSrc = Join-Path $PSScriptRoot $doc
         if (Test-Path $docSrc) {
             Copy-Item -Path $docSrc -Destination (Join-Path $InstallDir $doc) -Force
         }
+    }
+    $AssetsSrc = Join-Path $PSScriptRoot "assets"
+    $AssetsDst = Join-Path $InstallDir "assets"
+    if (Test-Path $AssetsSrc) {
+        if (-not (Test-Path $AssetsDst)) {
+            New-Item -Path $AssetsDst -ItemType Directory -Force | Out-Null
+        }
+        Copy-Item -Path (Join-Path $AssetsSrc "*") -Destination $AssetsDst -Recurse -Force
+    }
+    $AppIconPath = Join-Path $AssetsDst "app_icon.ico"
+    if (-not (Test-Path $AppIconPath)) {
+        $AppIconPath = $DestExe
     }
 
     # Add Bin to User PATH
@@ -104,6 +116,9 @@ if ($StandaloneExe) {
             $Shortcut.TargetPath = $DestExe
             $Shortcut.WorkingDirectory = $InstallDir
             $Shortcut.Description = "NetworkingAgent Enterprise NOC Mission Control Console"
+            if (Test-Path $AppIconPath) {
+                $Shortcut.IconLocation = "$AppIconPath,0"
+            }
             $Shortcut.Save()
             Write-Success "Acceso directo en el Escritorio creado: $ShortcutPath"
 
@@ -115,6 +130,9 @@ if ($StandaloneExe) {
                 $SmShortcut.TargetPath = $DestExe
                 $SmShortcut.WorkingDirectory = $InstallDir
                 $SmShortcut.Description = "NetworkingAgent Enterprise NOC Mission Control Console"
+                if (Test-Path $AppIconPath) {
+                    $SmShortcut.IconLocation = "$AppIconPath,0"
+                }
                 $SmShortcut.Save()
                 Write-Success "Acceso directo en Menú Inicio creado: $SmShortcutPath"
             }
@@ -294,12 +312,17 @@ if ($UserPath -notlike "*$BinDir*") {
     Write-Success "$BinDir is already registered in User PATH."
 }
 
-# 9. Create Desktop & Start Menu Shortcuts
+# 9. Create Desktop & Start Menu Shortcuts with Official App Icon
 if (-not $SkipShortcut) {
     try {
         $WshShell = New-Object -ComObject WScript.Shell
         
-        # Desktop
+        $AppIconPath = Join-Path $InstallDir "assets\app_icon.ico"
+        if (-not (Test-Path $AppIconPath)) {
+            $AppIconPath = Join-Path $AppSourceDir "assets\app_icon.ico"
+        }
+
+        # Desktop Shortcut
         $DesktopPath = [System.Environment]::GetFolderPath("Desktop")
         $ShortcutPath = Join-Path $DesktopPath "NetworkingAgent NOC Console.lnk"
         $Shortcut = $WshShell.CreateShortcut($ShortcutPath)
@@ -314,10 +337,13 @@ if (-not $SkipShortcut) {
         }
         $Shortcut.WorkingDirectory = $AppSourceDir
         $Shortcut.Description = "NetworkingAgent Enterprise NOC Mission Control Console"
+        if (Test-Path $AppIconPath) {
+            $Shortcut.IconLocation = "$AppIconPath,0"
+        }
         $Shortcut.Save()
-        Write-Success "Desktop shortcut created: $ShortcutPath"
+        Write-Success "Desktop shortcut created with icon: $ShortcutPath"
 
-        # Start Menu
+        # Start Menu Shortcut
         $StartMenuPrograms = [System.Environment]::GetFolderPath("Programs")
         if (Test-Path $StartMenuPrograms) {
             $SmShortcutPath = Join-Path $StartMenuPrograms "NetworkingAgent.lnk"
@@ -331,8 +357,11 @@ if (-not $SkipShortcut) {
             }
             $SmShortcut.WorkingDirectory = $AppSourceDir
             $SmShortcut.Description = "NetworkingAgent Enterprise NOC Mission Control Console"
+            if (Test-Path $AppIconPath) {
+                $SmShortcut.IconLocation = "$AppIconPath,0"
+            }
             $SmShortcut.Save()
-            Write-Success "Start Menu shortcut created: $SmShortcutPath"
+            Write-Success "Start Menu shortcut created with icon: $SmShortcutPath"
         }
     } catch {
         Write-WarningMsg "Could not create Desktop shortcut: $_"

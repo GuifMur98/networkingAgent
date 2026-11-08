@@ -62,7 +62,7 @@ def package_artifacts():
     else:
         arch = machine
 
-    version = "2.1.0"
+    version = "2.1.1"
     base_name = f"networking-agent-v{version}-{system}-{arch}"
     bundle_dir = RELEASE_DIR / base_name
     bundle_dir.mkdir(parents=True, exist_ok=True)
@@ -88,11 +88,16 @@ def package_artifacts():
         if src.exists():
             shutil.copy2(src, bundle_dir / doc)
 
+    # Copy assets (icons and logos)
+    assets_src = PROJECT_ROOT / "assets"
+    if assets_src.exists():
+        shutil.copytree(assets_src, bundle_dir / "assets", dirs_exist_ok=True)
+
     # Copy scripts and launchers
     if system == "windows":
         iniciar_bat = (
             "@echo off\r\n"
-            "title NetworkingAgent Enterprise v2.1.0\r\n"
+            "title NetworkingAgent Enterprise v2.1.1\r\n"
             '"%~dp0networking-agent.exe" %*\r\n'
             "if %ERRORLEVEL% NEQ 0 (\r\n"
             "    echo.\r\n"
@@ -106,7 +111,7 @@ def package_artifacts():
             "@echo off\r\n"
             "setlocal\r\n"
             "echo =================================================================\r\n"
-            "echo   NetworkingAgent Enterprise v2.1.0 - Instalador para Windows\r\n"
+            "echo   NetworkingAgent Enterprise v2.1.1 - Instalador para Windows\r\n"
             "echo =================================================================\r\n"
             "echo.\r\n"
             'powershell.exe -ExecutionPolicy Bypass -File "%~dp0install.ps1"\r\n'

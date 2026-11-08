@@ -33,7 +33,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/lang/es/).
   - Acciones dedicadas: `Tema: Modo Claro Suave (agent-light)` y `Tema: Modo Oscuro Cyberpunk (agent-dark)`.
 
 ### 🧪 Suite de Pruebas Automatizadas Ampliada (Changed)
-- Cobertura expandida de 172 a **189 pruebas automatizadas** (`pytest tests/`) con 100% de éxito en todos los sistemas operativos.
+- Cobertura expandida de 172 a **193 pruebas automatizadas** (`pytest tests/`) con 100% de éxito en todos los sistemas operativos.
 - Nuevos tests de seguridad (`tests/test_security_audit_remediation.py`) y ergonomía de temas (`test_agent_light_theme_and_color_ergonomics`).
 
 ---

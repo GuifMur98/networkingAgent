@@ -11,6 +11,7 @@ PROJECT_ROOT = Path(os.path.abspath(SPEC)).parent
 datas = [
     (str(PROJECT_ROOT / "src" / "networking_agent" / "tui" / "styles.tcss"), "networking_agent/tui"),
     (str(PROJECT_ROOT / "src" / "networking_agent" / "tui" / "styles.tcss"), "."),
+    (str(PROJECT_ROOT / "assets"), "assets"),
     (str(PROJECT_ROOT / "docs" / "banner.png"), "docs"),
     (str(PROJECT_ROOT / "LICENSE"), "."),
     (str(PROJECT_ROOT / "README.md"), "."),
@@ -76,4 +77,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=str(PROJECT_ROOT / "assets" / "app_icon.ico") if (PROJECT_ROOT / "assets" / "app_icon.ico").exists() else None,
 )

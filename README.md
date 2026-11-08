@@ -4,7 +4,7 @@
 
 [![Python 3.14](https://img.shields.io/badge/python-3.14-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org/)
 [![UI: Textual TUI](https://img.shields.io/badge/ui-Textual%20TUI%20v2.1-00e5ff.svg?style=flat&logo=gnometerminal)](https://textual.textualize.io/)
-[![Tests](https://img.shields.io/badge/tests-189%20passed-brightgreen.svg?style=flat&logo=pytest&logoColor=white)]()
+[![Tests](https://img.shields.io/badge/tests-193%20passed-brightgreen.svg?style=flat&logo=pytest&logoColor=white)]()
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg?style=flat&logo=ruff&logoColor=white)](https://github.com/astral-sh/ruff)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=flat)](LICENSE)
 [![Security: Hardened](https://img.shields.io/badge/security-hardened%20defense--in--depth%20v2.1.1-red.svg?style=flat&logo=shield)]()
@@ -210,7 +210,7 @@ networkingAgent/
 │       │       ├── template_modal.py       # Creador/Editor Jinja2 con chips de variables
 │       │       └── vault_modal.py          # Ajustes de IA dinámicos con escaneo de modelos
 │       └── cli/                # Modo consola clásico interactivo y por lotes
-└── tests/                      # Suite de 189 pruebas automatizadas (100% passing)
+└── tests/                      # Suite de 193 pruebas automatizadas (100% passing)
 ```
 
 ---
@@ -279,7 +279,7 @@ La interfaz responde a atajos ergonómicos contextuales:
 
 ## 🧪 Pruebas Automatizadas y Calidad
 
-El proyecto cuenta con **189 pruebas automatizadas** que cubren el 100% de los subsistemas:
+El proyecto cuenta con **193 pruebas automatizadas** que cubren el 100% de los subsistemas:
 - **Seguridad y Pentest Hardening:** Verificación de las 8 remediaciones de ciberseguridad (SSTI en Jinja2, mitigación de MitM SSH, blindaje de listas negras, permisos NTFS icacls, CWD isolation, enmascaramiento de credenciales, hash chaining continuo SHA-256 e instaladores seguros).
 - **Validación Sintáctica Pre-Flight:** Prevención de comandos destructivos, balance de llaves y sintaxis multi-vendor.
 - **Guardarraíles y Blast Radius:** Blindaje estricto de interfaces WAN y protección contra inyecciones CLI.
