@@ -40,7 +40,7 @@ jobs:
       - name: Install Dependencies & PyInstaller
         run: |
           uv sync --extra dev
-          uv pip install "pyinstaller>=6.11.0"
+          uv pip install "pyinstaller>=6.11.0" "pillow>=10.0.0"
 
       - name: Compile Standalone Release Package
         run: uv run python scripts/build_standalone.py

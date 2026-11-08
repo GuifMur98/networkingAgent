@@ -62,11 +62,10 @@ Bienvenido a la guía oficial de usuario y operaciones para **NetworkingAgent En
 > [!TIP]
 > Consulta la **[📘 Guía Definitiva de Instalación (`docs/INSTALLATION_GUIDE.md`)](INSTALLATION_GUIDE.md)** para una explicación exhaustiva de cada método, variables de entorno y solución de problemas.
 
-### 3.1. Paquete Autónomo Precompilado Standalone (GitHub Releases - Sin Python)
-Descarga el paquete precompilado desde los [Releases de GitHub](https://github.com/GuifMur98/networkingAgent/releases/tag/v2.1.1):
-- **Windows:** Descarga `networking-agent-v2.1.1-windows-x64.zip` y descomprímelo.
-  - **Instalación en 1 Clic (`instalar.bat`):** Registra permanentemente `networking-agent` en tu variable de entorno `PATH` y genera los accesos directos en el **Escritorio** y **Menú Inicio**.
-  - **Uso Portable Directo (`iniciar.bat`):** Ejecuta el agente inmediatamente sin modificar el sistema.
+### 3.1. Asistente Standalone y Paquetes Precompilados (GitHub Releases - Sin Python)
+Descarga los artefactos oficiales desde los [Releases de GitHub](https://github.com/GuifMur98/networkingAgent/releases/tag/v2.1.1):
+- **Windows (Asistente Gráfico Standalone Oficial):** Descarga **`NetworkingAgent-v2.1.1-Setup.exe`** y haz doble clic para iniciar la instalación guiada. Desplegará el binario, configurará los accesos directos en el **Escritorio** y **Menú Inicio** con el icono oficial de red "N", registrará `networking-agent` en el `PATH` y dará de alta el programa en **Aplicaciones Instaladas de Windows**.
+- **Windows (Modo Portable sin instalación):** Descarga `networking-agent-v2.1.1-windows-x64.zip`, descomprímelo y ejecuta directamente `iniciar.bat` o `networking-agent.exe`.
 - **Linux:** Descarga `networking-agent-v2.1.1-linux-x64.tar.gz` y ejecuta `./install.sh` para instalar el binario en `~/.local/bin/networking-agent`.
 
 ### 3.2. Instalador Automatizado One-Click por Terminal (Web Stream)

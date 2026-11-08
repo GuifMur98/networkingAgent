@@ -1,4 +1,4 @@
-"""Tests for NetworkingAgent Enterprise visual branding, logos, and icon assets."""
+"""Tests for NetworkingAgent Enterprise visual branding, logos, icons, and setup wizard."""
 
 from pathlib import Path
 
@@ -71,3 +71,36 @@ def test_pyinstaller_spec_embeds_app_icon():
     spec_content = (PROJECT_ROOT / "networking_agent.spec").read_text(encoding="utf-8")
     assert '"assets"' in spec_content
     assert "app_icon.ico" in spec_content
+
+
+def test_installer_spec_embeds_installer_icon_and_payload():
+    """Verify that installer.spec configures the single-file setup wizard with installer_icon.ico."""
+    installer_spec = PROJECT_ROOT / "installer.spec"
+    assert installer_spec.exists(), "installer.spec must exist"
+    spec_content = installer_spec.read_text(encoding="utf-8")
+    assert "installer_icon.ico" in spec_content
+    assert "NetworkingAgent-v2.1.1-Setup" in spec_content
+    assert "networking-agent.exe" in spec_content
+    assert "console=False" in spec_content
+
+
+def test_installer_wizard_script_implements_required_flows():
+    """Verify that scripts/installer_wizard.py implements setup routines."""
+    wizard_path = PROJECT_ROOT / "scripts" / "installer_wizard.py"
+    assert wizard_path.exists(), "scripts/installer_wizard.py must exist"
+    wizard_content = wizard_path.read_text(encoding="utf-8")
+    assert "perform_installation" in wizard_content
+    assert "register_in_windows_installed_apps" in wizard_content
+    assert "run_gui_wizard" in wizard_content
+    assert "add_to_user_path" in wizard_content
+    assert "refresh_windows_shell" in wizard_content
+
+
+def test_build_standalone_orchestrates_both_specs():
+    """Verify that scripts/build_standalone.py compiles both application and setup wizard."""
+    build_script = PROJECT_ROOT / "scripts" / "build_standalone.py"
+    assert build_script.exists()
+    content = build_script.read_text(encoding="utf-8")
+    assert "networking_agent.spec" in content
+    assert "installer.spec" in content
+    assert "Setup.exe" in content

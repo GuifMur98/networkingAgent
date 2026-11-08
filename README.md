@@ -223,11 +223,10 @@ networkingAgent/
 > [!TIP]
 > Para instrucciones detalladas paso a paso sobre cada sistema operativo y resolución de incidencias, consulta la **[📘 Guía Definitiva de Instalación (`docs/INSTALLATION_GUIDE.md`)](docs/INSTALLATION_GUIDE.md)**.
 
-#### Opción A: Paquete Standalone de GitHub Releases (Recomendado para Windows - Sin Python)
-Descarga el paquete precompilado desde los [Releases de GitHub](https://github.com/GuifMur98/networkingAgent/releases/tag/v2.1.1):
-- Descarga **`networking-agent-v2.1.1-windows-x64.zip`** y descomprímelo.
-- **Para instalar en el sistema (1 clic):** Haz doble clic en **`instalar.bat`** para registrar el comando `networking-agent` en tu `PATH` y crear los accesos directos en el **Escritorio** y **Menú Inicio**.
-- **Para usar en modo portable (sin instalar):** Haz doble clic en **`iniciar.bat`** o en `networking-agent.exe`.
+#### Opción A: Asistente de Instalación Standalone (Recomendado para Windows - Sin Python)
+Descarga el ejecutable desde los [Releases de GitHub](https://github.com/GuifMur98/networkingAgent/releases/tag/v2.1.1):
+- **Instalador Oficial Standalone:** Descarga **`NetworkingAgent-v2.1.1-Setup.exe`** y haz doble clic para iniciar el asistente gráfico de instalación. Configura automáticamente el binario, iconos oficiales en el Escritorio y Menú Inicio, variable `PATH` y registro en Aplicaciones Instaladas de Windows.
+- **Modo Portable (sin instalación):** Descarga el archivo `.zip` **`networking-agent-v2.1.1-windows-x64.zip`**, descomprímelo y ejecuta directamente `iniciar.bat` o `networking-agent.exe`.
 
 #### Opción B: Instalador Automatizado One-Click por Terminal
 - **Windows (PowerShell):**
