@@ -146,7 +146,7 @@ Write-Host '[+] NetworkingAgent desinstalado completamente.' -ForegroundColor Gr
 
     Write-Host ""
     Write-Host " =================================================================" -ForegroundColor Green
-    Write-Host " [EXITO] NetworkingAgent Enterprise v2.1.0 instalado con éxito!    " -ForegroundColor Green
+    Write-Host " [EXITO] NetworkingAgent Enterprise v2.1.1 instalado con éxito!    " -ForegroundColor Green
     Write-Host " =================================================================" -ForegroundColor Green
     Write-Host " Para iniciar el agente, abre una nueva terminal y simplemente escribe:" -ForegroundColor White
     Write-Host "    networking-agent" -ForegroundColor Yellow
@@ -362,7 +362,7 @@ Set-Content -Path $UninstallerPath -Value $UninstallerContent -Encoding UTF8
 
 Write-Host ""
 Write-Host " =================================================================" -ForegroundColor Green
-Write-Host " [SUCCESS] NetworkingAgent Enterprise v2.1.0 installed!           " -ForegroundColor Green
+Write-Host " [SUCCESS] NetworkingAgent Enterprise v2.1.1 installed!           " -ForegroundColor Green
 Write-Host " =================================================================" -ForegroundColor Green
 Write-Host " To start the agent, open a new terminal and simply type:" -ForegroundColor White
 Write-Host "    networking-agent" -ForegroundColor Yellow
