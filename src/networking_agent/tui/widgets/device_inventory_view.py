@@ -81,18 +81,34 @@ class DeviceInventoryView(Widget):
         self.reload_devices()
         self._reset_diagnostic_panel()
 
+    def _get_theme_palette(self):
+        theme = getattr(self.app, "current_theme", None)
+        is_dark = getattr(theme, "dark", True) if theme else True
+        return {
+            "is_dark": is_dark,
+            "primary": "#00e5ff" if is_dark else "#0369a1",
+            "secondary": "#00b4d8" if is_dark else "#475569",
+            "border": "#00b4d8" if is_dark else "#cbd5e1",
+            "success": "#4ade80" if is_dark else "#16a34a",
+            "warning": "#fbbf24" if is_dark else "#d97706",
+            "error": "#f43f5e" if is_dark else "#dc2626",
+            "fg": "#e2e8f0" if is_dark else "#1e293b",
+            "cyan": "cyan" if is_dark else "#0284c7",
+        }
+
     def _reset_diagnostic_panel(self) -> None:
         diag = self.query_one("#inventory-diagnostic-card", Static)
+        pal = self._get_theme_palette()
         msg = (
-            "[dim cyan]Selecciona un equipo de la tabla y pulsa [bold]Hacer Ping (ICMP)[/bold], "
+            f"[{pal['cyan']}]Selecciona un equipo de la tabla y pulsa [bold]Hacer Ping (ICMP)[/bold], "
             "[bold]Probar Conexión (SSH)[/bold] o [bold]Test Completo[/bold] para verificar la alcanzabilidad "
-            "y latencia de red en tiempo real.[/dim cyan]"
+            f"y latencia de red en tiempo real.[/{pal['cyan']}]"
         )
         diag.update(
             Panel(
                 msg,
                 title="DIAGNOSTICO DE CONECTIVIDAD Y ALCANZABILIDAD EN VIVO",
-                border_style="#00b4d8",
+                border_style=pal["border"],
                 box=box.ROUNDED,
             )
         )
@@ -298,11 +314,12 @@ class DeviceInventoryView(Widget):
             return
 
         dev_id, dev_name, device = selected
+        pal = self._get_theme_palette()
         diag.update(
             Panel(
-                f"[bold cyan]Verificando socket TCP en {device.host}:{device.port}...[/bold cyan]",
+                f"[bold {pal['cyan']}]Verificando socket TCP en {device.host}:{device.port}...[/bold {pal['cyan']}]",
                 title=f"TEST PUERTO SSH // {device.host}:{device.port}",
-                border_style="#00b4d8",
+                border_style=pal["border"],
                 box=box.ROUNDED,
             )
         )
@@ -363,11 +380,13 @@ class DeviceInventoryView(Widget):
             return
 
         dev_id, dev_name, device = selected
+        pal = self._get_theme_palette()
         diag.update(
             Panel(
-                f"[bold cyan]Ejecutando diagnóstico multi-capa (ICMP + TCP) en {device.host}...[/bold cyan]",
+                f"[bold {pal['cyan']}]Ejecutando diagnóstico multi-capa (ICMP + TCP) en "
+                f"{device.host}...[/bold {pal['cyan']}]",
                 title=f"TEST MULTI-TIER // {device.host}",
-                border_style="#00b4d8",
+                border_style=pal["border"],
                 box=box.ROUNDED,
             )
         )

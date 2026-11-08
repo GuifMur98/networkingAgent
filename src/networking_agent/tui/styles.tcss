@@ -131,19 +131,20 @@ TabPane {
     width: 1fr;
     height: 100%;
     min-height: 7;
-    background: $background;
+    background: $surface;
+    color: $foreground;
     border: none;
     padding: 0;
     margin: 0 1;
 }
 
 .home-nav-card:hover {
-    background: $surface-lighten-1;
+    background: $panel;
     border: none;
 }
 
 .home-nav-card:focus {
-    background: $surface-lighten-1;
+    background: $panel;
     border: none;
 }
 
@@ -672,7 +673,7 @@ TextArea:focus {
     min-height: 12;
     background: $panel;
     border: round $primary;
-    color: $primary-lighten-1;
+    color: $foreground;
     padding: 1;
     margin-bottom: 1;
 }

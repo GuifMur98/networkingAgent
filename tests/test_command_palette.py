@@ -217,3 +217,31 @@ async def test_footer_palette_position_and_module_filtering(tmp_path, monkeypatc
         restored_palette = [c.key for c in footer.query("FooterKey") if "-command-palette" in c.classes]
         assert restored_keys == ["h", "q", "d", "s", "r"]
         assert restored_palette == ["ctrl+p"]
+
+
+@pytest.mark.anyio
+async def test_agent_light_theme_and_color_ergonomics(tmp_path, monkeypatch):
+    """Verifies that agent-light provides soft eye-friendly colors without black card backgrounds."""
+    from networking_agent.tui.widgets.home_view import HomeNavCard
+
+    app = NetworkingAgentTUIApp()
+    async with app.run_test() as pilot:
+        await pilot.pause()
+
+        # 1. Switch to agent-light
+        app.action_set_theme_agent_light()
+        await pilot.pause()
+        assert app.theme == "agent-light"
+        assert getattr(app.current_theme, "dark", True) is False
+
+        # 2. Inspect HomeNavCard background and text
+        card = app.query_one("#btn-nav-troubleshooting", HomeNavCard)
+        assert card.styles.background.hex.upper() == "#FFFFFF"
+        panel = card.render()
+        assert panel.border_style in ("#cbd5e1", "#0369a1")
+
+        # 3. Switch to agent-dark
+        app.action_set_theme_agent_dark()
+        await pilot.pause()
+        assert app.theme == "agent-dark"
+        assert getattr(app.current_theme, "dark", False) is True

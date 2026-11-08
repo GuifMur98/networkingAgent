@@ -16,6 +16,17 @@ from networking_agent.models.config_intent import ConfigurationIntent, ProtocolC
 from networking_agent.models.device import DeviceInventory
 
 
+def _resolve_theme_color(color_val: str | None, fallback: str) -> str:
+    if not color_val:
+        return fallback
+    val = str(color_val).strip()
+    if "ansi_" in val:
+        val = val.replace("ansi_", "")
+    if val in ("default", "none", "None", ""):
+        return fallback
+    return val
+
+
 class ConfigurationView(Widget):
     """Interactive workspace for natural-language multi-protocol provisioning."""
 
@@ -119,7 +130,11 @@ class ConfigurationView(Widget):
             lbl_step = self.query_one("#lbl-config-step", Label)
             lbl_step.update(step)
             lbl_pct = self.query_one("#lbl-config-pct", Label)
-            color = "#4ade80" if percentage >= 100 else "#00e5ff"
+            theme = getattr(self.app, "current_theme", None)
+            is_dark = getattr(theme, "dark", True) if theme else True
+            success_color = "#4ade80" if is_dark else "#16a34a"
+            primary_color = "#00e5ff" if is_dark else "#0369a1"
+            color = success_color if percentage >= 100 else primary_color
             lbl_pct.update(f"[bold {color}]{percentage}%[/]")
         except Exception:
             pass
@@ -206,13 +221,17 @@ class ConfigurationView(Widget):
         """Renders the synthesized configuration plan, active state, candidate diff, and conflict analysis."""
         panel_widget = self.query_one("#config-plan-result", Static)
         panel_widget.styles.display = "block"
+        theme = getattr(self.app, "current_theme", None)
+        is_dark = getattr(theme, "dark", True) if theme else True
+        primary = _resolve_theme_color(getattr(theme, "primary", None), "#00e5ff" if is_dark else "#0369a1")
+        fg_color = "#e2e8f0" if is_dark else "#1e293b"
         table = Table(
             title=f"PLAN DE CONFIGURACION: {config_intent.protocol_type.value.upper()}",
             show_header=True,
-            header_style="bold #00e5ff",
+            header_style=f"bold {primary}",
         )
         table.add_column("Sección", style="dim", width=24)
-        table.add_column("Detalle / Comandos CLI", style="bold white")
+        table.add_column("Detalle / Comandos CLI", style=f"bold {fg_color}")
 
         table.add_row("Descripción Funcional", config_intent.description)
         table.add_row("Dispositivo Destino", config_intent.target_host or "Seleccionado")
@@ -243,5 +262,6 @@ class ConfigurationView(Widget):
             rb_preview = "\n".join([f"- {c}" for c in config_intent.rollback_commands])
             table.add_row("Plan de Rollback Inverso", f"[yellow]{rb_preview}[/yellow]")
 
-        table.add_row("Notas de Seguridad", f"[white]{config_intent.safety_notes}[/white]")
-        panel_widget.update(Panel(table, border_style="#00e5ff", box=box.ROUNDED))
+        table.add_row("Notas de Seguridad", f"[{fg_color}]{config_intent.safety_notes}[/{fg_color}]")
+        border_col = primary if is_dark else "#cbd5e1"
+        panel_widget.update(Panel(table, border_style=border_col, box=box.ROUNDED))

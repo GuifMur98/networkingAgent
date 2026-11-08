@@ -96,18 +96,35 @@ class AuditTableWidget(Widget):
         self.reload_audit_data()
         self._reset_detail_panel()
 
+    def _get_theme_palette(self):
+        theme = getattr(self.app, "current_theme", None)
+        is_dark = getattr(theme, "dark", True) if theme else True
+        return {
+            "is_dark": is_dark,
+            "primary": "#00e5ff" if is_dark else "#0369a1",
+            "secondary": "#00b4d8" if is_dark else "#475569",
+            "border": "#00b4d8" if is_dark else "#cbd5e1",
+            "success": "#4ade80" if is_dark else "#16a34a",
+            "warning": "#fbbf24" if is_dark else "#d97706",
+            "error": "#f43f5e" if is_dark else "#dc2626",
+            "fg": "#e2e8f0" if is_dark else "#1e293b",
+            "dim": "#94a3b8" if is_dark else "#64748b",
+            "cyan": "cyan" if is_dark else "#0284c7",
+        }
+
     def _reset_detail_panel(self) -> None:
         diag = self.query_one("#audit-detail-card", Static)
+        pal = self._get_theme_palette()
         msg = (
-            "[dim cyan]Selecciona cualquier fila de la bitácora para inspeccionar en detalle: "
+            f"[{pal['cyan']}]Selecciona cualquier fila de la bitácora para inspeccionar en detalle: "
             "comandos CLI completos, salidas del equipo, aprobaciones del operador, "
-            "verificación de guardarraíles y respaldos generados.[/dim cyan]"
+            f"verificación de guardarraíles y respaldos generados.[/{pal['cyan']}]"
         )
         diag.update(
             Panel(
                 msg,
                 title="PANEL DE INSPECCION FORENSE Y AUDITORIA",
-                border_style="#00b4d8",
+                border_style=pal["border"],
                 box=box.ROUNDED,
             )
         )
@@ -303,37 +320,50 @@ class AuditTableWidget(Widget):
         output = rec.get("execution_output")
         extra = rec.get("extra") or {}
 
+        pal = self._get_theme_palette()
         # Determine border color
         if "SUCCESS" in etype or "RESOLVED" in etype or vstatus == "PASSED":
-            border_col = "#4ade80"
+            border_col = pal["success"]
         elif "FAILED" in etype or "REJECTED" in etype or "BLOCKED" in etype or rollback == "SI":
-            border_col = "#f43f5e"
+            border_col = pal["error"]
         else:
-            border_col = "#00b4d8"
+            border_col = pal["border"]
 
         # Format Commands
+        fg_col = pal["fg"]
+        dim_col = pal["dim"]
+        cyan_col = pal["cyan"]
         if cmds:
-            cmds_formatted = "\n".join(f"    {i + 1}. [bold white]{cmd}[/bold white]" for i, cmd in enumerate(cmds))
+            cmds_formatted = "\n".join(
+                f"    {i + 1}. [bold {fg_col}]{cmd}[/bold {fg_col}]" for i, cmd in enumerate(cmds)
+            )
         else:
-            cmds_formatted = "    [dim white]Ninguno (Operación de sólo lectura o diagnóstico informativo)[/dim white]"
+            cmds_formatted = (
+                f"    [dim {dim_col}]Ninguno (Operación de sólo lectura o diagnóstico informativo)[/dim {dim_col}]"
+            )
 
         # Format Output or Diagnosis
         out_formatted = ""
         if output:
-            out_formatted = f"\n  * [cyan]Salida CLI Recibida del Equipo:[/cyan]\n[dim white]{output[:500]}[/dim white]"
+            out_formatted = (
+                f"\n  * [{cyan_col}]Salida CLI Recibida del Equipo:[/{cyan_col}]\n"
+                f"[dim {dim_col}]{output[:500]}[/dim {dim_col}]"
+            )
         elif extra.get("diagnosis"):
-            out_formatted = f"\n  * [cyan]Diagnóstico del Motor IA:[/cyan] [white]{extra['diagnosis']}[/white]"
+            out_formatted = (
+                f"\n  * [{cyan_col}]Diagnóstico del Motor IA:[/{cyan_col}] [{fg_col}]{extra['diagnosis']}[/{fg_col}]"
+            )
 
         # Format Extra metadata (backup, job_id, etc.)
         meta_items = []
         if "backup" in extra:
             meta_items.append(f"Backup de Seguridad: [bold green]{extra['backup']}[/bold green]")
         if "job_id" in extra:
-            meta_items.append(f"ID Despliegue: [bold cyan]{extra['job_id']}[/bold cyan]")
+            meta_items.append(f"ID Despliegue: [bold {cyan_col}]{extra['job_id']}[/bold {cyan_col}]")
         if "reason" in extra:
             meta_items.append(f"Motivo: [bold yellow]{extra['reason']}[/bold yellow]")
         if "total_devices" in extra:
-            meta_items.append(f"Equipos en Lote: [bold white]{extra['total_devices']}[/bold white]")
+            meta_items.append(f"Equipos en Lote: [bold {fg_col}]{extra['total_devices']}[/bold {fg_col}]")
 
         meta_str = ("\n  * Metadatos: " + " | ".join(meta_items)) if meta_items else ""
 
@@ -343,11 +373,13 @@ class AuditTableWidget(Widget):
             hash_str = f"\n  * Hash SHA-256 Forense: [bold green]{h_short}[/bold green]"
 
         content = (
-            f"─── REGISTRO FORENSE: [bold white]{etype}[/bold white] // Host: [bold cyan]{host}[/bold cyan] ───\n\n"
-            f"  * Fecha y Hora (UTC): [bold white]{ts}[/bold white]\n"
+            f"─── REGISTRO FORENSE: [bold {fg_col}]{etype}[/bold {fg_col}] // "
+            f"Host: [bold {cyan_col}]{host}[/bold {cyan_col}] ───\n\n"
+            f"  * Fecha y Hora (UTC): [bold {fg_col}]{ts}[/bold {fg_col}]\n"
             f"  * Acción Operativa: [bold yellow]{action}[/bold yellow]\n"
             f"  * Aprobación Operador: [bold green]{approved}[/bold green] (Autorizado por: {approver})\n"
-            f"  * Verificación Estado Red: [bold cyan]{vstatus}[/bold cyan] | Rollback Automático: {rollback}\n"
+            f"  * Verificación Estado Red: [bold {cyan_col}]{vstatus}[/bold {cyan_col}] | "
+            f"Rollback Automático: {rollback}\n"
             f"  * Comandos CLI Enviados:\n{cmds_formatted}"
             f"{out_formatted}"
             f"{meta_str}"
@@ -394,23 +426,26 @@ class AuditTableWidget(Widget):
             with open(export_path, "w", encoding="utf-8") as f:
                 json.dump(self.filtered_records, f, indent=2, ensure_ascii=False)
 
+            pal = self._get_theme_palette()
             diag.update(
                 Panel(
                     f"[bold green][OK] Bitácora exportada exitosamente:[/bold green]\n\n"
-                    f"  * Archivo generado: [bold white]{export_path.resolve()}[/bold white]\n"
-                    f"  * Total de eventos exportados: [bold cyan]{len(self.filtered_records)}[/bold cyan]\n"
+                    f"  * Archivo generado: [bold {pal['fg']}]{export_path.resolve()}[/bold {pal['fg']}]\n"
+                    f"  * Total de eventos exportados: "
+                    f"[bold {pal['cyan']}]{len(self.filtered_records)}[/bold {pal['cyan']}]\n"
                     f"  * Integridad: Formato JSON estructurado para cumplimiento y auditorías externas.",
                     title="EXPORTACION COMPLETADA",
-                    border_style="#4ade80",
+                    border_style=pal["success"],
                     box=box.ROUNDED,
                 )
             )
         except Exception as e:
+            pal = self._get_theme_palette()
             diag.update(
                 Panel(
                     f"[bold red]Error al exportar bitácora:[/bold red] {e}",
                     title="ERROR DE EXPORTACION",
-                    border_style="#f43f5e",
+                    border_style=pal["error"],
                     box=box.ROUNDED,
                 )
             )
@@ -466,26 +501,29 @@ class AuditTableWidget(Widget):
             preserved_hosts = sorted({str(r.get("device_host") or "N/A") for r in authentic_records})
             hosts_detail = ", ".join(preserved_hosts) if preserved_hosts else "Ninguno"
 
+            pal = self._get_theme_palette()
             diag.update(
                 Panel(
                     f"[bold green][OK] Depuración de registros sintéticos completada exitosamente:[/bold green]\n\n"
                     f"  * Registros de prueba purgados: [bold yellow]{purged_count}[/bold yellow]\n"
-                    f"  * Registros auténticos conservados: [bold cyan]{len(authentic_records)}[/bold cyan] "
-                    f"([bold white]{hosts_detail}[/bold white])\n"
-                    f"  * Respaldo previo creado en: [dim white]{backup_path.name}[/dim white]\n\n"
-                    f"[dim cyan]A partir de ahora, todas las pruebas automatizadas se ejecutan en un entorno aislado "
-                    f"sin alterar esta bitácora inmutable.[/dim cyan]",
+                    f"  * Registros auténticos conservados: "
+                    f"[bold {pal['cyan']}]{len(authentic_records)}[/bold {pal['cyan']}] "
+                    f"([bold {pal['fg']}]{hosts_detail}[/bold {pal['fg']}])\n"
+                    f"  * Respaldo previo creado en: [dim {pal['dim']}]{backup_path.name}[/dim {pal['dim']}]\n\n"
+                    f"[{pal['cyan']}]A partir de ahora, todas las pruebas automatizadas se ejecutan en un entorno "
+                    f"aislado sin alterar esta bitácora inmutable.[/{pal['cyan']}]",
                     title="BITACORA DEPURADA Y OPTIMIZADA",
-                    border_style="#4ade80",
+                    border_style=pal["success"],
                     box=box.ROUNDED,
                 )
             )
         except Exception as e:
+            pal = self._get_theme_palette()
             diag.update(
                 Panel(
                     f"[bold red]Error al purgar registros:[/bold red] {e}",
                     title="ERROR EN DEPURACION",
-                    border_style="#f43f5e",
+                    border_style=pal["error"],
                     box=box.ROUNDED,
                 )
             )

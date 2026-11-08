@@ -8,6 +8,7 @@ from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.command import CommandPalette
 from textual.containers import Horizontal
+from textual.theme import Theme
 from textual.widgets import Footer, Log, TabbedContent, TabPane
 
 from networking_agent.core.config import settings
@@ -124,6 +125,43 @@ class TextualAgentObserver(AgentObserver):
             self._safe_call(self.workspace.append_log, f"[{color}]{message}[/{color}]")
 
 
+THEME_AGENT_LIGHT = Theme(
+    name="agent-light",
+    primary="#0369a1",
+    secondary="#475569",
+    accent="#d97706",
+    success="#16a34a",
+    warning="#ea580c",
+    error="#dc2626",
+    foreground="#1e293b",
+    background="#f8fafc",
+    surface="#ffffff",
+    panel="#f1f5f9",
+    dark=False,
+    variables={
+        "footer-key-foreground": "#0369a1",
+    },
+)
+
+THEME_AGENT_DARK = Theme(
+    name="agent-dark",
+    primary="#00e5ff",
+    secondary="#00b4d8",
+    accent="#fbbf24",
+    success="#22c55e",
+    warning="#f59e0b",
+    error="#f43f5e",
+    foreground="#f1f5f9",
+    background="#0a0f1d",
+    surface="#111827",
+    panel="#1e293b",
+    dark=True,
+    variables={
+        "footer-key-foreground": "#00e5ff",
+    },
+)
+
+
 class NetworkingAgentTUIApp(App):
     """Main terminal user interface application for NetworkingAgent."""
 
@@ -152,6 +190,8 @@ class NetworkingAgentTUIApp(App):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.register_theme(THEME_AGENT_LIGHT)
+        self.register_theme(THEME_AGENT_DARK)
         self.is_busy = False
 
     def compose(self) -> ComposeResult:
@@ -199,7 +239,9 @@ class NetworkingAgentTUIApp(App):
             try:
                 self.theme = saved_theme
             except Exception:
-                pass
+                self.theme = "textual-dark"
+        else:
+            self.theme = "textual-dark"
 
         first_dev = None
         for sidebar in self.query(DeviceSidebar):
@@ -246,6 +288,19 @@ class NetworkingAgentTUIApp(App):
         try:
             for sidebar in self.query(DeviceSidebar):
                 sidebar.reload_devices()
+        except Exception:
+            pass
+        try:
+            diag_view = self.query_one(TroubleshootingWorkspace)
+            diag_view.update_mode_description()
+            if diag_view.current_device:
+                diag_view.set_device(diag_view.current_device)
+        except Exception:
+            pass
+        try:
+            cfg_view = self.query_one(ConfigurationView)
+            if cfg_view.current_device:
+                cfg_view.set_device(cfg_view.current_device)
         except Exception:
             pass
 
@@ -555,6 +610,7 @@ class NetworkingAgentTUIApp(App):
         is_dark = getattr(self.current_theme, "dark", True)
         if is_dark:
             light_map = {
+                "agent-dark": "agent-light",
                 "textual-dark": "textual-light",
                 "catppuccin-mocha": "catppuccin-latte",
                 "catppuccin-frappe": "catppuccin-latte",
@@ -570,9 +626,10 @@ class NetworkingAgentTUIApp(App):
             elif "dark" in self.theme and self.theme.replace("dark", "light") in self.available_themes:
                 self.theme = self.theme.replace("dark", "light")
             else:
-                self.theme = "textual-light"
+                self.theme = "agent-light"
         else:
             dark_map = {
+                "agent-light": "agent-dark",
                 "textual-light": "textual-dark",
                 "catppuccin-latte": "catppuccin-mocha",
                 "solarized-light": "solarized-dark",
@@ -585,13 +642,23 @@ class NetworkingAgentTUIApp(App):
             elif "light" in self.theme and self.theme.replace("light", "dark") in self.available_themes:
                 self.theme = self.theme.replace("light", "dark")
             else:
-                self.theme = "textual-dark"
+                self.theme = "agent-dark"
         self.notify(f"Tema activo: {self.theme}", title="APARIENCIA", timeout=2.5)
 
     def action_reset_theme(self) -> None:
         """Reset theme to default textual-dark."""
         self.theme = "textual-dark"
         self.notify("Tema restaurado a: textual-dark", title="APARIENCIA", timeout=2.5)
+
+    def action_set_theme_agent_light(self) -> None:
+        """Switch to eye-friendly soft enterprise light theme."""
+        self.theme = "agent-light"
+        self.notify("Tema activo: agent-light (Modo Claro Suave)", title="APARIENCIA", timeout=2.5)
+
+    def action_set_theme_agent_dark(self) -> None:
+        """Switch to mission-control cyberpunk dark theme."""
+        self.theme = "agent-dark"
+        self.notify("Tema activo: agent-dark (Modo Oscuro Cyberpunk)", title="APARIENCIA", timeout=2.5)
 
     def action_screenshot(self) -> None:
         """Save SVG screenshot of current terminal view into logs directory."""

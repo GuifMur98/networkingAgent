@@ -52,12 +52,12 @@ class BannerWidget(Static):
         # Dynamic theme palette
         theme = getattr(self.app, "current_theme", None)
         is_dark = getattr(theme, "dark", True) if theme else True
-        primary = _clean_rich_color(getattr(theme, "primary", None), "#00e5ff")
-        secondary = _clean_rich_color(getattr(theme, "secondary", None), "#00b4d8")
-        accent = _clean_rich_color(getattr(theme, "accent", None), "#f59e0b")
-        fg_dim = "#94a3b8" if is_dark else "#4b5563"
-        frame_border = f"bold {primary}"
-        frame_dim = f"dim {primary}"
+        primary = _clean_rich_color(getattr(theme, "primary", None), "#00e5ff" if is_dark else "#0369a1")
+        secondary = _clean_rich_color(getattr(theme, "secondary", None), "#00b4d8" if is_dark else "#475569")
+        accent = _clean_rich_color(getattr(theme, "accent", None), "#f59e0b" if is_dark else "#d97706")
+        fg_dim = "#94a3b8" if is_dark else "#64748b"
+        frame_border = f"bold {primary}" if is_dark else "bold #0369a1"
+        frame_dim = f"dim {primary}" if is_dark else "dim #94a3b8"
 
         t = Text(no_wrap=True)
 
@@ -92,11 +92,11 @@ class BannerWidget(Static):
             ]
         else:
             rows = [
-                (R1, f"bold {primary}"),
-                (R2, f"bold {secondary}"),
-                (R3, f"bold {primary}"),
-                (R4, f"bold {secondary}"),
-                (R5, f"bold {primary}"),
+                (R1, "bold #0369a1"),
+                (R2, "bold #0284c7"),
+                (R3, "bold #0f766e"),
+                (R4, "bold #0369a1"),
+                (R5, "bold #1e293b"),
             ]
 
         for r, style in rows:

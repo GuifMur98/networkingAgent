@@ -16,6 +16,17 @@ from networking_agent.models.device import DeviceInventory
 from networking_agent.models.intent import NetworkIntent
 
 
+def _resolve_theme_color(color_val: str | None, fallback: str) -> str:
+    if not color_val:
+        return fallback
+    val = str(color_val).strip()
+    if "ansi_" in val:
+        val = val.replace("ansi_", "")
+    if val in ("default", "none", "None", ""):
+        return fallback
+    return val
+
+
 class TroubleshootingWorkspace(Widget):
     """Operational troubleshooting workspace combining live interrogation and natural language symptoms."""
 
@@ -121,7 +132,25 @@ class TroubleshootingWorkspace(Widget):
         """Update explanatory banner based on active interrogation mode."""
         try:
             desc_widget = self.query_one("#mode-description-banner", Static)
-            text = self.MODE_DESCRIPTIONS.get(self.selected_mode, "")
+            theme = getattr(self.app, "current_theme", None)
+            is_dark = getattr(theme, "dark", True) if theme else True
+            pri = "#00e5ff" if is_dark else "#0369a1"
+            sec = "#38bdf8" if is_dark else "#0284c7"
+            acc = "#fbbf24" if is_dark else "#d97706"
+            if self.selected_mode == "PROACTIVE":
+                text = (
+                    f"[bold {pri}]MODO PROACTIVO (RECOMENDADO PARA FALLAS ACTIVAS):[/] "
+                    f"El agente se conectará vía SSH en tiempo real al equipo y ejecutará "
+                    f"comandos de telemetría y salud ([{sec}]show interfaces, show ip route, show bgp, etc.[/{sec}]), "
+                    f"combinando la salida viva con tu descripción para diagnosticar la causa raíz."
+                )
+            else:
+                text = (
+                    f"[bold {acc}]MODO REACTIVO (FORENSE / HISTORICO):[/] "
+                    f"El agente [bold underline]NO[/] enviará comandos ni tráfico al router. "
+                    f"Analizará únicamente el texto o eventos de Syslog que ingreses en el campo "
+                    f"inferior para correlacionar anomalías de incidentes ya ocurridos."
+                )
             desc_widget.update(Text.from_markup(text))
         except Exception:
             pass
@@ -130,9 +159,13 @@ class TroubleshootingWorkspace(Widget):
         """Update target device display."""
         self.current_device = device
         card = self.query_one("#target-device-card", Static)
+        theme = getattr(self.app, "current_theme", None)
+        is_dark = getattr(theme, "dark", True) if theme else True
+        primary = _resolve_theme_color(getattr(theme, "primary", None), "#00e5ff" if is_dark else "#0369a1")
+        fg_color = "#e2e8f0" if is_dark else "#1e293b"
         text = Text()
-        text.append("EQUIPO SELECCIONADO: ", style="bold cyan")
-        text.append(f"{device.host} ", style="bold white")
+        text.append("EQUIPO SELECCIONADO: ", style=f"bold {primary}")
+        text.append(f"{device.host} ", style=f"bold {fg_color}")
         text.append(f"[{device.device_type}]", style="bold green")
         text.append(f" | Puerto: {device.port} | Usuario: {device.username}", style="dim")
         card.update(text)
@@ -230,11 +263,17 @@ class TroubleshootingWorkspace(Widget):
             bar.update(progress=percentage)
 
             lbl_pct = self.query_one("#lbl-telemetry-pct", Label)
-            pct_color = "#4ade80" if percentage >= 100 else "#00e5ff"
+            theme = getattr(self.app, "current_theme", None)
+            is_dark = getattr(theme, "dark", True) if theme else True
+            success_color = "#4ade80" if is_dark else "#16a34a"
+            primary_color = "#00e5ff" if is_dark else "#0369a1"
+            pct_color = success_color if percentage >= 100 else primary_color
             lbl_pct.update(f"[bold {pct_color}]{percentage}%[/]")
 
             lbl_step = self.query_one("#lbl-telemetry-step", Label)
-            lbl_step.update(f"[dim cyan]●[/dim cyan] [white]{step}[/white]")
+            fg_step = "white" if is_dark else "#1e293b"
+            bullet_color = "dim cyan" if is_dark else "dim #0369a1"
+            lbl_step.update(f"[{bullet_color}]●[/{bullet_color}] [{fg_step}]{step}[/{fg_step}]")
         except Exception:
             pass
 
@@ -251,9 +290,15 @@ class TroubleshootingWorkspace(Widget):
         """Renders the AI root-cause analysis panel."""
         panel_widget = self.query_one("#diagnosis-result", Static)
         panel_widget.styles.display = "block"
-        table = Table(title="DICTAMEN TECNICO Y ANALISIS DE CAUSA RAIZ", show_header=True, header_style="bold #00e5ff")
+        theme = getattr(self.app, "current_theme", None)
+        is_dark = getattr(theme, "dark", True) if theme else True
+        primary = _resolve_theme_color(getattr(theme, "primary", None), "#00e5ff" if is_dark else "#0369a1")
+        fg_color = "#e2e8f0" if is_dark else "#1e293b"
+        table = Table(
+            title="DICTAMEN TECNICO Y ANALISIS DE CAUSA RAIZ", show_header=True, header_style=f"bold {primary}"
+        )
         table.add_column("Propiedad", style="dim", width=22)
-        table.add_column("Detalle Diagnosticado", style="bold white")
+        table.add_column("Detalle Diagnosticado", style=f"bold {fg_color}")
 
         sev_color = "red" if intent.severity == "CRITICAL" else ("yellow" if intent.severity == "HIGH" else "green")
         table.add_row("Severidad del Incidente", f"[{sev_color}]{intent.severity}[/{sev_color}]")
@@ -270,7 +315,8 @@ class TroubleshootingWorkspace(Widget):
         if intent.bgp_neighbor_ip:
             table.add_row("IP Vecino BGP", intent.bgp_neighbor_ip)
 
-        panel_widget.update(Panel(table, border_style="#00e5ff", box=box.ROUNDED))
+        border_col = primary if is_dark else "#cbd5e1"
+        panel_widget.update(Panel(table, border_style=border_col, box=box.ROUNDED))
 
     def display_no_op(self, device: DeviceInventory, intent: NetworkIntent) -> None:
         panel_widget = self.query_one("#diagnosis-result", Static)
@@ -282,7 +328,10 @@ class TroubleshootingWorkspace(Widget):
             f"[bold]Explicación:[/bold] {intent.diagnosis}\n"
             f"[dim]No se aplicaron cambios. La investigación ha sido registrada en auditoría.[/dim]"
         )
-        panel_widget.update(Panel(content, title="DICTAMEN TECNICO", border_style="#4ade80", box=box.ROUNDED))
+        theme = getattr(self.app, "current_theme", None)
+        is_dark = getattr(theme, "dark", True) if theme else True
+        border_ok = "#4ade80" if is_dark else "#16a34a"
+        panel_widget.update(Panel(content, title="DICTAMEN TECNICO", border_style=border_ok, box=box.ROUNDED))
 
     def display_guardrail_block(self, intent: NetworkIntent, reason: str) -> None:
         panel_widget = self.query_one("#diagnosis-result", Static)
@@ -293,7 +342,10 @@ class TroubleshootingWorkspace(Widget):
             f"[bold]Motivo:[/bold] [yellow]{reason}[/yellow]\n"
             f"[dim]No se inyectaron comandos en el dispositivo.[/dim]"
         )
-        panel = Panel(content, title="SEGURIDAD Y PROTECCION ACTIVA", border_style="#f43f5e", box=box.ROUNDED)
+        theme = getattr(self.app, "current_theme", None)
+        is_dark = getattr(theme, "dark", True) if theme else True
+        border_err = "#f43f5e" if is_dark else "#dc2626"
+        panel = Panel(content, title="SEGURIDAD Y PROTECCION ACTIVA", border_style=border_err, box=box.ROUNDED)
         panel_widget.update(panel)
 
 

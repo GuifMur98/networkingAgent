@@ -38,6 +38,7 @@ class HomeNavCard(Button):
         height: 100%;
         min-height: 8;
         background: $surface;
+        color: $foreground;
         border: none;
         padding: 0;
         margin: 0 1;
@@ -46,7 +47,7 @@ class HomeNavCard(Button):
         background: $panel;
     }
     HomeNavCard:hover {
-        background: $surface-lighten-1;
+        background: $panel;
     }
     """
 
@@ -80,17 +81,17 @@ class HomeNavCard(Button):
         # Dynamic theme colors
         theme = getattr(self.app, "current_theme", None)
         is_dark = getattr(theme, "dark", True) if theme else True
-        primary_color = _resolve_theme_color(getattr(theme, "primary", None), "#00e5ff")
-        secondary_color = _resolve_theme_color(getattr(theme, "secondary", None), "#00b4d8")
-        accent_color = _resolve_theme_color(getattr(theme, "accent", None), "#fbbf24")
-        success_color = _resolve_theme_color(getattr(theme, "success", None), "#22c55e")
-        error_color = _resolve_theme_color(getattr(theme, "error", None), "#f43f5e")
+        primary_color = _resolve_theme_color(getattr(theme, "primary", None), "#00e5ff" if is_dark else "#0369a1")
+        secondary_color = _resolve_theme_color(getattr(theme, "secondary", None), "#00b4d8" if is_dark else "#475569")
+        accent_color = _resolve_theme_color(getattr(theme, "accent", None), "#fbbf24" if is_dark else "#d97706")
+        success_color = _resolve_theme_color(getattr(theme, "success", None), "#22c55e" if is_dark else "#16a34a")
+        error_color = _resolve_theme_color(getattr(theme, "error", None), "#f43f5e" if is_dark else "#dc2626")
         fg_raw = getattr(theme, "foreground", None)
-        fg_color = _resolve_theme_color(fg_raw, "#e2e8f0" if is_dark else "#111827")
-        dim_color = "#94a3b8" if is_dark else "#4b5563"
+        fg_color = _resolve_theme_color(fg_raw, "#e2e8f0" if is_dark else "#1e293b")
+        dim_color = "#94a3b8" if is_dark else "#64748b"
 
         is_active = self.has_focus or self.has_pseudo_class("hover")
-        border_color = primary_color if is_active else secondary_color
+        border_color = primary_color if is_active else (secondary_color if is_dark else "#cbd5e1")
 
         t = Text()
         # 1. Title line: [1] TROUBLESHOOTING
@@ -269,13 +270,14 @@ class HomeDashboard(Widget):
         # Dynamic theme colors
         theme = getattr(self.app, "current_theme", None)
         is_dark = getattr(theme, "dark", True) if theme else True
-        primary_color = _resolve_theme_color(getattr(theme, "primary", None), "#00e5ff")
-        accent_color = _resolve_theme_color(getattr(theme, "accent", None), "#fbbf24")
-        success_color = _resolve_theme_color(getattr(theme, "success", None), "#4ade80")
-        error_color = _resolve_theme_color(getattr(theme, "error", None), "#ef4444")
+        primary_color = _resolve_theme_color(getattr(theme, "primary", None), "#00e5ff" if is_dark else "#0369a1")
+        accent_color = _resolve_theme_color(getattr(theme, "accent", None), "#fbbf24" if is_dark else "#d97706")
+        success_color = _resolve_theme_color(getattr(theme, "success", None), "#4ade80" if is_dark else "#16a34a")
+        error_color = _resolve_theme_color(getattr(theme, "error", None), "#ef4444" if is_dark else "#dc2626")
         fg_raw = getattr(theme, "foreground", None)
-        fg_color = _resolve_theme_color(fg_raw, "#e2e8f0" if is_dark else "#111827")
-        dim_color = "#94a3b8" if is_dark else "#6b7280"
+        fg_color = _resolve_theme_color(fg_raw, "#e2e8f0" if is_dark else "#1e293b")
+        dim_color = "#94a3b8" if is_dark else "#64748b"
+        border_color = primary_color if is_dark else "#cbd5e1"
 
         # Truncate model name only if extremely long (> 32 chars) to keep on 1 line
         if len(model) > 32:
@@ -304,7 +306,7 @@ class HomeDashboard(Widget):
         panel = Panel(
             status_text,
             title="PANEL DE CONTROL OPERACIONAL",
-            border_style=primary_color,
+            border_style=border_color,
             box=box.ROUNDED,
             padding=(0, 1),
         )

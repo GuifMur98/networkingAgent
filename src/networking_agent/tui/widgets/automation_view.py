@@ -183,7 +183,11 @@ class AutomationView(Widget):
                 lbl_pct = self.query_one("#lbl-auto-pct", Label)
                 pbar.update(progress=percent)
                 lbl_step.update(step_label)
-                color = "#4ade80" if percent >= 100 else "#00e5ff"
+                theme = getattr(self.app, "current_theme", None)
+                is_dark = getattr(theme, "dark", True) if theme else True
+                success_color = "#4ade80" if is_dark else "#16a34a"
+                primary_color = "#00e5ff" if is_dark else "#0369a1"
+                color = success_color if percent >= 100 else primary_color
                 lbl_pct.update(f"[bold {color}]{int(percent)}%[/]")
             except Exception:
                 pass
@@ -391,7 +395,10 @@ class AutomationView(Widget):
                 f"  * Guardarraíles destructivos: 0 violaciones{warn_text}\n\n"
                 f"[dim]El script cumple con los requisitos del SO y está listo para desplegar.[/dim]"
             )
-            panel = Panel(content, title="ANALISIS ESTATICO OS", border_style="#4ade80", box=box.ROUNDED)
+            theme = getattr(self.app, "current_theme", None)
+            is_dark = getattr(theme, "dark", True) if theme else True
+            border_ok = "#4ade80" if is_dark else "#16a34a"
+            panel = Panel(content, title="ANALISIS ESTATICO OS", border_style=border_ok, box=box.ROUNDED)
         else:
             err_text = "\n".join([f"  * {err}" for err in report.errors])
             warn_text = (
@@ -404,7 +411,10 @@ class AutomationView(Widget):
                 f"{err_text}{warn_text}\n\n"
                 f"[dim]Corrija los errores indicados antes de proceder al despliegue.[/dim]"
             )
-            panel = Panel(content, title="BLOQUEO DE SEGURIDAD OS", border_style="#f43f5e", box=box.ROUNDED)
+            theme = getattr(self.app, "current_theme", None)
+            is_dark = getattr(theme, "dark", True) if theme else True
+            border_err = "#f43f5e" if is_dark else "#dc2626"
+            panel = Panel(content, title="BLOQUEO DE SEGURIDAD OS", border_style=border_err, box=box.ROUNDED)
 
         status_card.update(panel)
 
