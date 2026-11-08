@@ -49,19 +49,12 @@ class AutomationView(Widget):
     def compose(self) -> ComposeResult:
         with Vertical(id="automation-container"):
             with Vertical(id="automation-content-wrapper", classes="workspace-content-wrapper"):
-                # Header Navigation Bar
+                # 1. Header Navigation Bar
                 with Horizontal(id="automation-top-bar"):
                     yield Label("AUTOMATIZACION // GESTOR DE PLANTILLAS Y DESPLIEGUE MASIVO", id="automation-title")
                     yield Button("Volver al Inicio", id="btn-back-from-automation")
 
-                # Live Deployment Progress Bar (Initially hidden or zero)
-                with Vertical(id="auto-progress-container", classes="section-panel"):
-                    with Horizontal(id="auto-progress-header"):
-                        yield Label("Listo para validación o despliegue en lote", id="lbl-auto-step")
-                        yield Label("0%", id="lbl-auto-pct")
-                    yield ProgressBar(total=100.0, show_eta=False, id="auto-progress-bar")
-
-                # Control Toolbar with perfectly aligned selectors & actions
+                # 2. Template Catalog & Parameter Definition Bar (Sleek unified card)
                 with Vertical(id="automation-toolbar", classes="section-panel"):
                     with Horizontal(id="automation-selectors-row"):
                         with Horizontal(classes="auto-field-pair"):
@@ -92,19 +85,26 @@ class AutomationView(Widget):
                             yield Button("Guardar", id="btn-save-template", classes="chip-btn")
                             yield Button("Eliminar", id="btn-delete-template", classes="chip-btn")
 
-                    with Horizontal(id="automation-actions"):
-                        yield Button("Validar Sintaxis (Dry-Run)", id="btn-validate-script")
-                        yield Button("Desplegar en Equipos", id="btn-deploy-batch", variant="primary")
+                    # Dynamic Variables Container (shown only when template has {{ variables }})
+                    with Vertical(id="tpl-variables-row"):
+                        with Horizontal(id="tpl-vars-subhead"):
+                            yield Label("Variables de la Plantilla (Jinja2):", id="lbl-tpl-vars")
+                            yield Button(
+                                "Renderizar a Editor",
+                                id="btn-render-variables",
+                                variant="primary",
+                                classes="chip-btn",
+                            )
+                        with Horizontal(id="tpl-vars-inputs"):
+                            yield Label("", id="lbl-tpl-vars-empty")
 
-                # Main Workspace Split (Editor & Variables on Left, Targets & Diagnostics on Right)
+                # 3. Main Workspace Split (Left: Editor | Right: Targets & Diagnostic)
                 with Horizontal(id="automation-split"):
                     with Vertical(id="editor-col"):
-                        with Horizontal(id="editor-header-bar"):
-                            yield Label(
-                                "Editor de Configuración / Script CLI (TextArea interactivo):",
-                                id="lbl-editor",
-                            )
-
+                        yield Label(
+                            "Script de Configuración CLI a Inyectar (Editable):",
+                            id="lbl-editor",
+                        )
                         initial_text = self.templates[0].template_content if self.templates else ""
                         self.active_template_raw = initial_text
                         yield TextArea(
@@ -114,23 +114,6 @@ class AutomationView(Widget):
                             show_line_numbers=True,
                         )
 
-                        # Dynamic Template Variables Panel
-                        with Vertical(id="tpl-variables-container", classes="section-panel"):
-                            with Horizontal(id="tpl-vars-header"):
-                                yield Label("Parámetros Dinámicos (Variables Jinja2):", id="lbl-tpl-vars")
-                                yield Button(
-                                    "Renderizar a Editor",
-                                    id="btn-render-variables",
-                                    variant="primary",
-                                    classes="chip-btn",
-                                )
-                            with Vertical(id="tpl-vars-inputs"):
-                                yield Label(
-                                    "Cargando variables de plantilla...",
-                                    id="lbl-tpl-vars-empty",
-                                    classes="dim-text",
-                                )
-
                     with Vertical(id="devices-and-status-col"):
                         with Horizontal(id="devices-header-row"):
                             yield Label("Equipos Destino para Despliegue:", id="lbl-target-devices")
@@ -139,11 +122,25 @@ class AutomationView(Widget):
 
                         yield SelectionList[str](id="device-selection-list")
 
-                        yield Label("Diagnóstico de Sintaxis y Seguridad:", id="lbl-syntax-header")
+                        yield Label("Diagnóstico de Sintaxis y Seguridad (Dry-Run):", id="lbl-syntax-header")
                         yield Static(id="syntax-status-card")
 
-                # Bottom Batch Execution Log Terminal
-                yield Label("Consola de Despliegue Masivo y Rollback por Lote:", id="lbl-auto-console")
+                # 4. Action Trigger Row
+                with Horizontal(id="automation-actions"):
+                    yield Button("Validar Sintaxis (Dry-Run)", id="btn-validate-script")
+                    yield Button("Ejecutar Despliegue en Lote", id="btn-deploy-batch", variant="primary")
+
+                # 5. Live Telemetry & Execution Log Terminal (Unified progress header)
+                with Vertical(id="auto-progress-container"):
+                    with Horizontal(id="auto-progress-header"):
+                        yield Label(
+                            "Consola de Despliegue Masivo y Rollback por Lote:",
+                            id="lbl-auto-console",
+                        )
+                        yield Label("[dim]Listo para validación o despliegue en lote[/dim]", id="lbl-auto-step")
+                        yield Label("[bold #00e5ff]0%[/]", id="lbl-auto-pct")
+                    yield ProgressBar(id="auto-progress-bar", total=100.0, show_eta=False, show_percentage=False)
+
                 yield Log(id="automation-log-terminal", highlight=True)
 
     def on_mount(self) -> None:
@@ -302,7 +299,8 @@ class AutomationView(Widget):
 
     def _refresh_variable_panel(self) -> None:
         """Dynamically renders variable inputs for detected template parameters."""
-        inputs_container = self.query_one("#tpl-vars-inputs", Vertical)
+        vars_row = self.query_one("#tpl-variables-row", Vertical)
+        inputs_container = self.query_one("#tpl-vars-inputs", Horizontal)
         inputs_container.remove_children()
 
         chosen_name = str(self.query_one("#select-template", Select).value)
@@ -312,22 +310,18 @@ class AutomationView(Widget):
         defaults: Dict[str, str] = current_tpl.parameters_schema if current_tpl else {}
 
         if not vars_list:
-            inputs_container.mount(
-                Label(
-                    "[dim]Esta plantilla no contiene variables {{ param }}. Lista para inyección directa.[/dim]",
-                    classes="dim-text",
-                )
-            )
+            vars_row.display = False
             return
 
+        vars_row.display = True
         for var_name in vars_list:
             default_val = str(defaults.get(var_name, ""))
-            row = Horizontal(classes="tpl-var-row")
+            item_col = Vertical(classes="tpl-var-item")
             lbl = Label(f"{{ {var_name} }}:", classes="tpl-var-label")
-            inp = Input(value=default_val, placeholder=f"Valor para {var_name}", id=f"var-inp-{var_name}")
-            row.mount(lbl)
-            row.mount(inp)
-            inputs_container.mount(row)
+            inp = Input(value=default_val, placeholder=var_name, id=f"var-inp-{var_name}")
+            item_col.mount(lbl)
+            item_col.mount(inp)
+            inputs_container.mount(item_col)
 
     def _render_variables_to_editor(self) -> None:
         """Collects parameter inputs and renders the template into the editor."""
