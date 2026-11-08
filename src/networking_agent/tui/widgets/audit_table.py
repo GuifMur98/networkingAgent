@@ -337,6 +337,11 @@ class AuditTableWidget(Widget):
 
         meta_str = ("\n  * Metadatos: " + " | ".join(meta_items)) if meta_items else ""
 
+        hash_str = ""
+        if rec.get("event_hash"):
+            h_short = f"{rec['event_hash'][:16]}...{rec['event_hash'][-8:]}"
+            hash_str = f"\n  * Hash SHA-256 Forense: [bold green]{h_short}[/bold green]"
+
         content = (
             f"─── REGISTRO FORENSE: [bold white]{etype}[/bold white] // Host: [bold cyan]{host}[/bold cyan] ───\n\n"
             f"  * Fecha y Hora (UTC): [bold white]{ts}[/bold white]\n"
@@ -346,6 +351,7 @@ class AuditTableWidget(Widget):
             f"  * Comandos CLI Enviados:\n{cmds_formatted}"
             f"{out_formatted}"
             f"{meta_str}"
+            f"{hash_str}"
         )
 
         diag.update(

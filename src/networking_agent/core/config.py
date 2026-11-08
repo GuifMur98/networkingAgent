@@ -1,10 +1,56 @@
 """Application configuration management using Pydantic Settings."""
 
+import os
 from pathlib import Path
 from typing import List, Optional
 
+import platformdirs
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def get_app_data_dir() -> Path:
+    """Returns the anchored secure data directory for the application.
+
+    Priority:
+    1. NETWORKING_AGENT_DATA_DIR environment variable
+    2. Local ./data directory IF running inside a local development repository (pyproject.toml present)
+    3. platformdirs.user_data_dir("NetworkingAgent", appauthor=False) / "data"
+    """
+    env_dir = os.environ.get("NETWORKING_AGENT_DATA_DIR")
+    if env_dir:
+        p = Path(env_dir).resolve()
+        p.mkdir(parents=True, exist_ok=True)
+        return p
+
+    cwd = Path.cwd()
+    if (cwd / "pyproject.toml").exists() and (cwd / "src" / "networking_agent").exists():
+        p = (cwd / "data").resolve()
+        p.mkdir(parents=True, exist_ok=True)
+        return p
+
+    p = Path(platformdirs.user_data_dir("NetworkingAgent", appauthor=False)) / "data"
+    p.mkdir(parents=True, exist_ok=True)
+    return p.resolve()
+
+
+def get_app_log_dir() -> Path:
+    """Returns the anchored log directory for the application."""
+    env_log = os.environ.get("NETWORKING_AGENT_LOG_DIR")
+    if env_log:
+        p = Path(env_log).resolve()
+        p.mkdir(parents=True, exist_ok=True)
+        return p
+
+    cwd = Path.cwd()
+    if (cwd / "pyproject.toml").exists() and (cwd / "src" / "networking_agent").exists():
+        p = (cwd / "logs").resolve()
+        p.mkdir(parents=True, exist_ok=True)
+        return p
+
+    p = Path(platformdirs.user_data_dir("NetworkingAgent", appauthor=False)) / "logs"
+    p.mkdir(parents=True, exist_ok=True)
+    return p.resolve()
 
 
 class AgentSettings(BaseSettings):
@@ -66,8 +112,14 @@ class AgentSettings(BaseSettings):
     min_mtu: int = Field(default=68, description="Minimum allowed MTU value")
 
     # Operations & Backups
-    backup_dir: Path = Field(default=Path("backups"), description="Directory where device running-configs are saved")
-    audit_log_path: Path = Field(default=Path("logs/audit.jsonl"), description="Path to immutable audit trail")
+    backup_dir: Path = Field(
+        default_factory=lambda: get_app_data_dir() / "backups",
+        description="Directory where device running-configs are saved",
+    )
+    audit_log_path: Path = Field(
+        default_factory=lambda: get_app_log_dir() / "audit.jsonl",
+        description="Path to immutable audit trail",
+    )
     ssh_timeout: int = Field(default=30, description="SSH connection timeout in seconds")
     auto_rollback_on_failure: bool = Field(default=True, description="Trigger automatic rollback if verification fails")
     auto_approve: bool = Field(default=False, description="Skip Human-in-the-Loop authorization gate")

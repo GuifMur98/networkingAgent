@@ -12,7 +12,7 @@ VENV_DIR="${INSTALL_DIR}/venv"
 
 echo ""
 echo "================================================================="
-echo "   NetworkingAgent Enterprise v2.1.0 - Automated POSIX Setup    "
+echo "   NetworkingAgent Enterprise v2.1.1 - Automated POSIX Setup    "
 echo "   Autonomous & Closed-Loop Network Assistant (Textual TUI)     "
 echo "================================================================="
 echo ""
@@ -42,7 +42,7 @@ if [[ -n "${SCRIPT_DIR}" && -f "${SCRIPT_DIR}/networking-agent" ]]; then
 
     echo ""
     echo "================================================================="
-    echo " [SUCCESS] NetworkingAgent Enterprise v2.1.0 installed!"
+    echo " [SUCCESS] NetworkingAgent Enterprise v2.1.1 installed!"
     echo "================================================================="
     echo " To start the agent, open a new terminal and type:"
     echo "    networking-agent"
@@ -57,8 +57,16 @@ if command -v uv &> /dev/null; then
 elif command -v python3 &> /dev/null; then
     INSTALLER="python"
 else
-    echo "[!] Neither uv nor Python 3 was found. Attempting to install uv..."
-    curl -LsSf https://astral.sh/uv/install.sh | sh
+    echo "[!] Neither uv nor Python 3 was found. Downloading uv installer securely..."
+    TEMP_UV="$(mktemp -t uv-install-XXXXXX.sh)"
+    if curl -LsSf https://astral.sh/uv/install.sh -o "${TEMP_UV}" && [[ -s "${TEMP_UV}" ]]; then
+        sh "${TEMP_UV}"
+        rm -f "${TEMP_UV}"
+    else
+        rm -f "${TEMP_UV}"
+        echo "[ERROR] Failed to download uv securely. Please install Python 3.12+ or uv manually."
+        exit 1
+    fi
     export PATH="${HOME}/.local/bin:${PATH}"
     if command -v uv &> /dev/null; then
         INSTALLER="uv"
@@ -104,6 +112,8 @@ LAUNCHER="${BIN_DIR}/networking-agent"
 cat << EOF > "${LAUNCHER}"
 #!/usr/bin/env bash
 export NETWORKING_AGENT_HOME="${INSTALL_DIR}"
+export NETWORKING_AGENT_DATA_DIR="${INSTALL_DIR}/data"
+cd "${APP_SOURCE_DIR}"
 exec "${VENV_PYTHON}" "${APP_SOURCE_DIR}/main.py" "\$@"
 EOF
 
@@ -137,7 +147,7 @@ chmod +x "${UNINSTALLER}"
 
 echo ""
 echo "================================================================="
-echo " [SUCCESS] NetworkingAgent Enterprise v2.1.0 installed!"
+echo " [SUCCESS] NetworkingAgent Enterprise v2.1.1 installed!"
 echo "================================================================="
 echo " To start the agent, open a new terminal and type:"
 echo "    networking-agent"

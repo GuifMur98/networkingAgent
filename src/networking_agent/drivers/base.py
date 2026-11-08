@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
+import paramiko
 from netmiko import ConnectHandler
 
 from networking_agent.core.config import settings
@@ -24,19 +25,33 @@ class NetworkOSDriver(ABC):
         self.backup_dir.mkdir(parents=True, exist_ok=True)
         self._conn: Optional[ConnectHandler] = None
 
+    def _create_connection(self) -> ConnectHandler:
+        try:
+            return ConnectHandler(**self.device.to_netmiko_dict())
+        except paramiko.BadHostKeyException as e:
+            err_msg = (
+                f"ALERTA CRITICA DE SEGURIDAD (MitM detectado): La llave pública del host '{self.device.host}' "
+                f"no coincide con la registrada en known_hosts. Posible suplantación de identidad: {e}"
+            )
+            logger.critical(f"[bold red]{err_msg}[/bold red]")
+            raise DeviceConnectionError(err_msg) from e
+        except Exception as e:
+            logger.error(f"Error establishing SSH connection to {self.device.host}: {e}")
+            raise DeviceConnectionError(f"Connection failed to {self.device.host}: {e}") from e
+
     def get_connection(self) -> ConnectHandler:
         """Retrieves an active Netmiko connection or establishes a new one if not alive.
 
         Eliminates repeated SSH handshakes across health checks, backups, and remediation.
         """
         if self._conn is None:
-            self._conn = ConnectHandler(**self.device.to_netmiko_dict())
+            self._conn = self._create_connection()
         else:
             try:
                 if hasattr(self._conn, "is_alive") and not self._conn.is_alive():
-                    self._conn = ConnectHandler(**self.device.to_netmiko_dict())
+                    self._conn = self._create_connection()
             except Exception:
-                self._conn = ConnectHandler(**self.device.to_netmiko_dict())
+                self._conn = self._create_connection()
         return self._conn
 
     def disconnect(self) -> None:

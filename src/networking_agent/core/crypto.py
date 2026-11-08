@@ -1,24 +1,37 @@
 """Cryptographic encryption and decryption for sensitive credentials and API keys."""
 
 import os
+import platform
 import stat
+import subprocess
 from pathlib import Path
 from typing import Optional
 
 from cryptography.fernet import Fernet
 
+from networking_agent.core.config import get_app_data_dir
 from networking_agent.core.logging import logger
 
-KEY_PATH = Path("data/.vault.key")
+KEY_PATH = get_app_data_dir() / ".vault.key"
 
 
 def secure_file_permissions(path: Path) -> None:
-    """Restricts file permissions to owner read/write (0600) on platforms supporting it."""
+    """Restricts file permissions to owner read/write (0600 on POSIX, strict DACLs via icacls on Windows)."""
     try:
         if path.exists():
-            os.chmod(path, stat.S_IRUSR | stat.S_IWUSR)
-    except Exception:
-        pass
+            if platform.system().lower() == "windows":
+                username = os.environ.get("USERNAME", "")
+                if username:
+                    subprocess.run(
+                        ["icacls", str(path), "/inheritance:r", "/grant:r", f"{username}:(F)"],
+                        capture_output=True,
+                        text=True,
+                        check=False,
+                    )
+            else:
+                os.chmod(path, stat.S_IRUSR | stat.S_IWUSR)
+    except Exception as e:
+        logger.debug(f"Could not enforce strict file permissions on {path}: {e}")
 
 
 class SecretVault:

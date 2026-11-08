@@ -8,10 +8,11 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import SecretStr
 
+from networking_agent.core.config import get_app_data_dir
 from networking_agent.core.crypto import secure_file_permissions, vault
 from networking_agent.models.device import DeviceInventory
 
-DB_PATH = Path("data/networking_agent.db")
+DB_PATH = get_app_data_dir() / "networking_agent.db"
 
 
 class DatabaseManager:

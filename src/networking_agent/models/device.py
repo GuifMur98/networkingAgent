@@ -30,6 +30,22 @@ class DeviceInventory(BaseModel):
     key_file: Optional[str] = Field(default=None, description="Path to private SSH key file")
     use_keys: bool = Field(default=False, description="Whether to use SSH key authentication")
     timeout: int = Field(default=30, description="Connection timeout in seconds")
+    system_host_keys: bool = Field(
+        default=True,
+        description="Whether to load system known_hosts for SSH host key verification",
+    )
+    ssh_strict: bool = Field(
+        default=False,
+        description="Whether to reject unknown SSH host keys to prevent MitM spoofing",
+    )
+    alt_host_keys: bool = Field(
+        default=False,
+        description="Whether to load an alternative known_hosts file",
+    )
+    alt_key_file: Optional[str] = Field(
+        default=None,
+        description="Path to alternative known_hosts file",
+    )
 
     @field_validator("host")
     @classmethod
@@ -54,7 +70,12 @@ class DeviceInventory(BaseModel):
             "port": self.port,
             "timeout": self.timeout,
             "use_keys": self.use_keys,
+            "system_host_keys": self.system_host_keys,
+            "ssh_strict": self.ssh_strict,
         }
+        if self.alt_host_keys and self.alt_key_file:
+            data["alt_host_keys"] = True
+            data["alt_key_file"] = self.alt_key_file
         if self.password:
             data["password"] = self.password.get_secret_value()
         if self.secret:

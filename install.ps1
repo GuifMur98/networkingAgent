@@ -15,7 +15,7 @@
     Skip creating shortcuts.
 
 .EXAMPLE
-    irm https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.ps1 | iex
+    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.ps1" -OutFile "$env:TEMP\install.ps1"; & "$env:TEMP\install.ps1" 
 #>
 
 [CmdletBinding()]
@@ -44,7 +44,7 @@ function Write-WarningMsg {
 function Write-Banner {
     Write-Host ""
     Write-Host " =================================================================" -ForegroundColor Cyan
-    Write-Host "    NetworkingAgent Enterprise v2.1.0 - Automated Windows Setup   " -ForegroundColor Yellow
+    Write-Host "    NetworkingAgent Enterprise v2.1.1 - Automated Windows Setup   " -ForegroundColor Yellow
     Write-Host "    Autonomous & Closed-Loop Network Assistant (Textual TUI)      " -ForegroundColor White
     Write-Host " =================================================================" -ForegroundColor Cyan
     Write-Host ""
@@ -186,9 +186,17 @@ $UvCmd = Get-Command "uv" -ErrorAction SilentlyContinue
 $PythonCmd = Get-Command "python" -ErrorAction SilentlyContinue
 
 if (-not $UvCmd -and -not $PythonCmd) {
-    Write-Step "uv / Python not found. Installing uv package manager..."
+    Write-Step "uv / Python not found. Downloading uv installer securely..."
     try {
-        irm https://astral.sh/uv/install.ps1 | iex
+        $TempInstaller = Join-Path ([System.IO.Path]::GetTempPath()) "uv-install-$([System.Guid]::NewGuid().ToString('N')).ps1"
+        Invoke-WebRequest -Uri "https://astral.sh/uv/install.ps1" -OutFile $TempInstaller -UseBasicParsing
+        if ((Test-Path $TempInstaller) -and ((Get-Item $TempInstaller).Length -gt 1000)) {
+            Write-Step "Executing verified local uv installer..."
+            & powershell.exe -ExecutionPolicy Bypass -File $TempInstaller
+            Remove-Item -Path $TempInstaller -Force -ErrorAction SilentlyContinue
+        } else {
+            throw "Downloaded installer was empty or invalid."
+        }
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "User") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "Machine")
         $UvCmd = Get-Command "uv" -ErrorAction SilentlyContinue
     } catch {
@@ -262,6 +270,8 @@ $LauncherContent = @"
 @echo off
 setlocal
 set "NETWORKING_AGENT_HOME=$InstallDir"
+set "NETWORKING_AGENT_DATA_DIR=$InstallDir\data"
+cd /d "$AppSourceDir"
 "$VenvPython" "$AppSourceDir\main.py" %*
 if %ERRORLEVEL% NEQ 0 (
     echo.

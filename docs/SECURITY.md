@@ -1,126 +1,103 @@
-# 🛡️ Manual de Ciberseguridad y Modelo de Amenazas: NetworkingAgent Enterprise v2.1
+# 🛡️ Manual de Ciberseguridad y Modelo de Amenazas: NetworkingAgent Enterprise v2.1.1
 
-> **Políticas de Hardening, Prevención de Inyecciones, Análisis Estático Pre-Flight y Protección de Infraestructura Crítica**
+> **Políticas de Hardening, Prevención de Inyecciones (SSTI/CLI), Análisis Estático Pre-Flight, Transporte SSH MitM-Proof y Criptografía Forense**
 
 ---
 
 ## 1. Resumen de Seguridad y Principios de Diseño
 
-Los sistemas autónomos que administran elementos centrales de conectividad corporativa (routers BGP/OSPF, switches de centro de datos y gateways de acceso) operan en la intersección de dos vectores de riesgo críticos:
-1. **Amenazas de Red y Automatización:** Inyecciones de comandos CLI, caídas accidentales de enlaces ascendentes (*uplinks*), borrado de configuraciones por plantillas defectuosas o desconexión por apagado de interfaces de gestión.
+Los sistemas autónomos que administran elementos centrales de conectividad corporativa (routers BGP/OSPF, switches de centro de datos y gateways de acceso) operan en la intersección de vectores de riesgo de infraestructura e inteligencia artificial:
+1. **Amenazas de Red y Automatización:** Inyecciones de plantillas Jinja2 (SSTI), ataques Man-in-the-Middle (MitM) en el transporte SSH, inyecciones de comandos CLI, caídas accidentales de enlaces ascendentes (*uplinks*), borrado de configuraciones o desconexión por apagado de interfaces de gestión.
 2. **Amenazas de Inteligencia Artificial:** Inyección indirecta de prompts (*Indirect Prompt Injection*) oculta en registros de syslog o paquetes de red, alucinaciones de comandos inexistentes o dañinos, y evasión de políticas de seguridad (*jailbreaks*).
+3. **Amenazas de Sistema Operativo Local:** Secuestro de directorio de trabajo (*CWD Hijacking*), filtración de credenciales en bitácoras de auditoría, permisos laxos en archivos de claves maestras y ejecución ciega de scripts web en instaladores.
 
-Para mitigar estos riesgos de forma absoluta, **NetworkingAgent Enterprise v2.1** opera bajo el principio de **Defensa en Profundidad (*Defense-in-Depth*)**. Ningún componente confía ciegamente en otro, y el motor de IA está estructuralmente aislado de la ejecución en consola.
+Para mitigar estos riesgos de forma absoluta, **NetworkingAgent Enterprise v2.1.1** opera bajo el principio de **Defensa en Profundidad (*Defense-in-Depth*)**. Ningún componente confía ciegamente en otro, y el motor de IA está estructuralmente aislado de la ejecución en consola.
 
 ---
 
-## 2. Matriz de Vectores de Amenaza y Mitigaciones v2.1
+## 2. Matriz Consolidada de Vectores de Amenaza y Mitigaciones v2.1.1
 
-| Vector de Amenaza | Riesgo / Impacto Operativo | Severidad | Mitigación Implementada |
+| Vector de Amenaza / Vulnerabilidad | Riesgo / Impacto Operativo | Severidad | Mitigación Implementada |
 |---|---|:---:|---|
-| **Comandos Destructivos en Automatización** | Un operador o script inyecta comandos de borrado (`erase`, `zeroize`, `format`, `reset-configuration`, `reload`). | 🔴 **CRÍTICO** | [`ConfigSyntaxValidator`](../src/networking_agent/guardrails/syntax_validator.py) analiza estáticamente el script en modo dry-run y aborta el despliegue antes de abrir sockets SSH. |
-| **Variables Jinja2 sin Renderizar** | Ejecución de scripts con variables huérfanas tipo `vlan {{ vlan_id }}` que provocan fallos de sintaxis en producción. | 🔴 **CRÍTICO** | Detección estática mediante `UNRENDERED_VARIABLE_PATTERN` con bloqueo inmediato de la ejecución. |
-| **Indirect Prompt Injection** | Cargas de syslog o descripciones de síntomas diseñadas para manipular al LLM e inyectar usuarios no autorizados. | 🔴 **CRÍTICO** | Aislamiento XML `<telemetry_event>`, directivas estrictas en `HARDENED_SYSTEM_PROMPT` y bloqueo cognitivo (`severity="CRITICAL"`, `action="none"`). |
+| **Server-Side Template Injection (SSTI) en Jinja2** | Ejecución remota o local de código (RCE) mediante introspección de objetos Python (`__class__`, `__mro__`, `__globals__`). | 🔴 **CRÍTICO** | [`HardenedSandboxedEnvironment`](../src/networking_agent/engine/automation.py) bloquea terminantemente el acceso a atributos dunder, callables inseguros (`eval`, `popen`, etc.) y previene escapes del sandbox. |
+| **Aceptación Ciega de Llaves SSH (Riesgo MitM)** | Intercepción de sesiones SSH y credenciales administrativas por spoofing de router o envenenamiento ARP/DNS. | 🔴 **CRÍTICO** | Carga obligatoria de `known_hosts` del sistema (`system_host_keys=True`), soporte para `ssh_strict` y detección de discrepancia de llaves (`BadHostKeyException`). |
+| **Comandos Destructivos y Backdoors en Red** | Scripts o plantillas que inyectan reinicios, borrado de configs, backdoors SNMP RW, degradación a Telnet o secuestro de rutas. | 🔴 **CRÍTICO** | [`CommandValidator`](../src/networking_agent/guardrails/validator.py) y [`ConfigSyntaxValidator`](../src/networking_agent/guardrails/syntax_validator.py) con listas negras ampliadas que vetan copias remotas, SNMP RW, Telnet y default routes no autorizadas. |
 | **Aislamiento Accidental de Gestión** | El agente apaga o reinicia la interfaz que aloja la IP de conexión SSH o la ruta por defecto (`0.0.0.0/0`). | 🔴 **CRÍTICO** | Descubrimiento dinámico de IP de gestión (`discover_active_management_interfaces`) + bloqueo incondicional en [`BlastRadiusGuard`](../src/networking_agent/guardrails/blast_radius.py). |
-| **CLI Command Injection & Metacaracteres** | Concatenación de sentencias shell mediante metacaracteres (`&&`, `;`, `\|`, `` ` ``, `$`). | 🔴 **CRÍTICO** | Expresiones regulares estrictas en Pydantic + validación en [`CommandValidator`](../src/networking_agent/guardrails/validator.py) previa a la conexión Netmiko. |
+| **Indirect Prompt Injection** | Cargas de syslog o descripciones de síntomas diseñadas para manipular al LLM e inyectar comandos o usuarios. | 🔴 **CRÍTICO** | Aislamiento XML `<telemetry_event>`, directivas estrictas en `HARDENED_SYSTEM_PROMPT` y bloqueo cognitivo (`severity="CRITICAL"`, `action="none"`). |
 | **Inyección en Pruebas de Ping** | Ejecución de ping con hosts malformados (ej. `192.168.1.1; rm -rf /`). | 🔴 **CRÍTICO** | Validación estricta con Pydantic (`DeviceInventory.host`) y ejecución directa mediante `asyncio.create_subprocess_exec` sin invocar shell del SO (`shell=False`). |
-| **Sintaxis Jerárquica Desbalanceada** | Scripts de Juniper Junos con llaves impares (`{` vs `}`) que dejan al dispositivo en estado inconsistente. | 🟠 **ALTO** | Balanceo aritmético de bloques en `ConfigSyntaxValidator` (`junos_brace_balance == 0`). |
-| **Fuga de Credenciales de Equipos** | Contraseñas de acceso SSH expuestas en texto claro en logs o en disco. | 🟠 **ALTO** | Enmascaramiento con `SecretStr`, cifrado simétrico Fernet (AES-128-CBC) y permisos restrictivos `0600` en la base SQLite y en la llave maestra. |
-| **Path Traversal en Backups** | Nombres de host o archivos maliciosos (ej. `../../etc/shadow`) para sobrescribir archivos arbitrarios. | 🟠 **ALTO** | Sanitización con regex alfanumérico + validación en disco mediante `backup_file.is_relative_to(backup_dir)`. |
-| **Alteración de Auditoría** | Manipulación no autorizada de registros históricos de cambios. | 🟠 **ALTO** | Estructuración inmutable de eventos con hashes SHA-256 criptográficos y modo append-only en `audit.jsonl`. |
-| **Agotamiento de Memoria (DoS)** | Payloads masivos de telemetría enviados al agente para saturar buffers de memoria o tokens de IA. | 🟡 **MEDIO** | Límite forzado a 30,000 caracteres en `TelemetryEvent` y purga de bytes nulos (`\x00`). |
+| **Permisos Ineficaces en Llave Maestra** | Herencia de permisos de lectura de la clave Fernet para usuarios locales bajo Windows NTFS. | 🟠 **ALTO** | En Windows, [`secure_file_permissions`](../src/networking_agent/core/crypto.py) elimina herencia y restringe acceso exclusivamente al usuario actual mediante `icacls /inheritance:r /grant:r "%USERNAME%:(F)"`. En POSIX aplica `0600`. |
+| **Confusión de Directorio (CWD Hijacking)** | Carga de base de datos o clave criptográfica adulterada al ejecutar `networking-agent` desde carpetas arbitrarias. | 🟠 **ALTO** | Rutas ancladas mediante [`get_app_data_dir()`](../src/networking_agent/core/config.py) con prioridad de entorno `NETWORKING_AGENT_DATA_DIR` y resolución a `%LOCALAPPDATA%\NetworkingAgent\data`. |
+| **Fuga de Credenciales en Auditoría** | Persistencia de contraseñas, secretos, comunidades SNMP o pre-shared keys en texto plano en `audit.jsonl`. | 🟡 **MEDIO** | Filtrado universal con [`mask_sensitive_data()`](../src/networking_agent/core/logging.py) aplicado a todos los comandos y salidas antes de persistir en auditoría. |
+| **Manipulación no Detectada de Auditoría** | Falsificación o borrado inadvertido de registros históricos de operaciones de red. | 🟡 **MEDIO** | Encadenamiento criptográfico **SHA-256** continuo (`prev_hash` + `event_hash`) en cada evento de [`AuditLogger`](../src/networking_agent/core/audit.py) con función de verificación `verify_audit_integrity()`. |
+| **Ejecución Ciega en Instaladores** | Instalación mediante tuberías ciegas a shell (`curl | sh` o `irm | iex`). | 🟡 **MEDIO** | Descarga segura a archivos temporales aislados, validación de tamaño e integridad antes de la ejecución local y purga inmediata tras finalizar. |
 
 ---
 
-## 3. Arquitectura Detallada de Guardarraíles
+## 3. Arquitectura Detallada de Guardarraíles y Controles
 
-### 3.1. Validador de Sintaxis Pre-Flight (`ConfigSyntaxValidator`)
+### 3.1. Sandbox Estricto de Plantillas (`HardenedSandboxedEnvironment`)
 
-Antes de que un script manual, una plantilla Jinja2 o un conjunto de comandos generados por la IA sea enviado a la capa de red, es analizado por [`ConfigSyntaxValidator`](../src/networking_agent/guardrails/syntax_validator.py).
+Para neutralizar de forma definitiva la ejecución remota de código por inyección de plantillas (SSTI), el motor [`TemplateEngine`](../src/networking_agent/engine/automation.py) encapsula el renderizado dentro de un entorno Jinja2 restringido:
+- **Inspección de Atributos:** Se prohíbe el acceso a cualquier atributo que comience con guión bajo `_` o atributos de introspección de runtime (`__class__`, `__mro__`, `__globals__`, `f_globals`, `f_builtins`, etc.).
+- **Inspección de Callables:** Se prohíbe la invocación de funciones de sistema (`eval`, `exec`, `open`, `__import__`, `system`, `popen`, `spawn`, `compile`, etc.).
+- **Interrupción Inmediata:** Cualquier intento de evasión lanza `TemplateSecurityError` y se registra una alerta crítica de auditoría.
 
-#### 1. Detección de Patrones Destructivos y Shell Injections:
 ```python
-FORBIDDEN_PATTERNS = [
-    (re.compile(r"\b(reload|reboot|system\s+reboot)\b", re.IGNORECASE), "Comando de reinicio de equipo no permitido."),
-    (
-        re.compile(r"\b(format\s+flash:|erase\s+startup-config|write\s+erase)\b", re.IGNORECASE),
-        "Comando destructivo de almacenamiento no permitido.",
-    ),
-    (
-        re.compile(r"\b(request\s+system\s+zeroize|zeroize)\b", re.IGNORECASE),
-        "Comando destructivo de borrado seguro (zeroize) bloqueado.",
-    ),
-    (
-        re.compile(r"\b(/system\s+reset-configuration)\b", re.IGNORECASE),
-        "Reset a valores de fábrica bloqueado en RouterOS.",
-    ),
-    (re.compile(r"[;&|`]", re.IGNORECASE), "Metacarácter de encadenamiento de comandos detectado."),
-    (
-        re.compile(r"\b(rm\s+-rf|nc\s+-e|/bin/sh|/bin/bash)\b", re.IGNORECASE),
-        "Comando de ejecución de shell no permitido.",
-    ),
-]
+class HardenedSandboxedEnvironment(SandboxedEnvironment):
+    def is_safe_attribute(self, obj: Any, attr: str, value: Any) -> bool:
+        if attr.startswith("_") or attr in ("format", "format_map", "mro", "gi_frame", "f_globals", "f_builtins"):
+            return False
+        return super().is_safe_attribute(obj, attr, value)
 ```
 
-#### 2. Detección de Variables Jinja2 sin Renderizar:
-```python
-UNRENDERED_VARIABLE_PATTERN = re.compile(r"\{\{\s*([a-zA-Z0-9_\.]+)\s*\}\}")
-```
-Si el operador olvidó sustituir una variable o si el motor de plantillas falló en procesar un parámetro, el análisis estático detecta la variable huérfana y genera un error fatal, evitando que el router reciba sintaxis no procesada.
+---
 
-#### 3. Verificaciones Específicas por Sistema Operativo:
-- **Juniper Junos:** Calcula el balance algebraico de llaves `{` y `}`. Si `junos_brace_balance != 0`, el script es rechazado por inconsistencia estructural.
-- **Cisco IOS / IOS-XE / NX-OS:** Verifica que las cadenas de texto con comillas dobles posean paridad numérica para evitar comandos cortados.
-- **MikroTik RouterOS:** Alerta si una línea de configuración no comienza con el prefijo nativo `/` o `:` para prevenir rechazos del parser de RouterOS.
+### 3.2. Seguridad en el Transporte SSH y Mitigación de MitM
+
+La comunicación con los equipos de red a través de Netmiko / Paramiko se endurece para evitar ataques de suplantación de identidad o intercepción de credenciales:
+1. **Validación de Llaves Públicas:** `to_netmiko_dict()` activa por defecto `system_host_keys=True`, cargando el almacén `known_hosts` del sistema.
+2. **Detección de Discrepancias:** Si la llave pública del router difiere de la registrada previamente, Paramiko lanza `BadHostKeyException`. El controlador captura la excepción y emite una alerta crítica de seguridad (`ALERTA CRITICA DE SEGURIDAD (MitM detectado)`), abortando la conexión antes de transmitir credenciales.
+3. **Modo Estricto Opcional:** Se proporciona soporte para `ssh_strict=True` y archivos `known_hosts` alternativos mediante `alt_host_keys` y `alt_key_file`.
 
 ---
 
-### 3.2. Blindaje de Blast Radius y Puertos WAN (`BlastRadiusGuard`)
+### 3.3. Filtro de Comandos a Nivel de Transporte y Sintaxis Pre-Flight
 
-La causa número uno de incidentes catastróficos en automatización de redes es la pérdida de gestión remota cuando una rutina apaga la interfaz a través de la cual el ingeniero está conectado.
-
-1. **Descubrimiento Dinámico de Enlaces de Gestión:**  
-   Al inicio de cada sesión de diagnóstico o remediación, [`discover_active_management_interfaces()`](../src/networking_agent/drivers/base.py) interroga dinámicamente las salidas de telemetría para ubicar qué interfaz física o virtual posee la IP de conexión SSH o la ruta por defecto (`0.0.0.0/0`).
-2. **Regla de Blindaje Activo:**  
-   [`BlastRadiusGuard`](../src/networking_agent/guardrails/blast_radius.py) prohíbe de forma terminante las acciones `restart_interface` y `disable_interface` sobre interfaces WAN, enlaces troncales o puertos de gestión (ej. `GigabitEthernet0/0/0`, `mgmt0`, `fxp0`, `ether1`, `sfp-sfpplus1`).
-3. **Excepción de Diagnóstico Saludable:**  
-   Si un síntoma reporta "internet lento", pero la interfaz WAN presenta 0 errores físicos y bajo tráfico, el guardarraíl bloquea cualquier intento de reinicio, identificando que el problema es de congestión externa y no de fallo de hardware local.
-
----
-
-### 3.3. Filtro de Comandos a Nivel de Transporte (`CommandValidator`)
-
-Directamente acoplado al método `execute_commands()` de todos los controladores de red:
-- Bloquea creación o modificación de usuarios locales (`username`, `user add`, `password`, `secret`).
-- Bloquea manipulación de autenticación centralizada (`radius`, `tacacs`).
-- Bloquea herramientas de descarga o exfiltración (`tool fetch`, `tftp-server`, `guestshell`).
-- Bloquea proxies no autorizados (`ip socks`, `ip proxy`).
-- Bloquea tareas programadas persistentes no autorizadas (`system script`, `system scheduler`).
+Tanto [`CommandValidator`](../src/networking_agent/guardrails/validator.py) como [`ConfigSyntaxValidator`](../src/networking_agent/guardrails/syntax_validator.py) vetan de forma determinista:
+- **Destrucción y Reinicio:** `reload`, `reboot`, `format flash:`, `erase startup-config`, `zeroize`, `reset-configuration`.
+- **Cuentas y Credenciales:** Creación de usuarios (`username`, `user add`), modificación de contraseñas locales o agentes AAA (`radius`, `tacacs`).
+- **Comunidades SNMP RW:** Declaraciones de comunidades con permisos de escritura (`snmp-server community <nombre> RW`).
+- **Descargas no Autorizadas y Backdoors:** `copy tftp:`, `copy ftp:`, `copy http:`, `tool fetch`, `tftp-server`, `guestshell`, `start shell`.
+- **Protocolos en Texto Claro:** Degradación de transporte vty a Telnet (`transport input telnet`, `transport input all`).
+- **Almacenamiento Inseguro:** Desactivación de cifrado de contraseñas (`no service password-encryption`).
+- **Desvío de Tráfico:** Inyecciones no autorizadas de rutas por defecto (`ip route 0.0.0.0 0.0.0.0`).
 
 ---
 
-### 3.4. Bóveda Criptográfica y Almacenamiento Seguro
+### 3.4. Bóveda Criptográfica, ACLs de Sistema Operativo y Aislamiento CWD
 
-1. **Cifrado Simétrico Fernet:**
-   - Implementado mediante la librería estándar de criptografía de Python (`cryptography.fernet`).
-   - Basado en **AES-128 en modo CBC** con derivación de clave HMAC-SHA256 para autenticación de integridad.
-2. **Clave Maestra Local (`data/.vault.key`):**
-   - Se genera automáticamente con entropía criptográfica del sistema operativo.
-   - En sistemas tipo POSIX (Linux/macOS), impone permisos estrictos de sólo lectura y escritura para el usuario propietario (`0600` / `stat.S_IRUSR | stat.S_IWUSR`).
-3. **Base de Datos SQLite (`data/networking_agent.db`):**
-   - Optimizada en modo WAL (`PRAGMA journal_mode = WAL;`) con permisos restrictivos `0600`.
-   - Todas las credenciales de dispositivos y llaves de API (Gemini, OpenAI, Claude) se almacenan en columnas cifradas; la base de datos nunca almacena texto en claro.
+1. **Cifrado Simétrico Fernet (AES-128-CBC + HMAC-SHA256):**
+   - Utilizado para proteger todas las credenciales locales de routers y claves API de IA almacenadas en la base de datos SQLite.
+2. **Restricción de DACLs en Windows (`icacls`):**
+   - La clave maestra `.vault.key` aplica permisos estrictos. En sistemas Windows, se deshabilita la herencia de permisos NTFS y se otorga control total exclusivamente al usuario actual:
+     `icacls "<path>" /inheritance:r /grant:r "%USERNAME%:(F)"`
+   - En sistemas tipo POSIX (Linux/macOS), se aplican permisos `0600` (`stat.S_IRUSR | stat.S_IWUSR`).
+3. **Protección contra CWD Hijacking:**
+   - La resolución de rutas de almacenamiento (`get_app_data_dir()` y `get_app_log_dir()`) prioriza la variable de entorno `NETWORKING_AGENT_DATA_DIR` o se ancla de forma absoluta en `%LOCALAPPDATA%\NetworkingAgent\data`.
+   - Los lanzadores ejecutables (`networking-agent.cmd` y `networking-agent`) cambian de directorio automáticamente a la carpeta de instalación de la aplicación antes de invocar Python.
 
 ---
 
-### 3.5. Seguridad en Pruebas de Red y Paleta de Comandos
+### 3.5. Encadenamiento Criptográfico SHA-256 en Auditoría y Sanitización
 
-1. **Subprocesos Asíncronos Seguros:**
-   - [`ConnectivityEngine`](../src/networking_agent/engine/connectivity.py) utiliza llamadas directas a subprocesos con arrays de argumentos (`["ping", "-n", "2", host]`), evitando terminantemente `shell=True` o concatenaciones de cadenas que permitan escapes shell.
-2. **Restricción de Operaciones en la Paleta:**
-   - [`NetworkAgentCommandProvider`](../src/networking_agent/tui/commands.py) expone exclusivamente acciones pre-mapeadas a métodos autorizados de la aplicación. No existe capacidad para ejecutar comandos shell arbitrarios a través de la paleta.
-3. **Protección de la Bitácora de Auditoría:**
-   - La funcionalidad de purga de pruebas valida explícitamente que los registros eliminados pertenezcan exclusivamente a sesiones sintéticas o de prueba, garantizando que el historial de despliegues en equipos de producción permanezca inalterable.
+1. **Sanitización de Secretos (`mask_sensitive_data`):**
+   - Antes de escribir cualquier evento en `logs/audit.jsonl`, todos los comandos CLI y salidas de ejecución se procesan para enmascarar contraseñas, secretos de enable, comunidades SNMP y tokens Bearer con secuencias `********`.
+2. **Encadenamiento Criptográfico SHA-256:**
+   - Cada evento incluye el hash del evento anterior (`prev_hash`) y su propio hash canónico (`event_hash`).
+   - El primer registro inicia con `GENESIS_0000000000000000000000000000000000000000000000000000000000000000`.
+   - La función `verify_audit_integrity()` permite a auditores y operadores verificar la inmutabilidad de la cadena y detectar cualquier línea adulterada o borrada.
+3. **Respaldo Previo a la Purga de Pruebas:**
+   - Cuando un operador solicita la purga de registros sintéticos en la TUI, se genera una copia forense automática en `logs/audit_backup_pre_purge.jsonl` antes de guardar los registros auténticos.
 
 ---
 
@@ -142,17 +119,15 @@ La ventana modal de aprobación presenta de manera inmutable:
 La suite de pruebas contiene tests automatizados diseñados específicamente para certificar la resistencia ante vectores de ataque:
 
 ```bash
-uv run --no-sync pytest tests/test_guardrails.py tests/test_automation_module.py tests/test_crypto.py tests/test_models.py
+uv run --no-sync pytest tests/
 ```
 
-### Casos Verificados en la Suite (172 pruebas):
-- [x] Inyección de comandos shell con tuberías `|`, operadores `&&`, y punto y coma `;`.
-- [x] Intentos de borrado de almacenamiento o reinicio (`write erase`, `zeroize`, `reset-configuration`).
-- [x] Detección de variables Jinja2 huérfanas sin sustitución en plantillas de automatización.
-- [x] Balanceo algebraico de llaves en bloques jerárquicos de Juniper Junos.
-- [x] Detección de formatos sin prefijo obligatorio en MikroTik RouterOS.
-- [x] Intentos de *Path Traversal* en nombres de host (`../../etc/passwd`).
-- [x] Cargas de telemetría de gran tamaño (>30k caracteres) o con bytes nulos (`\x00`).
-- [x] Aislamiento estricto de prompts manipulados dentro de etiquetas XML.
-- [x] Cifrado y descifrado verificado con Fernet y permisos de archivo `0600`.
-- [x] Pruebas de conectividad con hosts no válidos o maliciosos rechazadas de forma segura.
+### Casos Verificados en la Suite:
+- [x] Bloqueo de Server-Side Template Injection (SSTI) y fugas por introspección en `TemplateEngine`.
+- [x] Detección de ataques Man-in-the-Middle y validación de llaves públicas SSH en Netmiko.
+- [x] Bloqueo de comandos destructivos, copias TFTP, comunidades SNMP RW, Telnet y desvíos de ruta por defecto.
+- [x] Aplicación de permisos estrictos en Windows (`icacls`) y POSIX (`0600`) para la llave criptográfica.
+- [x] Aislamiento de rutas de datos contra secuestro de directorio de trabajo (CWD Hijacking).
+- [x] Enmascaramiento de contraseñas, secretos y tokens en el registro de auditoría forense.
+- [x] Encadenamiento criptográfico continuo SHA-256 y detección matemática de adulteración en `audit.jsonl`.
+- [x] Descargas seguras en instaladores con eliminación de tuberías directas a shell (`curl | sh` / `irm | iex`).

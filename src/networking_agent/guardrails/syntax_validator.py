@@ -55,6 +55,32 @@ class ConfigSyntaxValidator:
             re.compile(r"\b(rm\s+-rf|nc\s+-e|/bin/sh|/bin/bash)\b", re.IGNORECASE),
             "Comando de ejecución de shell no permitido.",
         ),
+        (
+            re.compile(
+                r"\bcopy\s+(?:tftp|ftp|http|https|scp):|\bcopy\s+\S+\s+(?:running-config|startup-config)\b",
+                re.IGNORECASE,
+            ),
+            "Comando no autorizado de sobreescritura o copia remota de configuración.",
+        ),
+        (
+            re.compile(r"\bsnmp-server\s+community\s+\S+\s+RW\b", re.IGNORECASE),
+            "Comunidad SNMP con permisos de lectura y escritura (RW) no permitida por seguridad.",
+        ),
+        (
+            re.compile(r"\btransport\s+input\s+(?:all|telnet|none)\b", re.IGNORECASE),
+            "Degradación de transporte SSH a protocolo en texto claro (Telnet) no permitida.",
+        ),
+        (
+            re.compile(r"\bno\s+service\s+password-encryption\b", re.IGNORECASE),
+            "Desactivación del cifrado de contraseñas de servicio bloqueada.",
+        ),
+        (
+            re.compile(
+                r"\bip\s+route\s+0\.0\.0\.0\s+0\.0\.0\.0\b|\bset\s+routing-options\s+static\s+route\s+0\.0\.0\.0/0\b",
+                re.IGNORECASE,
+            ),
+            "Alteración de ruta por defecto (0.0.0.0/0) bloqueada para prevenir secuestro de tráfico.",
+        ),
     ]
 
     UNRENDERED_VARIABLE_PATTERN = re.compile(r"\{\{\s*([a-zA-Z0-9_\.]+)\s*\}\}")

@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 import jinja2
+from jinja2.sandbox import SandboxedEnvironment, SecurityError
 
 from networking_agent.core.audit import audit_logger
 from networking_agent.core.db import db
@@ -185,6 +186,48 @@ add bridge={{ bridge_name }} tagged={{ trunk_port }} vlan-ids={{ vlan_id }}
 ]
 
 
+class TemplateSecurityError(ValueError):
+    """Raised when template content violates Jinja2 sandbox security boundaries."""
+
+
+class HardenedSandboxedEnvironment(SandboxedEnvironment):
+    """Jinja2 sandbox enforcing strict restrictions against SSTI and introspection."""
+
+    def is_safe_attribute(self, obj: Any, attr: str, value: Any) -> bool:
+        if attr.startswith("_") or attr in (
+            "format",
+            "format_map",
+            "mro",
+            "gi_frame",
+            "cr_frame",
+            "f_globals",
+            "f_locals",
+            "f_builtins",
+        ):
+            return False
+        return super().is_safe_attribute(obj, attr, value)
+
+    def is_safe_callable(self, obj: Any) -> bool:
+        if not super().is_safe_callable(obj):
+            return False
+        name = getattr(obj, "__name__", "")
+        if name in (
+            "eval",
+            "exec",
+            "open",
+            "__import__",
+            "system",
+            "popen",
+            "spawn",
+            "fork",
+            "compile",
+            "input",
+            "breakpoint",
+        ):
+            return False
+        return True
+
+
 class TemplateEngine:
     """Renderer and catalog manager for configuration templates."""
 
@@ -290,11 +333,21 @@ class TemplateEngine:
         """Removes a custom template from storage."""
         return db.delete_template_by_name(name)
 
+    _sandbox_env = HardenedSandboxedEnvironment(
+        undefined=jinja2.StrictUndefined,
+        autoescape=False,
+    )
+
     @classmethod
     def render(cls, template_content: str, variables: Dict[str, Any]) -> str:
-        """Renders a template string using Jinja2 with provided parameter dictionary."""
-        template = jinja2.Template(template_content, undefined=jinja2.StrictUndefined)
-        return template.render(**variables)
+        """Renders a template string safely using Jinja2 SandboxedEnvironment with provided parameter dictionary."""
+        try:
+            template = cls._sandbox_env.from_string(template_content)
+            return template.render(**variables)
+        except SecurityError as e:
+            err_msg = f"Security Violation: Template SSTI or unsafe attribute access detected: {e}"
+            logger.critical(f"[bold red]{err_msg}[/bold red]")
+            raise TemplateSecurityError(err_msg) from e
 
 
 class BatchDeployer:

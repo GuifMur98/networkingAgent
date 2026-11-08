@@ -27,6 +27,19 @@ FORBIDDEN_COMMAND_PATTERNS = [
     # Core routing and crypto destruction
     re.compile(r"\b(no\s+ip\s+routing|no\s+router)\b", re.IGNORECASE),
     re.compile(r"\b(crypto\s+key\s+zeroize)\b", re.IGNORECASE),
+    # Dangerous config replacement and remote firmware/config download
+    re.compile(r"\bcopy\s+(?:tftp|ftp|http|https|scp):", re.IGNORECASE),
+    re.compile(r"\bcopy\s+\S+\s+(?:running-config|startup-config)\b", re.IGNORECASE),
+    # SNMP Backdoor with Read-Write privileges
+    re.compile(r"\bsnmp-server\s+community\s+\S+\s+RW\b", re.IGNORECASE),
+    re.compile(r"\b(?:set\s+snmp|/snmp)\b.*?\b(?:write|rw)\b", re.IGNORECASE),
+    # Insecure plaintext protocol downgrade (Telnet)
+    re.compile(r"\btransport\s+input\s+(?:all|telnet|none)\b", re.IGNORECASE),
+    # Storage of passwords in plaintext (disabling encryption)
+    re.compile(r"\bno\s+service\s+password-encryption\b", re.IGNORECASE),
+    # Default route hijacking / redirecting unreviewed gateway of last resort
+    re.compile(r"\bip\s+route\s+0\.0\.0\.0\s+0\.0\.0\.0\b", re.IGNORECASE),
+    re.compile(r"\bset\s+routing-options\s+static\s+route\s+0\.0\.0\.0/0\b", re.IGNORECASE),
     # Command chaining, redirection, background execution, and shell escaping
     re.compile(r"[\r\n;`$><&|\\]", re.IGNORECASE),
 ]
