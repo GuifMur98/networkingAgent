@@ -26,16 +26,8 @@ class TemplateModal(ModalScreen[Optional[AutomationTemplate]]):
         ("MikroTik RouterOS", "mikrotik_routeros"),
     ]
 
-    COMMON_VARIABLES = [
-        "vlan_id",
-        "vlan_name",
-        "ip_address",
-        "netmask",
-        "gateway",
-        "interface",
-        "description",
-        "bgp_as",
-    ]
+    COMMON_VARIABLES_ROW1 = ["vlan_id", "vlan_name", "ip_address", "netmask"]
+    COMMON_VARIABLES_ROW2 = ["gateway", "interface", "description", "bgp_as"]
 
     def __init__(
         self,
@@ -89,12 +81,15 @@ class TemplateModal(ModalScreen[Optional[AutomationTemplate]]):
                     yield Label("Sintaxis: {{ nombre_variable }}", id="lbl-guide-syntax")
                 yield Label(
                     "Encierra cualquier parámetro en dobles llaves para volverlo dinámico. "
-                    "El motor solicitará los valores al ejecutar despliegues masivos.",
+                    "Al ejecutar un despliegue, el motor solicitará los valores de cada variable.",
                     id="lbl-guide-desc",
                 )
-                with Horizontal(id="tpl-chips-row"):
-                    yield Label("Atajos (clic para insertar):", id="lbl-chips-tag")
-                    for var in self.COMMON_VARIABLES:
+                yield Label("Variables habituales de red (clic para insertar en el editor):", id="lbl-chips-tag")
+                with Horizontal(classes="tpl-chips-row"):
+                    for var in self.COMMON_VARIABLES_ROW1:
+                        yield Button(var, id=f"chip-var-{var}", classes="tpl-var-chip")
+                with Horizontal(classes="tpl-chips-row"):
+                    for var in self.COMMON_VARIABLES_ROW2:
                         yield Button(var, id=f"chip-var-{var}", classes="tpl-var-chip")
 
             with Vertical(classes="modal-row-full", id="modal-editor-row"):
