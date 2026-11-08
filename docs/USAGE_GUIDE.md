@@ -89,7 +89,7 @@ cd networkingAgent
 # 2. Sincronizar el entorno virtual y dependencias con uv
 uv sync --extra dev
 
-# 3. Validar la integridad de la suite de pruebas (189/193 pruebas passing)
+# 3. Validar la integridad de la suite de pruebas (189/194 pruebas passing)
 uv run --no-sync pytest
 
 # 4. Verificar conformidad del linter estático (0 advertencias)

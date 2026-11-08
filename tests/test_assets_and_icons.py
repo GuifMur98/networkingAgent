@@ -56,6 +56,16 @@ def test_install_script_configures_shortcut_icons():
     assert '$Shortcut.IconLocation = "$AppIconPath,0"' in ps1_content
 
 
+def test_install_script_registers_windows_installed_app():
+    """Verify that install.ps1 registers in Windows Installed Apps (Settings / Control Panel)."""
+    ps1_content = (PROJECT_ROOT / "install.ps1").read_text(encoding="utf-8")
+    assert "CurrentVersion\\Uninstall\\NetworkingAgent" in ps1_content
+    assert "Register-WindowsApp" in ps1_content
+    assert "DisplayName" in ps1_content
+    assert "DisplayIcon" in ps1_content
+    assert "UninstallString" in ps1_content
+
+
 def test_pyinstaller_spec_embeds_app_icon():
     """Verify that networking_agent.spec references assets and sets the application icon."""
     spec_content = (PROJECT_ROOT / "networking_agent.spec").read_text(encoding="utf-8")

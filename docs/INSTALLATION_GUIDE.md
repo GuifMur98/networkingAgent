@@ -110,7 +110,7 @@ uv run python main.py
 ```powershell
 uv run pytest
 ```
-*Debe reportar 193 pruebas aprobadas (100% passing).*
+*Debe reportar 194 pruebas aprobadas (100% passing).*
 
 ---
 

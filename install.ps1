@@ -52,6 +52,44 @@ function Write-Banner {
 
 Write-Banner
 
+function Register-WindowsApp {
+    param(
+        [string]$InstallDir,
+        [string]$AppIconPath,
+        [string]$UninstallerPath
+    )
+    try {
+        $RegPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\NetworkingAgent"
+        if (-not (Test-Path $RegPath)) {
+            New-Item -Path $RegPath -Force | Out-Null
+        }
+        
+        $EstimatedSizeKB = 0
+        if (Test-Path $InstallDir) {
+            $EstimatedSizeKB = [int]((Get-ChildItem -Path $InstallDir -Recurse -File -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum / 1KB)
+        }
+        
+        Set-ItemProperty -Path $RegPath -Name "DisplayName" -Value "NetworkingAgent Enterprise"
+        Set-ItemProperty -Path $RegPath -Name "DisplayVersion" -Value "2.1.1"
+        Set-ItemProperty -Path $RegPath -Name "Publisher" -Value "NetworkingAgent Enterprise Team"
+        Set-ItemProperty -Path $RegPath -Name "InstallLocation" -Value "$InstallDir"
+        if (Test-Path $AppIconPath) {
+            Set-ItemProperty -Path $RegPath -Name "DisplayIcon" -Value "$AppIconPath,0"
+        }
+        Set-ItemProperty -Path $RegPath -Name "UninstallString" -Value "powershell.exe -ExecutionPolicy Bypass -File `"$UninstallerPath`""
+        Set-ItemProperty -Path $RegPath -Name "QuietUninstallString" -Value "powershell.exe -ExecutionPolicy Bypass -NonInteractive -File `"$UninstallerPath`""
+        Set-ItemProperty -Path $RegPath -Name "InstallDate" -Value (Get-Date -Format "yyyyMMdd")
+        Set-ItemProperty -Path $RegPath -Name "EstimatedSize" -Value $EstimatedSizeKB -Type DWord
+        Set-ItemProperty -Path $RegPath -Name "HelpLink" -Value "https://github.com/GuifMur98/networkingAgent"
+        Set-ItemProperty -Path $RegPath -Name "URLInfoAbout" -Value "https://github.com/GuifMur98/networkingAgent"
+        Set-ItemProperty -Path $RegPath -Name "NoModify" -Value 1 -Type DWord
+        Set-ItemProperty -Path $RegPath -Name "NoRepair" -Value 1 -Type DWord
+        Write-Success "Registrado en Aplicaciones Instaladas de Windows (Panel de Control y Configuracion)."
+    } catch {
+        Write-WarningMsg "No se pudo registrar en la lista de programas de Windows: $_"
+    }
+}
+
 # 1. Check if running alongside a compiled standalone binary (.exe)
 $StandaloneExe = $null
 if ($PSScriptRoot) {
@@ -152,6 +190,8 @@ Write-Host '[*] Desinstalando NetworkingAgent Enterprise...' -ForegroundColor Cy
 
 if (Test-Path `$DesktopShortcut) { Remove-Item `$DesktopShortcut -Force }
 if (Test-Path `$SmShortcut) { Remove-Item `$SmShortcut -Force }
+`$RegPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\NetworkingAgent'
+if (Test-Path `$RegPath) { Remove-Item `$RegPath -Recurse -Force -ErrorAction SilentlyContinue }
 `$UserPath = [System.Environment]::GetEnvironmentVariable('Path', 'User')
 `$NewPath = (`$UserPath -split ';' | Where-Object { `$_ -ne `$BinDir }) -join ';'
 [System.Environment]::SetEnvironmentVariable('Path', `$NewPath, 'User')
@@ -161,6 +201,7 @@ Remove-Item `$InstallDir -Recurse -Force
 Write-Host '[+] NetworkingAgent desinstalado completamente.' -ForegroundColor Green
 "@
     Set-Content -Path $UninstallerPath -Value $UninstallerContent -Encoding UTF8
+    Register-WindowsApp -InstallDir $InstallDir -AppIconPath $AppIconPath -UninstallerPath $UninstallerPath
 
     Write-Host ""
     Write-Host " =================================================================" -ForegroundColor Green
@@ -379,6 +420,8 @@ Write-Host '[*] Uninstalling NetworkingAgent Enterprise...' -ForegroundColor Cya
 
 if (Test-Path `$DesktopShortcut) { Remove-Item `$DesktopShortcut -Force }
 if (Test-Path `$SmShortcut) { Remove-Item `$SmShortcut -Force }
+`$RegPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\NetworkingAgent'
+if (Test-Path `$RegPath) { Remove-Item `$RegPath -Recurse -Force -ErrorAction SilentlyContinue }
 `$UserPath = [System.Environment]::GetEnvironmentVariable('Path', 'User')
 `$NewPath = (`$UserPath -split ';' | Where-Object { `$_ -ne `$BinDir }) -join ';'
 [System.Environment]::SetEnvironmentVariable('Path', `$NewPath, 'User')
@@ -388,6 +431,7 @@ Remove-Item `$InstallDir -Recurse -Force
 Write-Host '[+] NetworkingAgent successfully removed.' -ForegroundColor Green
 "@
 Set-Content -Path $UninstallerPath -Value $UninstallerContent -Encoding UTF8
+Register-WindowsApp -InstallDir $InstallDir -AppIconPath $AppIconPath -UninstallerPath $UninstallerPath
 
 Write-Host ""
 Write-Host " =================================================================" -ForegroundColor Green
