@@ -1,4 +1,4 @@
-# 🖧 Matriz de Hardware y Compatibilidad Multi-Fabricante v2.1
+# 🖧 Matriz de Hardware y Compatibilidad Multi-Fabricante v2.1.1
 
 > **Dispositivos Certificados, Comandos de Diagnóstico Especializados por Protocolo, Síntesis Declarativa y Mecanismos de Reversión**
 

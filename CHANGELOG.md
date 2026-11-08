@@ -7,6 +7,37 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [2.1.1] - 2026-11-08
+
+### 🛡️ Ciberseguridad y Remediación de Auditoría de Penetración (Security)
+- **Remediación Integral de 8 Hallazgos de Seguridad (Ethical Hacking & Pentest):**
+  - **VULN-01 (SSTI a RCE en Jinja2):** Implementación de `HardenedSandboxedEnvironment` en `engine/automation.py`, bloqueando acceso a atributos dunder (`__class__`, `__globals__`, `__mro__`, etc.) y callables peligrosos (`eval`, `popen`, etc.).
+  - **VULN-02 (Aceptación ciega de llaves SSH / MitM):** Carga forzosa del almacén `known_hosts` del sistema (`system_host_keys=True`) en `to_netmiko_dict()`, detección de discrepancias de llaves (`BadHostKeyException`) con interrupción inmediata y emisión de alerta crítica de seguridad. Soporte para `ssh_strict=True`.
+  - **VULN-03 (Evasión de guardarraíles):** Ampliación de listas negras en `CommandValidator` y `ConfigSyntaxValidator` para vetar transferencias TFTP/FTP/HTTP (`copy tftp:`, `tool fetch`), comunidades SNMP RW (`snmp-server community <name> RW`), degradación a Telnet (`transport input telnet`), desvíos de ruta por defecto (`0.0.0.0/0`), deshabilitación de cifrado de contraseñas (`no service password-encryption`) y shells del SO (`guestshell`, `start shell`).
+  - **VULN-04 (Permisos ineficaces de llave maestra en Windows):** Restricción estricta de DACLs en `core/crypto.py` (`secure_file_permissions`), deshabilitando herencia NTFS y asignando control total exclusivamente al usuario actual (`icacls /inheritance:r /grant:r "%USERNAME%:(F)"`) y `0600` en sistemas POSIX.
+  - **VULN-05 (CWD Hijacking y confusión de rutas):** Anclaje determinista de directorios con `get_app_data_dir()` y `get_app_log_dir()` con variable prioritaria `NETWORKING_AGENT_DATA_DIR` y fallback a `%LOCALAPPDATA%\NetworkingAgent\data`. Integración de cambio de directorio previo en lanzadores.
+  - **VULN-06 (Filtración de credenciales en logs de auditoría):** Sanitización universal de datos confidenciales (`mask_sensitive_data()`) en `core/audit.py` antes de registrar comandos o respuestas CLI en `audit.jsonl`.
+  - **VULN-07 (Encadenamiento criptográfico continuo SHA-256):** Implementación de hash encadenado (`prev_hash` + `event_hash`) en cada entrada de `AuditLogger` con verificación matemática de inmutabilidad mediante `verify_audit_integrity()`.
+  - **VULN-08 (Instaladores seguros):** Eliminación de tuberías directas a intérpretes de shell (`curl | sh` / `irm | iex`), migrando a un patrón seguro de descarga en dos pasos a archivos temporales aislados con comprobación de integridad.
+
+### 🎨 Ergonomía Visual y Soporte Integral de Tema Claro (Added)
+- **Tema Oficial Claro Suave (`agent-light`):**
+  - Paleta ergonómica basada en tonos zinc y pizarra suave (`#f8fafc` fondo general, `#ffffff` superficie de tarjetas, `#1e293b` tipografía oscura contrastada, `#cbd5e1` / `#0369a1` bordes sutiles, acentos verde esmeralda y ámbar cálido).
+  - Diseñado específicamente para eliminar fatiga visual y reflejos excesivos en ambientes luminosos.
+- **Tema Oficial Cyberpunk NOC (`agent-dark`):**
+  - Consola de centro de operaciones con fondo azul espacial profundo (`#0a0f1d`), superficie grafito (`#111827`) y acentos cian eléctrico (`#00e5ff`) y oro (`#fbbf24`).
+- **Corrección de Fondo de Tarjetas en Dashboard:**
+  - Corrección de `.home-nav-card` y `HomeNavCard` para respetar dinámicamente `$surface` y `$foreground`, eliminando los fondos negros fijos que persistían en tema claro.
+  - Dinamización de bordes, indicadores ASCII y gráficos de estado en los 5 módulos para armonizar con el tema activo.
+- **Comandos Rápidos en Paleta (`Ctrl+P`):**
+  - Acciones dedicadas: `Tema: Modo Claro Suave (agent-light)` y `Tema: Modo Oscuro Cyberpunk (agent-dark)`.
+
+### 🧪 Suite de Pruebas Automatizadas Ampliada (Changed)
+- Cobertura expandida de 172 a **189 pruebas automatizadas** (`pytest tests/`) con 100% de éxito en todos los sistemas operativos.
+- Nuevos tests de seguridad (`tests/test_security_audit_remediation.py`) y ergonomía de temas (`test_agent_light_theme_and_color_ergonomics`).
+
+---
+
 ## [2.1.0] - 2026-11-08
 
 ### 🚀 Paleta de Comandos, Temas Visuales y Operaciones Globales (Added)

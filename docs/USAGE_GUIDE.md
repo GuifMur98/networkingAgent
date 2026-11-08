@@ -1,4 +1,4 @@
-# 📖 Guía Completa de Uso y Operación: NetworkingAgent Enterprise v2.1
+# 📖 Guía Completa de Uso y Operación: NetworkingAgent Enterprise v2.1.1
 
 Bienvenido a la guía oficial de usuario y operaciones para **NetworkingAgent Enterprise v2.1**, la plataforma autónoma de ingeniería de redes con automatización en bucle cerrado (*Closed-Loop Automation*), inferencia de inteligencia artificial multi-cerebro y terminal reactiva de alto rendimiento.
 
@@ -63,20 +63,21 @@ Bienvenido a la guía oficial de usuario y operaciones para **NetworkingAgent En
 > Consulta la **[📘 Guía Definitiva de Instalación (`docs/INSTALLATION_GUIDE.md`)](INSTALLATION_GUIDE.md)** para una explicación exhaustiva de cada método, variables de entorno y solución de problemas.
 
 ### 3.1. Paquete Autónomo Precompilado Standalone (GitHub Releases - Sin Python)
-Descarga el paquete precompilado desde los [Releases de GitHub](https://github.com/GuifMur98/networkingAgent/releases/tag/v2.1.0):
-- **Windows:** Descarga `networking-agent-v2.1.0-windows-x64.zip` y descomprímelo.
+Descarga el paquete precompilado desde los [Releases de GitHub](https://github.com/GuifMur98/networkingAgent/releases/tag/v2.1.1):
+- **Windows:** Descarga `networking-agent-v2.1.1-windows-x64.zip` y descomprímelo.
   - **Instalación en 1 Clic (`instalar.bat`):** Registra permanentemente `networking-agent` en tu variable de entorno `PATH` y genera los accesos directos en el **Escritorio** y **Menú Inicio**.
   - **Uso Portable Directo (`iniciar.bat`):** Ejecuta el agente inmediatamente sin modificar el sistema.
-- **Linux:** Descarga `networking-agent-v2.1.0-linux-x64.tar.gz` y ejecuta `./install.sh` para instalar el binario en `~/.local/bin/networking-agent`.
+- **Linux:** Descarga `networking-agent-v2.1.1-linux-x64.tar.gz` y ejecuta `./install.sh` para instalar el binario en `~/.local/bin/networking-agent`.
 
 ### 3.2. Instalador Automatizado One-Click por Terminal (Web Stream)
 - **Windows (PowerShell):**
   ```powershell
-  irm https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.ps1 | iex
+  Invoke-WebRequest -Uri https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.ps1 -OutFile "$env:TEMP\install.ps1"
+& "$env:TEMP\install.ps1"
   ```
 - **Linux / macOS (Bash):**
   ```bash
-  curl -sSL https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.sh -o /tmp/install.sh && bash /tmp/install.sh
   ```
 
 ### 3.3. Instalación para Desarrolladores (uv)
@@ -88,7 +89,7 @@ cd networkingAgent
 # 2. Sincronizar el entorno virtual y dependencias con uv
 uv sync --extra dev
 
-# 3. Validar la integridad de la suite de pruebas (172/172 pruebas passing)
+# 3. Validar la integridad de la suite de pruebas (189/189 pruebas passing)
 uv run --no-sync pytest
 
 # 4. Verificar conformidad del linter estático (0 advertencias)
@@ -202,9 +203,12 @@ La **Paleta de Comandos** proporciona acceso centralizado e instantáneo a opera
 ### Categorías de Operaciones:
 
 1. **Apariencia y Temas Visuales:**
-   - **Cambiar Tema Visual:** Despliega el catálogo de más de 20 temas profesionales de Textual (Nord, Dracula, Tokyo Night, Gruvbox, Catppuccin, Monokai, Solarized, etc.). El tema seleccionado se guarda de forma persistente en SQLite (`app_theme`) y se restaura automáticamente en los siguientes inicios.
-   - **Alternar Modo Oscuro / Claro:** Conmuta al instante entre las variantes clara y oscura del tema activo.
-   - **Restaurar Tema Predeterminado:** Regresa a la apariencia corporativa `textual-dark`.
+   - **Temas Visuales Ergonómicos de Primera Clase:**
+     - **`agent-light` (Modo Claro Suave):** Paleta zinc/slate (`#f8fafc` fondo, `#ffffff` superficie, `#1e293b` tipografía) sin brillo deslumbrante, diseñada para eliminar la fatiga ocular en turnos diurnos.
+     - **`agent-dark` (Modo Oscuro Cyberpunk):** Estética NOC de misión crítica con azul profundo (`#0a0f1d`) y acentos cian (`#00e5ff`).
+     - **Catálogo de +20 Temas de Textual:** Nord, Dracula, Tokyo Night, Gruvbox, Catppuccin, Monokai, etc. con persistencia en SQLite (`app_theme`).
+     - **Alternar Modo Oscuro / Claro:** Conmutación instantánea entre variantes del tema activo.
+     - **Restaurar Tema Predeterminado:** Regreso a la apariencia corporativa de fábrica.
 2. **Navegación Global:**
    - Salto instantáneo al Dashboard Principal o a cualquiera de los 5 módulos operacionales (`1` al `5`).
 3. **Configuración y Seguridad Global del Sistema:**

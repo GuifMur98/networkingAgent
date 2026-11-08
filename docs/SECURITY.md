@@ -116,7 +116,7 @@ La ventana modal de aprobación presenta de manera inmutable:
 
 ## 5. Pruebas Automatizadas de Seguridad
 
-La suite de pruebas contiene tests automatizados diseñados específicamente para certificar la resistencia ante vectores de ataque:
+La suite de pruebas contiene **189 pruebas automatizadas (100% passing)**, incluyendo tests diseñados específicamente para certificar la resistencia ante vectores de ataque:
 
 ```bash
 uv run --no-sync pytest tests/

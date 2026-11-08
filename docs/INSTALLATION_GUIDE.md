@@ -1,6 +1,6 @@
-# Guía Definitiva de Instalación y Despliegue — NetworkingAgent Enterprise v2.1.0
+# Guía Definitiva de Instalación y Despliegue — NetworkingAgent Enterprise v2.1.1
 
-Esta guía describe todas las alternativas de instalación y despliegue de **NetworkingAgent Enterprise v2.1.0**, desde instaladores automáticos de un solo clic hasta paquetes ejecutables portables (sin necesidad de instalar Python) y entornos de desarrollo.
+Esta guía describe todas las alternativas de instalación y despliegue de **NetworkingAgent Enterprise v2.1.1**, desde instaladores automáticos de un solo clic hasta paquetes ejecutables portables (sin necesidad de instalar Python) y entornos de desarrollo.
 
 ---
 
@@ -20,8 +20,8 @@ Esta guía describe todas las alternativas de instalación y despliegue de **Net
 No requiere tener instalado Python, Git ni compiladores en tu computadora.
 
 ### Paso 1: Descargar el Paquete
-1. Ve a la sección de [Releases de GitHub](https://github.com/GuifMur98/networkingAgent/releases/tag/v2.1.0).
-2. Descarga el archivo: **`networking-agent-v2.1.0-windows-x64.zip`**.
+1. Ve a la sección de [Releases de GitHub](https://github.com/GuifMur98/networkingAgent/releases/tag/v2.1.1).
+2. Descarga el archivo: **`networking-agent-v2.1.1-windows-x64.zip`**.
 3. Haz clic derecho sobre el archivo `.zip` y selecciona **Extraer todo...** en la carpeta de tu preferencia.
 
 ### Paso 2: Instalación con 1 Clic (`instalar.bat`)
@@ -53,16 +53,17 @@ Si prefieres instalar directamente desde tu terminal sin descargar archivos manu
 ### En Windows (PowerShell):
 Abre PowerShell y ejecuta:
 ```powershell
-irm https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.ps1 | iex
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.ps1 -OutFile "$env:TEMP\install.ps1"
+& "$env:TEMP\install.ps1"
 ```
 
 > [!NOTE]
-> Este comando descarga el código del agente, aprovisiona un entorno virtual Python aislado con `uv` en `%LOCALAPPDATA%\NetworkingAgent`, registra el comando en el `PATH` y genera los accesos directos en el Escritorio y Menú Inicio.
+> Este método descarga primero el script a una ubicación temporal aislada y luego lo ejecuta (patrón en dos pasos seguro contra ejecución ciega en tuberías de shell), aprovisionando un entorno virtual Python aislado con `uv` en `%LOCALAPPDATA%\NetworkingAgent`, registrando el comando en el `PATH` y generando los accesos directos en el Escritorio y Menú Inicio.
 
 ### En Linux y macOS (Bash):
 Abre tu terminal y ejecuta:
 ```bash
-curl -sSL https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.sh -o /tmp/install.sh && bash /tmp/install.sh
 ```
 
 > [!NOTE]
@@ -74,7 +75,7 @@ curl -sSL https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/insta
 
 Si deseas utilizar NetworkingAgent desde una memoria USB o probarlo sin registrar comandos en el sistema:
 
-1. Descomprime `networking-agent-v2.1.0-windows-x64.zip`.
+1. Descomprime `networking-agent-v2.1.1-windows-x64.zip`.
 2. Haz doble clic en **`iniciar.bat`** (o en `networking-agent.exe`).
 3. El agente se ejecutará de inmediato en modo interactivo.
 
@@ -109,7 +110,7 @@ uv run python main.py
 ```powershell
 uv run pytest
 ```
-*Debe reportar 172 pruebas aprobadas (100% passing).*
+*Debe reportar 189 pruebas aprobadas (100% passing).*
 
 ---
 
@@ -127,7 +128,7 @@ Para confirmar que el agente quedó correctamente registrado en tu sistema opera
    ```powershell
    networking-agent --version
    ```
-   *Salida esperada:* `networking-agent 2.1.0`
+   *Salida esperada:* `networking-agent 2.1.1`
 
 3. **Verificar el menú de ayuda y opciones CLI:**
    ```powershell

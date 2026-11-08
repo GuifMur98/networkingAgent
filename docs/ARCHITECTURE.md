@@ -1,4 +1,4 @@
-# 🏛️ Arquitectura del Sistema: NetworkingAgent Enterprise v2.1
+# 🏛️ Arquitectura del Sistema: NetworkingAgent Enterprise v2.1.1
 
 > **Diseño Arquitectónico Hexagonal, Patrones de Ingeniería Closed-Loop, Threading Model y Garantías de Confiabilidad**
 

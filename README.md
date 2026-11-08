@@ -1,20 +1,20 @@
-# 🌐 NetworkingAgent Enterprise v2.1
+# 🌐 NetworkingAgent Enterprise v2.1.1
 
 <div align="center">
 
 [![Python 3.14](https://img.shields.io/badge/python-3.14-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org/)
 [![UI: Textual TUI](https://img.shields.io/badge/ui-Textual%20TUI%20v2.1-00e5ff.svg?style=flat&logo=gnometerminal)](https://textual.textualize.io/)
-[![Tests](https://img.shields.io/badge/tests-172%20passed-brightgreen.svg?style=flat&logo=pytest&logoColor=white)]()
+[![Tests](https://img.shields.io/badge/tests-189%20passed-brightgreen.svg?style=flat&logo=pytest&logoColor=white)]()
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg?style=flat&logo=ruff&logoColor=white)](https://github.com/astral-sh/ruff)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=flat)](LICENSE)
-[![Security: Hardened](https://img.shields.io/badge/security-hardened%20defense--in--depth-red.svg?style=flat&logo=shield)]()
+[![Security: Hardened](https://img.shields.io/badge/security-hardened%20defense--in--depth%20v2.1.1-red.svg?style=flat&logo=shield)]()
 [![Architecture: Hexagonal](https://img.shields.io/badge/architecture-closed--loop%20hexagonal-orange.svg?style=flat)]()
 
 **Asistente Autónomo de Ingeniería de Redes en Bucle Cerrado (*Closed-Loop Automation*) con IA Multi-Cerebro**
 
 ![NetworkingAgent](docs/banner.png)
 
-*Diagnóstico de causa raíz autónomo (L1-L7), aprovisionamiento declarativo multi-protocolo, editor de plantillas Jinja2 con guía interactiva de variables dinámicas, validación sintáctica pre-vuelo, pruebas de conectividad en tiempo real (Ping ICMP y Socket SSH), paleta de comandos profesional y bitácora forense inmutable SHA-256.*
+*Diagnóstico de causa raíz autónomo (L1-L7), aprovisionamiento declarativo multi-protocolo, editor de plantillas Jinja2 con guía interactiva de variables dinámicas, validación sintáctica pre-vuelo, pruebas de conectividad en tiempo real (Ping ICMP y Socket SSH), paleta de comandos con temas ergonómicos (agent-light / agent-dark), sandbox Jinja2 anti-SSTI, transporte SSH inmune a MitM y bitácora forense inmutable con encadenamiento continuo SHA-256.*
 
 [📖 Guía de Uso](docs/USAGE_GUIDE.md) • [🏛️ Arquitectura](docs/ARCHITECTURE.md) • [🛡️ Seguridad](docs/SECURITY.md) • [🖧 Hardware Soportado](docs/SUPPORTED_HARDWARE.md)
 
@@ -22,7 +22,7 @@
 
 ---
 
-## 🚀 Pilares Operacionales de la Versión 2.1
+## 🚀 Pilares Operacionales de la Versión 2.1.1
 
 NetworkingAgent Enterprise estructura las operaciones de ingeniería de redes en **cinco módulos especializados**, coordinados desde una consola de terminal reactiva (`Textual TUI`) con estética *Cyberpunk NOC Mission Control*:
 
@@ -64,7 +64,10 @@ La plataforma incorpora una **Paleta de Comandos** global accesible desde cualqu
 - **Diseño Sobrio Enterprise NOC:** Cero emojis e iconos decorativos, priorizando etiquetas técnicas de alta densidad.
 - **Búsqueda Difusa (Fuzzy Search):** Localización inmediata de operaciones tecleando palabras clave.
 - **Catálogo Exhaustivo de Operaciones del Sistema:**
-  - **Temas Visuales:** Selector interactivo de más de 20 temas de Textual (Nord, Dracula, Tokyo Night, Gruvbox, etc.) con persistencia en SQLite (`app_theme`), conmutación claro/oscuro y restauración predeterminada.
+  - **Temas Visuales Ergonómicos de Primera Clase:**
+    - **`agent-light` (Modo Claro Suave):** Paleta ergonómica en tonos zinc/slate (`#f8fafc` fondo, `#ffffff` superficie, `#1e293b` texto oscuro, `#cbd5e1` / `#0369a1` bordes sutiles, acentos esmeralda y ámbar cálido), optimizada para eliminar fatiga visual y reflejos.
+    - **`agent-dark` (Modo Oscuro Cyberpunk):** Estética NOC de misión crítica (`#0a0f1d` fondo profundo, `#111827` superficie, acentos cian `#00e5ff` y oro `#fbbf24`).
+    - **Selector de +20 Temas de Textual:** Nord, Dracula, Tokyo Night, Gruvbox, etc. con persistencia automática en base de datos SQLite (`app_theme`) y conmutador rápido claro/oscuro.
   - **Navegación Global:** Desplazamiento instantáneo al Dashboard Principal o a los 5 módulos operacionales (`1` al `5`).
   - **Seguridad y Configuración:** Configuración de IA y bóveda criptográfica, alternancia de guardarraíles (HITL) y registro de equipos.
   - **Utilidades de Terminal:** Captura vectorial de pantalla en formato SVG (`logs/screenshot_*.svg`), limpieza de consola activa y recarga/sincronización global del sistema (`F5` / `r`).
@@ -123,13 +126,13 @@ flowchart TD
 
 ```
 networkingAgent/
-├── pyproject.toml              # Metadatos del proyecto y dependencias (v2.1.0)
+├── pyproject.toml              # Metadatos del proyecto y dependencias (v2.1.1)
 ├── uv.lock                     # Lockfile determinista
 ├── install.ps1                 # Instalador One-Click automatizado para Windows (PowerShell)
 ├── install.sh                  # Instalador One-Click automatizado para Linux / macOS (Bash)
 ├── networking_agent.spec       # Especificación PyInstaller para binario independiente
 ├── README.md                   # Documentación principal del proyecto
-├── CHANGELOG.md                # Bitácora detallada de cambios y versiones (v2.1.0)
+├── CHANGELOG.md                # Bitácora detallada de cambios y versiones (v2.1.1)
 ├── CONTRIBUTING.md             # Guía de contribución y estándares de código
 ├── LICENSE                     # Licencia Apache 2.0
 ├── .env.example                # Plantilla de variables de entorno
@@ -207,7 +210,7 @@ networkingAgent/
 │       │       ├── template_modal.py       # Creador/Editor Jinja2 con chips de variables
 │       │       └── vault_modal.py          # Ajustes de IA dinámicos con escaneo de modelos
 │       └── cli/                # Modo consola clásico interactivo y por lotes
-└── tests/                      # Suite de 172 pruebas automatizadas (100% passing)
+└── tests/                      # Suite de 189 pruebas automatizadas (100% passing)
 ```
 
 ---
@@ -224,19 +227,19 @@ networkingAgent/
 > Para instrucciones detalladas paso a paso sobre cada sistema operativo y resolución de incidencias, consulta la **[📘 Guía Definitiva de Instalación (`docs/INSTALLATION_GUIDE.md`)](docs/INSTALLATION_GUIDE.md)**.
 
 #### Opción A: Paquete Standalone de GitHub Releases (Recomendado para Windows - Sin Python)
-Descarga el paquete precompilado desde los [Releases de GitHub](https://github.com/GuifMur98/networkingAgent/releases/tag/v2.1.0):
-- Descarga **`networking-agent-v2.1.0-windows-x64.zip`** y descomprímelo.
+Descarga el paquete precompilado desde los [Releases de GitHub](https://github.com/GuifMur98/networkingAgent/releases/tag/v2.1.1):
+- Descarga **`networking-agent-v2.1.1-windows-x64.zip`** y descomprímelo.
 - **Para instalar en el sistema (1 clic):** Haz doble clic en **`instalar.bat`** para registrar el comando `networking-agent` en tu `PATH` y crear los accesos directos en el **Escritorio** y **Menú Inicio**.
 - **Para usar en modo portable (sin instalar):** Haz doble clic en **`iniciar.bat`** o en `networking-agent.exe`.
 
 #### Opción B: Instalador Automatizado One-Click por Terminal
 - **Windows (PowerShell):**
   ```powershell
-  irm https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.ps1 | iex
+  Invoke-WebRequest -Uri https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.ps1 -OutFile "$env:TEMP\install.ps1"; & "$env:TEMP\install.ps1"
   ```
 - **Linux / macOS (Bash):**
   ```bash
-  curl -sSL https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.sh -o /tmp/install.sh && bash /tmp/install.sh
   ```
 
 #### Opción C: Instalación Manual para Desarrolladores
@@ -276,7 +279,8 @@ La interfaz responde a atajos ergonómicos contextuales:
 
 ## 🧪 Pruebas Automatizadas y Calidad
 
-El proyecto cuenta con **172 pruebas automatizadas** que cubren el 100% de los subsistemas:
+El proyecto cuenta con **189 pruebas automatizadas** que cubren el 100% de los subsistemas:
+- **Seguridad y Pentest Hardening:** Verificación de las 8 remediaciones de ciberseguridad (SSTI en Jinja2, mitigación de MitM SSH, blindaje de listas negras, permisos NTFS icacls, CWD isolation, enmascaramiento de credenciales, hash chaining continuo SHA-256 e instaladores seguros).
 - **Validación Sintáctica Pre-Flight:** Prevención de comandos destructivos, balance de llaves y sintaxis multi-vendor.
 - **Guardarraíles y Blast Radius:** Blindaje estricto de interfaces WAN y protección contra inyecciones CLI.
 - **Inferencia Cognitiva Multi-Cerebro:** Aislamiento de prompts para Ollama, Google Gemini, OpenAI y Claude.
