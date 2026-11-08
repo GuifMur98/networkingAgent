@@ -1161,7 +1161,7 @@ TextArea:focus {
 /* DataTables for Inventory and Audit */
 #inventory-widget,
 #audit-widget {
-    height: auto;
+    height: 100%;
     width: 100%;
 }
 
