@@ -26,6 +26,17 @@ class TemplateModal(ModalScreen[Optional[AutomationTemplate]]):
         ("MikroTik RouterOS", "mikrotik_routeros"),
     ]
 
+    COMMON_VARIABLES = [
+        "vlan_id",
+        "vlan_name",
+        "ip_address",
+        "netmask",
+        "gateway",
+        "interface",
+        "description",
+        "bgp_as",
+    ]
+
     def __init__(
         self,
         template: Optional[AutomationTemplate] = None,
@@ -71,6 +82,21 @@ class TemplateModal(ModalScreen[Optional[AutomationTemplate]]):
                     id="input-tpl-desc",
                 )
 
+            # Guía interactiva de sintaxis Jinja2 y atajos de inserción
+            with Vertical(classes="tpl-guide-card"):
+                with Horizontal(id="tpl-guide-header"):
+                    yield Label("GUIA DE VARIABLES DINAMICAS (JINJA2):", id="lbl-guide-title")
+                    yield Label("Sintaxis: {{ nombre_variable }}", id="lbl-guide-syntax")
+                yield Label(
+                    "Encierra cualquier parámetro en dobles llaves para volverlo dinámico. "
+                    "El motor solicitará los valores al ejecutar despliegues masivos.",
+                    id="lbl-guide-desc",
+                )
+                with Horizontal(id="tpl-chips-row"):
+                    yield Label("Atajos (clic para insertar):", id="lbl-chips-tag")
+                    for var in self.COMMON_VARIABLES:
+                        yield Button(var, id=f"chip-var-{var}", classes="tpl-var-chip")
+
             with Vertical(classes="modal-row-full", id="modal-editor-row"):
                 with Horizontal(id="modal-editor-header"):
                     yield Label("Contenido CLI con Sintaxis Jinja2:", id="lbl-modal-editor")
@@ -105,6 +131,15 @@ class TemplateModal(ModalScreen[Optional[AutomationTemplate]]):
             self.action_cancel()
         elif event.button.id == "btn-detect-vars":
             self.action_detect_variables()
+        elif event.button.id and event.button.id.startswith("chip-var-"):
+            var_name = event.button.id.replace("chip-var-", "")
+            self._insert_variable(var_name)
+
+    def _insert_variable(self, var_name: str) -> None:
+        """Inserts {{ var_name }} into the template editor at the cursor location."""
+        editor = self.query_one("#input-tpl-content", TextArea)
+        editor.insert(f"{{{{ {var_name} }}}}")
+        editor.focus()
 
     def action_detect_variables(self) -> None:
         """Parses the text area content and reports variables found in real time."""

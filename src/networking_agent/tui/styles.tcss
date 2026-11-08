@@ -999,6 +999,70 @@ TextArea:focus {
     height: 3;
 }
 
+/* Template Variable Guide Card */
+.tpl-guide-card {
+    height: auto;
+    background: #080c14;
+    border-left: thick #00e5ff;
+    border: round #1e293b;
+    padding: 0 1;
+    margin-bottom: 1;
+}
+
+#tpl-guide-header {
+    height: 2;
+    align-vertical: middle;
+}
+
+#lbl-guide-title {
+    width: 1fr;
+    color: #00e5ff;
+    text-style: bold;
+}
+
+#lbl-guide-syntax {
+    width: auto;
+    color: #38bdf8;
+    text-style: bold;
+}
+
+#lbl-guide-desc {
+    color: #94a3b8;
+    margin-bottom: 1;
+}
+
+#tpl-chips-row {
+    height: 3;
+    align-vertical: middle;
+    margin-bottom: 0;
+}
+
+#lbl-chips-tag {
+    width: auto;
+    color: #cbd5e1;
+    text-style: bold;
+    margin-right: 1;
+    content-align: left middle;
+}
+
+.tpl-var-chip {
+    height: 3;
+    min-width: 9;
+    margin-right: 1;
+    background: #0d1527;
+    border: round #00b4d8;
+    color: #38bdf8;
+    text-style: bold;
+    text-align: center;
+    content-align: center middle;
+}
+
+.tpl-var-chip:hover {
+    background: #0e2038;
+    border: round #00e5ff;
+    color: #ffffff;
+}
+
 #modal-editor-row {
     height: auto;
     width: 100%;
