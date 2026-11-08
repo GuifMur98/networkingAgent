@@ -70,7 +70,7 @@ class AuditTableWidget(Widget):
                         )
 
                     with Horizontal(id="audit-action-buttons"):
-                        yield Button("Recargar", id="btn-refresh-audit")
+                        yield Button("Recargar (r)", id="btn-refresh-audit")
                         yield Button("Exportar JSON", id="btn-export-audit")
                         yield Button("Purgar Tests", id="btn-purge-test-audit", variant="error")
 

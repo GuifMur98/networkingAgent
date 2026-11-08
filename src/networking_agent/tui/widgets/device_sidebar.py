@@ -45,7 +45,7 @@ class DeviceSidebar(Widget):
         with Vertical(id="sidebar-container"):
             yield Label("INVENTARIO DE RED", id="sidebar-title")
             yield ListView(id="device-list")
-            yield Button("+ Registrar Equipo", id="btn-add-device", variant="primary")
+            yield Button("+ Registrar Equipo (d)", id="btn-add-device", variant="primary")
 
     def on_mount(self) -> None:
         self.reload_devices()

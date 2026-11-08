@@ -50,9 +50,9 @@ class DeviceInventoryView(Widget):
                 # 2. Operational Actions Toolbar (Sleek unified card)
                 with Horizontal(id="inventory-toolbar", classes="section-panel"):
                     with Horizontal(id="inventory-crud-actions"):
-                        yield Button("+ Registrar Equipo", id="btn-inv-add", variant="primary")
+                        yield Button("+ Registrar Equipo (d)", id="btn-inv-add", variant="primary")
                         yield Button("Eliminar", id="btn-inv-delete", variant="error")
-                        yield Button("Recargar", id="btn-inv-refresh")
+                        yield Button("Recargar (r)", id="btn-inv-refresh")
 
                     with Horizontal(id="inventory-diagnostic-actions"):
                         yield Button("Hacer Ping (ICMP)", id="btn-inv-ping")

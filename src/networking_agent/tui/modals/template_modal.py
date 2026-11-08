@@ -108,7 +108,7 @@ class TemplateModal(ModalScreen[Optional[AutomationTemplate]]):
 
             with Horizontal(classes="modal-actions"):
                 yield Button("Guardar Plantilla", id="btn-save-tpl", variant="primary")
-                yield Button("Cancelar", id="btn-cancel-tpl")
+                yield Button("Cancelar (Esc)", id="btn-cancel-tpl")
 
     def on_mount(self) -> None:
         """Trigger initial variable scan if initial content is present."""

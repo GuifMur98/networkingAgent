@@ -132,6 +132,7 @@ class NetworkingAgentTUIApp(App):
     COMMANDS = {NetworkAgentCommandProvider}
 
     BINDINGS = [
+        Binding("ctrl+p", "command_palette", "Paleta", show=True),
         Binding("h", "go_home", "Inicio", show=True),
         Binding("escape", "escape_or_home", "Inicio", show=False),
         Binding("ctrl+h", "go_home", "Inicio", show=False),
@@ -139,7 +140,6 @@ class NetworkingAgentTUIApp(App):
         Binding("d", "add_device", "Nuevo Equipo", show=True),
         Binding("s", "open_settings", "Ajustes IA", show=True),
         Binding("r", "refresh_all", "Recargar", show=True),
-        Binding("ctrl+p", "command_palette", "Paleta", show=True),
         Binding("f5", "refresh_all", "Recargar", show=False),
         Binding("ctrl+r", "refresh_all", "Recargar", show=False),
         Binding("1", "nav_tab_1", "Troubleshooting", show=False),
@@ -220,6 +220,23 @@ class NetworkingAgentTUIApp(App):
         except Exception:
             pass
 
+    def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
+        """Dynamic actions filter: on Home show all shortcuts; on modules show ONLY 'h' Inicio."""
+        try:
+            tabs = self.query_one("#main-tabs", TabbedContent)
+            is_home = tabs.active == "pane-home"
+        except Exception:
+            is_home = True
+
+        if is_home:
+            return True
+        else:
+            return action in ["go_home", "escape_or_home"]
+
+    def on_tabbed_content_tab_activated(self, event: TabbedContent.TabActivated) -> None:
+        """Refresh active bindings in footer whenever active tab changes."""
+        self.screen.refresh_bindings()
+
     def action_go_home(self) -> None:
         """Switch navigation back to the Home Dashboard."""
         self.set_focus(None)
@@ -231,6 +248,7 @@ class NetworkingAgentTUIApp(App):
             self.query_one("#btn-nav-troubleshooting").focus()
         except Exception:
             pass
+        self.screen.refresh_bindings()
 
     def action_escape_or_home(self) -> None:
         """Handle escape: unfocus active input/editor to back button, or return to Home."""
@@ -265,6 +283,7 @@ class NetworkingAgentTUIApp(App):
             self.query_one("#btn-back-to-home").focus()
         except Exception:
             pass
+        self.screen.refresh_bindings()
 
     def action_nav_tab_2(self) -> None:
         """Switch navigation to Configuration view."""
@@ -275,6 +294,7 @@ class NetworkingAgentTUIApp(App):
             self.query_one("#btn-back-from-config").focus()
         except Exception:
             pass
+        self.screen.refresh_bindings()
 
     def action_nav_tab_3(self) -> None:
         """Switch navigation to Automation view."""
@@ -285,6 +305,7 @@ class NetworkingAgentTUIApp(App):
             self.query_one("#btn-back-from-automation").focus()
         except Exception:
             pass
+        self.screen.refresh_bindings()
 
     def action_nav_tab_4(self) -> None:
         """Switch navigation to Device Inventory view."""
@@ -295,6 +316,7 @@ class NetworkingAgentTUIApp(App):
             self.query_one("#btn-back-from-inventory").focus()
         except Exception:
             pass
+        self.screen.refresh_bindings()
 
     def action_nav_tab_5(self) -> None:
         """Switch navigation to Audit trail view."""
@@ -305,6 +327,7 @@ class NetworkingAgentTUIApp(App):
             self.query_one("#btn-back-from-audit").focus()
         except Exception:
             pass
+        self.screen.refresh_bindings()
 
     def on_home_dashboard_navigate_to_tab(self, event: HomeDashboard.NavigateToTab) -> None:
         self.set_focus(None)
@@ -329,6 +352,7 @@ class NetworkingAgentTUIApp(App):
                 self.query_one("#btn-back-from-audit").focus()
         except Exception:
             pass
+        self.screen.refresh_bindings()
 
     def on_home_dashboard_open_settings_requested(self, event: HomeDashboard.OpenSettingsRequested) -> None:
         self.action_open_settings()

@@ -144,7 +144,7 @@ class VaultModal(ModalScreen[Optional[Dict[str, str]]]):
 
             with Horizontal(classes="modal-actions"):
                 yield Button("Guardar Cambios", id="btn-save-vault", variant="primary")
-                yield Button("Cerrar", id="btn-cancel")
+                yield Button("Cerrar (Esc)", id="btn-cancel")
 
     def on_mount(self) -> None:
         """Trigger background scan for Ollama models if not already cached."""

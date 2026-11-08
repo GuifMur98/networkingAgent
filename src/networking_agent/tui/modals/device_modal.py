@@ -59,7 +59,7 @@ class DeviceModal(ModalScreen[Optional[DeviceInventory]]):
 
             with Horizontal(classes="modal-actions"):
                 yield Button("Guardar Equipo", id="btn-save-device", variant="primary")
-                yield Button("Cancelar", id="btn-cancel")
+                yield Button("Cancelar (Esc)", id="btn-cancel")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "btn-save-device":
