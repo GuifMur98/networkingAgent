@@ -1161,11 +1161,69 @@ TextArea:focus {
 /* DataTables for Inventory and Audit */
 #inventory-widget,
 #audit-widget {
-    height: 1fr;
+    height: auto;
     width: 100%;
 }
 
-#inventory-data-table,
+#inventory-content-wrapper {
+    height: auto;
+    width: 100%;
+    padding: 0 2;
+}
+
+#inventory-toolbar {
+    height: auto;
+    min-height: 5;
+    background: #0d1527;
+    border: round #00b4d8;
+    padding: 0 1;
+    margin-bottom: 1;
+    align-vertical: middle;
+}
+
+#inventory-crud-actions {
+    width: auto;
+    height: 3;
+    align-vertical: middle;
+    margin-right: 2;
+}
+
+#inventory-crud-actions Button {
+    margin-right: 1;
+    height: 3;
+}
+
+#inventory-diagnostic-actions {
+    width: 1fr;
+    height: 3;
+    align-vertical: middle;
+    align-horizontal: right;
+}
+
+#inventory-diagnostic-actions Button {
+    margin-left: 1;
+    height: 3;
+    background: #080c14;
+    border: round #00b4d8;
+    color: #38bdf8;
+    text-style: bold;
+}
+
+#inventory-diagnostic-actions Button:hover {
+    background: #0e2038;
+    border: round #00e5ff;
+    color: #ffffff;
+}
+
+#inventory-data-table {
+    height: 13;
+    min-height: 8;
+    max-height: 16;
+    border: round #00b4d8;
+    background: #080c14;
+    margin-bottom: 1;
+}
+
 #audit-data-table {
     height: 1fr;
     min-height: 10;
@@ -1173,10 +1231,26 @@ TextArea:focus {
     background: #080c14;
 }
 
+#inventory-data-table:focus,
+#audit-data-table:focus {
+    border: round #00e5ff;
+}
+
+#inventory-diagnostic-card {
+    height: auto;
+    min-height: 8;
+    margin-bottom: 1;
+}
+
+DataTable {
+    background: #080c14;
+}
+
 DataTable > .datatable--header {
     background: #0d1527;
     color: #00e5ff;
     text-style: bold;
+    padding: 0 1;
 }
 
 DataTable > .datatable--cursor {
@@ -1189,14 +1263,20 @@ DataTable > .datatable--hover {
     background: #0f172a;
 }
 
-.inventory-actions,
+DataTable > .datatable--even {
+    background: #080c14;
+}
+
+DataTable > .datatable--odd {
+    background: #0b1120;
+}
+
 .audit-actions {
     layout: horizontal;
     height: 3;
     margin-top: 1;
 }
 
-.inventory-actions Button,
 .audit-actions Button {
     margin-right: 1;
 }
