@@ -180,8 +180,6 @@ La **Paleta de Comandos** proporciona acceso centralizado e instantáneo a opera
 │  > buscar comando...                                                  │
 ├────────────────────────────────────────────────────────────────────────┤
 │  Tema: Cambiar Tema Visual...                                         │
-│  Tema: Alternar Modo Oscuro / Claro                                   │
-│  Tema: Restaurar Tema Predeterminado                                  │
 │  Navegar: Inicio (Dashboard Principal)                                │
 │  Navegar: Modulo 1 - Diagnostico y Troubleshooting                    │
 │  Navegar: Modulo 2 - Configuracion de Red                             │
@@ -203,12 +201,7 @@ La **Paleta de Comandos** proporciona acceso centralizado e instantáneo a opera
 ### Categorías de Operaciones:
 
 1. **Apariencia y Temas Visuales:**
-   - **Temas Visuales Ergonómicos de Primera Clase:**
-     - **`agent-light` (Modo Claro Suave):** Paleta zinc/slate (`#f8fafc` fondo, `#ffffff` superficie, `#1e293b` tipografía) sin brillo deslumbrante, diseñada para eliminar la fatiga ocular en turnos diurnos.
-     - **`agent-dark` (Modo Oscuro Cyberpunk):** Estética NOC de misión crítica con azul profundo (`#0a0f1d`) y acentos cian (`#00e5ff`).
-     - **Catálogo de +20 Temas de Textual:** Nord, Dracula, Tokyo Night, Gruvbox, Catppuccin, Monokai, etc. con persistencia en SQLite (`app_theme`).
-     - **Alternar Modo Oscuro / Claro:** Conmutación instantánea entre variantes del tema activo.
-     - **Restaurar Tema Predeterminado:** Regreso a la apariencia corporativa de fábrica.
+   - **Cambiar Tema Visual (Unificado):** Despliega el selector interactivo de temas con búsqueda y previsualización en vivo (`search_themes`). Permite escoger entre las opciones ergonómicas corporativas (`agent-light`, `agent-dark`) y la biblioteca completa de más de 20 temas de Textual (`dracula`, `nord`, `tokyo-night`, `gruvbox`, `catppuccin`, `solarized`, etc.). El tema seleccionado se guarda automáticamente en SQLite (`app_theme`) y se restaura sin pérdida de configuración entre reinicios.
 2. **Navegación Global:**
    - Salto instantáneo al Dashboard Principal o a cualquiera de los 5 módulos operacionales (`1` al `5`).
 3. **Configuración y Seguridad Global del Sistema:**

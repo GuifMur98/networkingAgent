@@ -64,10 +64,7 @@ La plataforma incorpora una **Paleta de Comandos** global accesible desde cualqu
 - **Diseño Sobrio Enterprise NOC:** Cero emojis e iconos decorativos, priorizando etiquetas técnicas de alta densidad.
 - **Búsqueda Difusa (Fuzzy Search):** Localización inmediata de operaciones tecleando palabras clave.
 - **Catálogo Exhaustivo de Operaciones del Sistema:**
-  - **Temas Visuales Ergonómicos de Primera Clase:**
-    - **`agent-light` (Modo Claro Suave):** Paleta ergonómica en tonos zinc/slate (`#f8fafc` fondo, `#ffffff` superficie, `#1e293b` texto oscuro, `#cbd5e1` / `#0369a1` bordes sutiles, acentos esmeralda y ámbar cálido), optimizada para eliminar fatiga visual y reflejos.
-    - **`agent-dark` (Modo Oscuro Cyberpunk):** Estética NOC de misión crítica (`#0a0f1d` fondo profundo, `#111827` superficie, acentos cian `#00e5ff` y oro `#fbbf24`).
-    - **Selector de +20 Temas de Textual:** Nord, Dracula, Tokyo Night, Gruvbox, etc. con persistencia automática en base de datos SQLite (`app_theme`) y conmutador rápido claro/oscuro.
+  - **Selector de Temas Visuales Unificado:** Opción interactiva `Tema: Cambiar Tema Visual...` que despliega el selector en vivo de más de 20 temas profesionales (`dracula`, `nord`, `tokyo-night`, `gruvbox`, `catppuccin`, etc.) y las paletas ergonómicas dedicadas (`agent-light` modo claro suave zinc/slate sin reflejos y `agent-dark` modo oscuro cyberpunk), con persistencia automática en SQLite (`app_theme`).
   - **Navegación Global:** Desplazamiento instantáneo al Dashboard Principal o a los 5 módulos operacionales (`1` al `5`).
   - **Seguridad y Configuración:** Configuración de IA y bóveda criptográfica, alternancia de guardarraíles (HITL) y registro de equipos.
   - **Utilidades de Terminal:** Captura vectorial de pantalla en formato SVG (`logs/screenshot_*.svg`), limpieza de consola activa y recarga/sincronización global del sistema (`F5` / `r`).

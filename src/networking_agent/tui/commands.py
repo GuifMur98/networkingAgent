@@ -23,34 +23,10 @@ class NetworkAgentCommandProvider(Provider):
     COMMANDS: List[PaletteCommand] = [
         # --- Apariencia y Temas ---
         PaletteCommand(
-            "Tema: Activar Modo Claro Suave (Agent Light)",
-            "Aplica la paleta clara ergonómica optimizada para descanso visual y máxima legibilidad.",
-            "set_theme_agent_light",
-            "claro suave light agent descanso visual blanco modo tema ergonomico",
-        ),
-        PaletteCommand(
-            "Tema: Activar Modo Oscuro Cyberpunk (Agent Dark)",
-            "Aplica la paleta oscura de centro de operaciones y ciberseguridad.",
-            "set_theme_agent_dark",
-            "oscuro cyberpunk dark agent control nocturno negro modo tema",
-        ),
-        PaletteCommand(
-            "Tema: Alternar Modo Oscuro / Claro",
-            "Conmuta entre la paleta de modo oscuro y modo claro del sistema.",
-            "toggle_dark",
-            "oscuro claro modo dark light contraste blanco negro tema",
-        ),
-        PaletteCommand(
             "Tema: Cambiar Tema Visual...",
-            "Explora y aplica más de 20 temas visuales (Nord, Dracula, Tokyo Night, Gruvbox, etc.).",
+            "Explora y aplica temas visuales (Agent Light, Agent Dark, Dracula, Nord, Tokyo Night, Gruvbox, etc.).",
             "change_theme",
-            "tema temas color colores apariencia interfaz aspecto visual dracula nord tokyo gruvbox",
-        ),
-        PaletteCommand(
-            "Tema: Restaurar Tema Predeterminado",
-            "Restaura la apariencia original corporativa (Agent Dark).",
-            "reset_theme",
-            "restaurar tema default original reset reiniciar apariencia",
+            "tema temas color apariencia aspecto visual dracula nord tokyo gruvbox claro oscuro light dark",
         ),
         # --- Navegacion a Modulos ---
         PaletteCommand(
