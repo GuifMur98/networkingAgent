@@ -92,9 +92,7 @@ def cli_entrypoint() -> None:
     # 1. Explicitly requested with --tui
     # 2. Default behavior: interactive terminal session without batch flags or --cli/-i
     has_batch_args = bool(args.provider or args.device_host or args.log_message)
-    should_launch_tui = args.tui or (
-        not args.cli and not args.interactive and not has_batch_args and sys.stdin.isatty()
-    )
+    should_launch_tui = args.tui or (not args.cli and not args.interactive and not has_batch_args)
 
     if should_launch_tui:
         from networking_agent.tui import run_tui

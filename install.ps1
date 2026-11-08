@@ -51,9 +51,28 @@ function Write-Banner {
 
 Write-Banner
 
-# 1. Determine Source Directory or Clone
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
-$IsLocalRepo = Test-Path (Join-Path $ScriptDir "pyproject.toml")
+# 1. Determine Source Directory or Clone (Safe for piped execution via iex)
+$IsLocalRepo = $false
+$ScriptDir = $null
+
+try {
+    if ($PSScriptRoot -and (Test-Path -LiteralPath $PSScriptRoot -PathType Container)) {
+        $CheckToml = Join-Path $PSScriptRoot "pyproject.toml"
+        if (Test-Path -LiteralPath $CheckToml -PathType Leaf) {
+            $IsLocalRepo = $true
+            $ScriptDir = $PSScriptRoot
+        }
+    } elseif ($MyInvocation.MyCommand.Path -and (Test-Path -LiteralPath $MyInvocation.MyCommand.Path -PathType Leaf)) {
+        $Parent = Split-Path -Parent $MyInvocation.MyCommand.Path
+        $CheckToml = Join-Path $Parent "pyproject.toml"
+        if (Test-Path -LiteralPath $CheckToml -PathType Leaf) {
+            $IsLocalRepo = $true
+            $ScriptDir = $Parent
+        }
+    }
+} catch {
+    $IsLocalRepo = $false
+}
 
 # 2. Check for uv or Python
 Write-Step "Checking prerequisites (Python >= 3.12 or uv)..."
@@ -91,15 +110,31 @@ if ($IsLocalRepo) {
     }
     Copy-Item -Path $ScriptDir -Destination $AppSourceDir -Recurse -Exclude ".venv", "__pycache__", "build", "dist"
 } else {
-    Write-Step "Cloning NetworkingAgent repository from GitHub..."
+    Write-Step "Fetching NetworkingAgent repository from GitHub..."
     if (Test-Path $AppSourceDir) {
         Remove-Item -Path $AppSourceDir -Recurse -Force | Out-Null
     }
-    git clone --depth 1 https://github.com/GuifMur98/networkingAgent.git $AppSourceDir
+    
+    $GitCmd = Get-Command "git" -ErrorAction SilentlyContinue
+    if ($GitCmd) {
+        & git clone --depth 1 https://github.com/GuifMur98/networkingAgent.git $AppSourceDir
+    } else {
+        Write-Step "Git not detected. Downloading source archive from GitHub..."
+        $ZipPath = Join-Path $InstallDir "repo.zip"
+        Invoke-RestMethod -Uri "https://github.com/GuifMur98/networkingAgent/archive/refs/heads/main.zip" -OutFile $ZipPath
+        Expand-Archive -Path $ZipPath -DestinationPath $InstallDir -Force
+        Remove-Item $ZipPath -Force
+        $Extracted = Join-Path $InstallDir "networkingAgent-main"
+        if (Test-Path $Extracted) {
+            Move-Item -Path $Extracted -Destination $AppSourceDir -Force
+        }
+    }
 }
 
 # 5. Create Virtual Environment and Install Dependencies
 Set-Location $AppSourceDir
+$env:UV_LINK_MODE = "copy"
+
 if ($UvCmd) {
     Write-Step "Setting up virtual environment with uv..."
     & uv venv (Join-Path $InstallDir "venv")
@@ -122,6 +157,11 @@ $LauncherContent = @"
 setlocal
 set "NETWORKING_AGENT_HOME=$InstallDir"
 "$VenvPython" "$AppSourceDir\main.py" %*
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo [ERROR] NetworkingAgent se cerro con codigo de salida %ERRORLEVEL%.
+    pause
+)
 endlocal
 "@
 Set-Content -Path $LauncherPath -Value $LauncherContent -Encoding Ascii
@@ -146,14 +186,13 @@ if (-not $SkipShortcut) {
         $ShortcutPath = Join-Path $DesktopPath "NetworkingAgent NOC Console.lnk"
         $Shortcut = $WshShell.CreateShortcut($ShortcutPath)
         
-        # Check if Windows Terminal is installed
         $WtCmd = Get-Command "wt.exe" -ErrorAction SilentlyContinue
         if ($WtCmd) {
             $Shortcut.TargetPath = "wt.exe"
-            $Shortcut.Arguments = "-p `"PowerShell`" -d `"$AppSourceDir`" `"$LauncherPath`""
+            $Shortcut.Arguments = "-p `"Command Prompt`" -d `"$AppSourceDir`" `"$LauncherPath`""
         } else {
-            $Shortcut.TargetPath = "powershell.exe"
-            $Shortcut.Arguments = "-NoExit -Command `"& '$LauncherPath'`""
+            $Shortcut.TargetPath = "$LauncherPath"
+            $Shortcut.Arguments = ""
         }
         $Shortcut.WorkingDirectory = $AppSourceDir
         $Shortcut.Description = "NetworkingAgent Enterprise NOC Mission Control Console"

@@ -40,8 +40,8 @@ mkdir -p "${INSTALL_DIR}"
 mkdir -p "${BIN_DIR}"
 
 # 3. Source setup (local or remote clone)
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [[ -f "${SCRIPT_DIR}/pyproject.toml" ]]; then
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd || echo "")"
+if [[ -n "${SCRIPT_DIR}" && -f "${SCRIPT_DIR}/pyproject.toml" ]]; then
     echo "[*] Installing from local repository: ${SCRIPT_DIR}..."
     rm -rf "${APP_SOURCE_DIR}"
     mkdir -p "${APP_SOURCE_DIR}"
@@ -54,63 +54,60 @@ fi
 
 cd "${APP_SOURCE_DIR}"
 
-# 4. Virtual environment & dependencies
+# 4. Virtual Environment & Dependencies
+echo "[*] Setting up isolated Python virtual environment..."
 if [[ "${INSTALLER}" == "uv" ]]; then
-    echo "[*] Creating virtual environment with uv..."
     uv venv "${VENV_DIR}"
     VENV_PYTHON="${VENV_DIR}/bin/python"
     uv pip install --python "${VENV_PYTHON}" -e .
 else
-    echo "[*] Creating virtual environment with python3 venv..."
     python3 -m venv "${VENV_DIR}"
     VENV_PYTHON="${VENV_DIR}/bin/python"
     "${VENV_PYTHON}" -m pip install --upgrade pip
     "${VENV_PYTHON}" -m pip install -e .
 fi
 
-# 5. Launcher script
+# 5. Generate Launcher Script
 LAUNCHER="${BIN_DIR}/networking-agent"
 cat << EOF > "${LAUNCHER}"
 #!/usr/bin/env bash
 export NETWORKING_AGENT_HOME="${INSTALL_DIR}"
 exec "${VENV_PYTHON}" "${APP_SOURCE_DIR}/main.py" "\$@"
 EOF
+
 chmod +x "${LAUNCHER}"
+echo "[+] Launcher generated: ${LAUNCHER}"
 
-echo "[+] Created launcher: ${LAUNCHER}"
+# 6. Ensure bin directory is in PATH
+SHELL_RC=""
+case "${SHELL}" in
+    */zsh)  SHELL_RC="${HOME}/.zshrc" ;;
+    */bash) SHELL_RC="${HOME}/.bashrc" ;;
+    *)      SHELL_RC="${HOME}/.profile" ;;
+esac
 
-# 6. Ensure ~/.local/bin is in PATH
-if [[ ":$PATH:" != *":${BIN_DIR}:"* ]]; then
-    echo "[!] ${BIN_DIR} is not in your current PATH."
-    SHELL_RC=""
-    if [[ -n "${BASH_VERSION:-}" ]]; then
-        SHELL_RC="${HOME}/.bashrc"
-    elif [[ -n "${ZSH_VERSION:-}" ]]; then
-        SHELL_RC="${HOME}/.zshrc"
-    fi
-
-    if [[ -n "${SHELL_RC}" && -f "${SHELL_RC}" ]]; then
-        echo "export PATH=\"${BIN_DIR}:\$PATH\"" >> "${SHELL_RC}"
-        echo "[+] Added ${BIN_DIR} to ${SHELL_RC}."
-    fi
+if [[ ":${PATH}:" != *":${BIN_DIR}:"* ]]; then
+    echo "[*] Adding ${BIN_DIR} to ${SHELL_RC}..."
+    echo "export PATH=\"\${PATH}:${BIN_DIR}\"" >> "${SHELL_RC}"
+    echo "[!] Run 'source ${SHELL_RC}' or open a new terminal tab to use 'networking-agent'."
 fi
 
-# 7. Uninstaller script
+# 7. Generate Uninstaller
 UNINSTALLER="${INSTALL_DIR}/uninstall.sh"
 cat << EOF > "${UNINSTALLER}"
 #!/usr/bin/env bash
-echo "[*] Uninstalling NetworkingAgent Enterprise..."
-rm -rf "${INSTALL_DIR}"
+echo "[*] Removing NetworkingAgent Enterprise..."
 rm -f "${LAUNCHER}"
+rm -rf "${INSTALL_DIR}"
 echo "[+] NetworkingAgent successfully removed."
 EOF
 chmod +x "${UNINSTALLER}"
 
 echo ""
 echo "================================================================="
-echo " [SUCCESS] NetworkingAgent Enterprise v2.1.0 installed!          "
+echo " [SUCCESS] NetworkingAgent Enterprise v2.1.0 installed!"
 echo "================================================================="
-echo " To start the agent, run:"
+echo " To start the agent, open a new terminal and type:"
 echo "    networking-agent"
 echo ""
 echo " Uninstaller located at: ${UNINSTALLER}"
