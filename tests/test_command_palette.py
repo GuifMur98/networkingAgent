@@ -153,6 +153,17 @@ async def test_palette_theme_actions(tmp_path, monkeypatch):
         assert app.theme == "textual-light"
         assert db.get_setting("app_theme") == "textual-light"
 
+        # 4. ANSI themes (ansi-dark and ansi-light) render without MissingStyle crash
+        app.theme = "ansi-dark"
+        await pilot.pause()
+        assert app.theme == "ansi-dark"
+        app.action_toggle_dark()
+        await pilot.pause()
+        assert app.theme == "ansi-light"
+        app.action_reset_theme()
+        await pilot.pause()
+        assert app.theme == "textual-dark"
+
 
 @pytest.mark.anyio
 async def test_palette_action_screenshot(tmp_path, monkeypatch):

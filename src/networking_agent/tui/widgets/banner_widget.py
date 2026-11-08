@@ -19,12 +19,16 @@ VENDORS_SUFFIX = " | Gemini | OpenAI | Claude"
 VENDORS_LEN = len(VENDORS_PREFIX) + len(VENDORS_OLLAMA) + len(VENDORS_SUFFIX)  # 65
 
 
-def _resolve_theme_color(color_val: str | None, fallback: str) -> str:
+def _clean_rich_color(color_val: str | None, fallback: str) -> str:
+    """Sanitize color names for Rich styling, handling Textual ANSI theme values."""
     if not color_val:
         return fallback
-    if color_val.startswith("ansi_"):
-        return color_val.replace("ansi_", "")
-    return color_val
+    val = str(color_val).strip()
+    if "ansi_" in val:
+        val = val.replace("ansi_", "")
+    if val in ("default", "none", "None", ""):
+        return fallback
+    return val
 
 
 class BannerWidget(Static):
@@ -48,9 +52,9 @@ class BannerWidget(Static):
         # Dynamic theme palette
         theme = getattr(self.app, "current_theme", None)
         is_dark = getattr(theme, "dark", True) if theme else True
-        primary = getattr(theme, "primary", "#00e5ff") if theme else "#00e5ff"
-        secondary = getattr(theme, "secondary", "#00b4d8") if theme else "#00b4d8"
-        accent = getattr(theme, "accent", "#f59e0b") if theme else "#f59e0b"
+        primary = _clean_rich_color(getattr(theme, "primary", None), "#00e5ff")
+        secondary = _clean_rich_color(getattr(theme, "secondary", None), "#00b4d8")
+        accent = _clean_rich_color(getattr(theme, "accent", None), "#f59e0b")
         fg_dim = "#94a3b8" if is_dark else "#4b5563"
         frame_border = f"bold {primary}"
         frame_dim = f"dim {primary}"

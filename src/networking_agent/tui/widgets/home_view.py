@@ -18,11 +18,15 @@ from networking_agent.tui.widgets.banner_widget import BannerWidget
 
 
 def _resolve_theme_color(color_val: Optional[str], fallback: str) -> str:
+    """Sanitize color names for Rich styling, handling Textual ANSI theme values."""
     if not color_val:
         return fallback
-    if color_val.startswith("ansi_"):
-        return color_val.replace("ansi_", "")
-    return color_val
+    val = str(color_val).strip()
+    if "ansi_" in val:
+        val = val.replace("ansi_", "")
+    if val in ("default", "none", "None", ""):
+        return fallback
+    return val
 
 
 class HomeNavCard(Button):
