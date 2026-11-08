@@ -216,14 +216,30 @@ networkingAgent/
 - Python `>= 3.12` (Certificado y probado en Python `3.14`).
 - [`uv`](https://github.com/astral-sh/uv) (Recomendado para resolución determinista de dependencias).
 
-### 2. Instalación en 3 Pasos
+### 2. Opciones de Instalación
 
+#### Opción A: Instalador Automatizado One-Click (Recomendado)
+- **Windows (PowerShell):**
+  ```powershell
+  irm https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.ps1 | iex
+  ```
+- **Linux / macOS (Bash):**
+  ```bash
+  curl -sSL https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.sh | bash
+  ```
+
+#### Opción B: Ejecutable Autónomo Portable (Sin dependencias de Python)
+Descarga el paquete precompilado desde los [Releases de GitHub](https://github.com/GuifMur98/networkingAgent/releases/tag/v2.1.0):
+- `networking-agent-v2.1.0-windows-x64.zip` (Windows)
+- `networking-agent-v2.1.0-linux-x64.tar.gz` (Linux)
+
+#### Opción C: Instalación Manual para Desarrolladores
 ```bash
 # 1. Clonar el repositorio
 git clone https://github.com/GuifMur98/networkingAgent.git
 cd networkingAgent
 
-# 2. Sincronizar el entorno virtual
+# 2. Sincronizar el entorno virtual con uv
 uv sync --extra dev
 
 # 3. Lanzar la aplicación en modo TUI

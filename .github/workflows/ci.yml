@@ -42,5 +42,5 @@ jobs:
       - name: Run Ruff Code Format Verification
         run: uv run ruff format --check .
 
-      - name: Run Automated Pytest Suite (105 Tests)
+      - name: Run Automated Pytest Suite (172 Tests)
         run: uv run pytest

@@ -57,8 +57,22 @@ Bienvenido a la guía oficial de usuario y operaciones para **NetworkingAgent En
 
 ---
 
-## 3. Instalación Rápida con uv
+## 3. Métodos de Instalación
 
+### 3.1. Instalador Automatizado One-Click
+- **Windows (PowerShell):**
+  ```powershell
+  irm https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.ps1 | iex
+  ```
+- **Linux / macOS (Bash):**
+  ```bash
+  curl -sSL https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.sh | bash
+  ```
+
+### 3.2. Paquete Autónomo Precompilado (GitHub Releases)
+Descarga el binario portátil desde los [Releases de GitHub](https://github.com/GuifMur98/networkingAgent/releases/tag/v2.1.0) sin necesidad de configurar Python ni entornos virtuales.
+
+### 3.3. Instalación para Desarrolladores (uv)
 ```bash
 # 1. Clonar el repositorio
 git clone https://github.com/GuifMur98/networkingAgent.git

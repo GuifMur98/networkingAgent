@@ -62,17 +62,28 @@
 
 ---
 
-## ⚡ Instalación y Actualización
+## ⚡ Instaladores y Métodos de Instalación
 
+### 📥 1. Instalador Automatizado One-Click (Recomendado)
+- **Windows (PowerShell):**
+  ```powershell
+  irm https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.ps1 | iex
+  ```
+- **Linux / macOS (POSIX Bash):**
+  ```bash
+  curl -sSL https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.sh | bash
+  ```
+
+### 📦 2. Binarios Autónomos Precompilados (Assets del Release)
+No requieren Python ni dependencias previas:
+- `networking-agent-v2.1.0-windows-x64.zip` (Ejecutable `.exe` portátil)
+- `networking-agent-v2.1.0-linux-x64.tar.gz` (Binario Linux x64)
+
+### 🛠️ 3. Instalación Manual para Desarrolladores
 ```bash
-# Clonar o actualizar a la versión v2.1.0
 git clone https://github.com/GuifMur98/networkingAgent.git
 cd networkingAgent
 git checkout v2.1.0
-
-# Sincronizar dependencias con uv
 uv sync --extra dev
-
-# Iniciar la aplicación
 uv run python main.py
 ```
