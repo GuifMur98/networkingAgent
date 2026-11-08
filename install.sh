@@ -17,7 +17,40 @@ echo "   Autonomous & Closed-Loop Network Assistant (Textual TUI)     "
 echo "================================================================="
 echo ""
 
-# 1. Prerequisites check
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd || echo "")"
+
+# 1. Fast-Path: Standalone binary (.tar.gz distribution)
+if [[ -n "${SCRIPT_DIR}" && -f "${SCRIPT_DIR}/networking-agent" ]]; then
+    echo "[*] Standalone binary detected. Installing to ${BIN_DIR}/networking-agent..."
+    mkdir -p "${BIN_DIR}"
+    mkdir -p "${INSTALL_DIR}"
+    cp "${SCRIPT_DIR}/networking-agent" "${BIN_DIR}/networking-agent"
+    chmod +x "${BIN_DIR}/networking-agent"
+
+    # Shell RC detection
+    SHELL_RC=""
+    case "${SHELL}" in
+        */zsh)  SHELL_RC="${HOME}/.zshrc" ;;
+        */bash) SHELL_RC="${HOME}/.bashrc" ;;
+        *)      SHELL_RC="${HOME}/.profile" ;;
+    esac
+
+    if [[ ":${PATH}:" != *":${BIN_DIR}:"* ]]; then
+        echo "[*] Adding ${BIN_DIR} to ${SHELL_RC}..."
+        echo "export PATH=\"\${PATH}:${BIN_DIR}\"" >> "${SHELL_RC}"
+    fi
+
+    echo ""
+    echo "================================================================="
+    echo " [SUCCESS] NetworkingAgent Enterprise v2.1.0 installed!"
+    echo "================================================================="
+    echo " To start the agent, open a new terminal and type:"
+    echo "    networking-agent"
+    echo ""
+    exit 0
+fi
+
+# 2. Source-Path: Prerequisites check
 echo "[*] Checking Python and uv availability..."
 if command -v uv &> /dev/null; then
     INSTALLER="uv"
@@ -35,12 +68,11 @@ else
     fi
 fi
 
-# 2. Directory setup
+# 3. Directory setup
 mkdir -p "${INSTALL_DIR}"
 mkdir -p "${BIN_DIR}"
 
-# 3. Source setup (local or remote clone)
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd || echo "")"
+# 4. Source setup (local or remote clone)
 if [[ -n "${SCRIPT_DIR}" && -f "${SCRIPT_DIR}/pyproject.toml" ]]; then
     echo "[*] Installing from local repository: ${SCRIPT_DIR}..."
     rm -rf "${APP_SOURCE_DIR}"
@@ -54,7 +86,7 @@ fi
 
 cd "${APP_SOURCE_DIR}"
 
-# 4. Virtual Environment & Dependencies
+# 5. Virtual Environment & Dependencies
 echo "[*] Setting up isolated Python virtual environment..."
 if [[ "${INSTALLER}" == "uv" ]]; then
     uv venv "${VENV_DIR}"
@@ -67,7 +99,7 @@ else
     "${VENV_PYTHON}" -m pip install -e .
 fi
 
-# 5. Generate Launcher Script
+# 6. Generate Launcher Script
 LAUNCHER="${BIN_DIR}/networking-agent"
 cat << EOF > "${LAUNCHER}"
 #!/usr/bin/env bash
@@ -78,7 +110,7 @@ EOF
 chmod +x "${LAUNCHER}"
 echo "[+] Launcher generated: ${LAUNCHER}"
 
-# 6. Ensure bin directory is in PATH
+# 7. Ensure bin directory is in PATH
 SHELL_RC=""
 case "${SHELL}" in
     */zsh)  SHELL_RC="${HOME}/.zshrc" ;;
@@ -92,7 +124,7 @@ if [[ ":${PATH}:" != *":${BIN_DIR}:"* ]]; then
     echo "[!] Run 'source ${SHELL_RC}' or open a new terminal tab to use 'networking-agent'."
 fi
 
-# 7. Generate Uninstaller
+# 8. Generate Uninstaller
 UNINSTALLER="${INSTALL_DIR}/uninstall.sh"
 cat << EOF > "${UNINSTALLER}"
 #!/usr/bin/env bash

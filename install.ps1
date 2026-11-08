@@ -4,14 +4,15 @@
 
 .DESCRIPTION
     Sets up NetworkingAgent Enterprise in a self-contained local environment,
-    installs runtime dependencies via uv/pip, registers the 'networking-agent'
-    CLI/TUI command in the User PATH, and creates a Desktop shortcut.
+    registers the 'networking-agent' CLI/TUI command in the User PATH,
+    and creates Desktop and Start Menu shortcuts.
+    Supports both compiled standalone binary (.exe) and Python source setup.
 
 .PARAMETER InstallDir
     Destination folder (default: $env:LOCALAPPDATA\NetworkingAgent).
 
 .PARAMETER SkipShortcut
-    Skip creating a Desktop shortcut.
+    Skip creating shortcuts.
 
 .EXAMPLE
     irm https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.ps1 | iex
@@ -51,7 +52,112 @@ function Write-Banner {
 
 Write-Banner
 
-# 1. Determine Source Directory or Clone (Safe for piped execution via iex)
+# 1. Check if running alongside a compiled standalone binary (.exe)
+$StandaloneExe = $null
+if ($PSScriptRoot) {
+    $Candidate = Join-Path $PSScriptRoot "networking-agent.exe"
+    if (Test-Path -LiteralPath $Candidate -PathType Leaf) {
+        $StandaloneExe = $Candidate
+    }
+}
+
+if ($StandaloneExe) {
+    Write-Step "Paquete Standalone detectado: Instalando binario compilado..."
+    Write-Step "Preparando directorio de instalación: $InstallDir"
+    $BinDir = Join-Path $InstallDir "bin"
+    if (-not (Test-Path $BinDir)) {
+        New-Item -Path $BinDir -ItemType Directory -Force | Out-Null
+    }
+    
+    $DestExe = Join-Path $BinDir "networking-agent.exe"
+    Write-Step "Instalando ejecutable en $DestExe..."
+    Copy-Item -Path $StandaloneExe -Destination $DestExe -Force
+
+    # Copy docs if present
+    foreach ($doc in @("README.md", "LICENSE")) {
+        $docSrc = Join-Path $PSScriptRoot $doc
+        if (Test-Path $docSrc) {
+            Copy-Item -Path $docSrc -Destination (Join-Path $InstallDir $doc) -Force
+        }
+    }
+
+    # Add Bin to User PATH
+    $UserPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+    if ($UserPath -notlike "*$BinDir*") {
+        Write-Step "Agregando $BinDir a la variable de entorno PATH de usuario..."
+        [System.Environment]::SetEnvironmentVariable("Path", "$UserPath;$BinDir", "User")
+        $env:Path = "$env:Path;$BinDir"
+        Write-Success "Agregado al PATH del usuario permanentemente."
+    } else {
+        Write-Success "$BinDir ya está registrado en el PATH."
+    }
+
+    # Create Shortcuts (Desktop + Start Menu)
+    if (-not $SkipShortcut) {
+        try {
+            $WshShell = New-Object -ComObject WScript.Shell
+            
+            # Desktop Shortcut
+            $DesktopPath = [System.Environment]::GetFolderPath("Desktop")
+            $ShortcutPath = Join-Path $DesktopPath "NetworkingAgent NOC Console.lnk"
+            $Shortcut = $WshShell.CreateShortcut($ShortcutPath)
+            $Shortcut.TargetPath = $DestExe
+            $Shortcut.WorkingDirectory = $InstallDir
+            $Shortcut.Description = "NetworkingAgent Enterprise NOC Mission Control Console"
+            $Shortcut.Save()
+            Write-Success "Acceso directo en el Escritorio creado: $ShortcutPath"
+
+            # Start Menu Shortcut
+            $StartMenuPrograms = [System.Environment]::GetFolderPath("Programs")
+            if (Test-Path $StartMenuPrograms) {
+                $SmShortcutPath = Join-Path $StartMenuPrograms "NetworkingAgent.lnk"
+                $SmShortcut = $WshShell.CreateShortcut($SmShortcutPath)
+                $SmShortcut.TargetPath = $DestExe
+                $SmShortcut.WorkingDirectory = $InstallDir
+                $SmShortcut.Description = "NetworkingAgent Enterprise NOC Mission Control Console"
+                $SmShortcut.Save()
+                Write-Success "Acceso directo en Menú Inicio creado: $SmShortcutPath"
+            }
+        } catch {
+            Write-WarningMsg "No se pudieron crear algunos accesos directos: $_"
+        }
+    }
+
+    # Create Uninstaller Script
+    $UninstallerPath = Join-Path $InstallDir "uninstall.ps1"
+    $UninstallerContent = @"
+Write-Host '[*] Desinstalando NetworkingAgent Enterprise...' -ForegroundColor Cyan
+`$InstallDir = '$InstallDir'
+`$BinDir = '$BinDir'
+`$DesktopShortcut = Join-Path ([System.Environment]::GetFolderPath('Desktop')) 'NetworkingAgent NOC Console.lnk'
+`$SmShortcut = Join-Path ([System.Environment]::GetFolderPath('Programs')) 'NetworkingAgent.lnk'
+
+if (Test-Path `$DesktopShortcut) { Remove-Item `$DesktopShortcut -Force }
+if (Test-Path `$SmShortcut) { Remove-Item `$SmShortcut -Force }
+`$UserPath = [System.Environment]::GetEnvironmentVariable('Path', 'User')
+`$NewPath = (`$UserPath -split ';' | Where-Object { `$_ -ne `$BinDir }) -join ';'
+[System.Environment]::SetEnvironmentVariable('Path', `$NewPath, 'User')
+
+Set-Location `$env:USERPROFILE
+Remove-Item `$InstallDir -Recurse -Force
+Write-Host '[+] NetworkingAgent desinstalado completamente.' -ForegroundColor Green
+"@
+    Set-Content -Path $UninstallerPath -Value $UninstallerContent -Encoding UTF8
+
+    Write-Host ""
+    Write-Host " =================================================================" -ForegroundColor Green
+    Write-Host " [EXITO] NetworkingAgent Enterprise v2.1.0 instalado con éxito!    " -ForegroundColor Green
+    Write-Host " =================================================================" -ForegroundColor Green
+    Write-Host " Para iniciar el agente, abre una nueva terminal y simplemente escribe:" -ForegroundColor White
+    Write-Host "    networking-agent" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host " O ejecútalo desde el acceso directo en tu Escritorio o Menú Inicio." -ForegroundColor White
+    Write-Host " Desinstalador disponible en: $UninstallerPath" -ForegroundColor DarkGray
+    Write-Host ""
+    return
+}
+
+# 2. Source-based Setup (Repo or web stream via iex)
 $IsLocalRepo = $false
 $ScriptDir = $null
 
@@ -74,7 +180,7 @@ try {
     $IsLocalRepo = $false
 }
 
-# 2. Check for uv or Python
+# 3. Check for uv or Python
 Write-Step "Checking prerequisites (Python >= 3.12 or uv)..."
 $UvCmd = Get-Command "uv" -ErrorAction SilentlyContinue
 $PythonCmd = Get-Command "python" -ErrorAction SilentlyContinue
@@ -90,7 +196,7 @@ if (-not $UvCmd -and -not $PythonCmd) {
     }
 }
 
-# 3. Create Installation Directory
+# 4. Create Installation Directory
 Write-Step "Preparing installation directory: $InstallDir"
 if (-not (Test-Path $InstallDir)) {
     New-Item -Path $InstallDir -ItemType Directory -Force | Out-Null
@@ -101,7 +207,7 @@ if (-not (Test-Path $BinDir)) {
     New-Item -Path $BinDir -ItemType Directory -Force | Out-Null
 }
 
-# 4. Copy or Clone Repository
+# 5. Copy or Clone Repository
 $AppSourceDir = Join-Path $InstallDir "app"
 if ($IsLocalRepo) {
     Write-Step "Copying local repository files to $AppSourceDir..."
@@ -131,7 +237,7 @@ if ($IsLocalRepo) {
     }
 }
 
-# 5. Create Virtual Environment and Install Dependencies
+# 6. Create Virtual Environment and Install Dependencies
 Set-Location $AppSourceDir
 $env:UV_LINK_MODE = "copy"
 
@@ -150,7 +256,7 @@ if ($UvCmd) {
     throw "Neither uv nor Python was available to create the virtual environment."
 }
 
-# 6. Generate Launcher Command (.cmd)
+# 7. Generate Launcher Command (.cmd)
 $LauncherPath = Join-Path $BinDir "networking-agent.cmd"
 $LauncherContent = @"
 @echo off
@@ -167,7 +273,7 @@ endlocal
 Set-Content -Path $LauncherPath -Value $LauncherContent -Encoding Ascii
 Write-Success "Generated launcher script: $LauncherPath"
 
-# 7. Add Bin to User PATH
+# 8. Add Bin to User PATH
 $UserPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
 if ($UserPath -notlike "*$BinDir*") {
     Write-Step "Adding $BinDir to User PATH environment variable..."
@@ -178,10 +284,12 @@ if ($UserPath -notlike "*$BinDir*") {
     Write-Success "$BinDir is already registered in User PATH."
 }
 
-# 8. Create Desktop Shortcut (Optional)
+# 9. Create Desktop & Start Menu Shortcuts
 if (-not $SkipShortcut) {
     try {
         $WshShell = New-Object -ComObject WScript.Shell
+        
+        # Desktop
         $DesktopPath = [System.Environment]::GetFolderPath("Desktop")
         $ShortcutPath = Join-Path $DesktopPath "NetworkingAgent NOC Console.lnk"
         $Shortcut = $WshShell.CreateShortcut($ShortcutPath)
@@ -198,20 +306,40 @@ if (-not $SkipShortcut) {
         $Shortcut.Description = "NetworkingAgent Enterprise NOC Mission Control Console"
         $Shortcut.Save()
         Write-Success "Desktop shortcut created: $ShortcutPath"
+
+        # Start Menu
+        $StartMenuPrograms = [System.Environment]::GetFolderPath("Programs")
+        if (Test-Path $StartMenuPrograms) {
+            $SmShortcutPath = Join-Path $StartMenuPrograms "NetworkingAgent.lnk"
+            $SmShortcut = $WshShell.CreateShortcut($SmShortcutPath)
+            if ($WtCmd) {
+                $SmShortcut.TargetPath = "wt.exe"
+                $SmShortcut.Arguments = "-p `"Command Prompt`" -d `"$AppSourceDir`" `"$LauncherPath`""
+            } else {
+                $SmShortcut.TargetPath = "$LauncherPath"
+                $SmShortcut.Arguments = ""
+            }
+            $SmShortcut.WorkingDirectory = $AppSourceDir
+            $SmShortcut.Description = "NetworkingAgent Enterprise NOC Mission Control Console"
+            $SmShortcut.Save()
+            Write-Success "Start Menu shortcut created: $SmShortcutPath"
+        }
     } catch {
         Write-WarningMsg "Could not create Desktop shortcut: $_"
     }
 }
 
-# 9. Create Uninstaller Script
+# 10. Create Uninstaller Script
 $UninstallerPath = Join-Path $InstallDir "uninstall.ps1"
 $UninstallerContent = @"
 Write-Host '[*] Uninstalling NetworkingAgent Enterprise...' -ForegroundColor Cyan
 `$InstallDir = '$InstallDir'
 `$BinDir = '$BinDir'
 `$DesktopShortcut = Join-Path ([System.Environment]::GetFolderPath('Desktop')) 'NetworkingAgent NOC Console.lnk'
+`$SmShortcut = Join-Path ([System.Environment]::GetFolderPath('Programs')) 'NetworkingAgent.lnk'
 
 if (Test-Path `$DesktopShortcut) { Remove-Item `$DesktopShortcut -Force }
+if (Test-Path `$SmShortcut) { Remove-Item `$SmShortcut -Force }
 `$UserPath = [System.Environment]::GetEnvironmentVariable('Path', 'User')
 `$NewPath = (`$UserPath -split ';' | Where-Object { `$_ -ne `$BinDir }) -join ';'
 [System.Environment]::SetEnvironmentVariable('Path', `$NewPath, 'User')
@@ -229,6 +357,6 @@ Write-Host " =================================================================" 
 Write-Host " To start the agent, open a new terminal and simply type:" -ForegroundColor White
 Write-Host "    networking-agent" -ForegroundColor Yellow
 Write-Host ""
-Write-Host " Or launch it directly from the Desktop shortcut." -ForegroundColor White
+Write-Host " Or launch it directly from the Desktop or Start Menu shortcut." -ForegroundColor White
 Write-Host " Uninstaller located at: $UninstallerPath" -ForegroundColor DarkGray
 Write-Host ""
