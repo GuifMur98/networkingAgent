@@ -12,15 +12,7 @@
 
 **Asistente Autónomo de Ingeniería de Redes en Bucle Cerrado (*Closed-Loop Automation*) con IA Multi-Cerebro**
 
-```text
-  _   _      _                      _     _               _                    _   
- | \ | | ___| |___      _____  _ __| | __(_)_ __   __ _  / \   __ _  ___ _ __ | |_ 
- |  \| |/ _ \ __\ \ /\ / / _ \| '__| |/ /| | '_ \ / _` |/ _ \ / _` |/ _ \ '_ \| __|
- | |\  |  __/ |_ \ V  V / (_) | |  |   < | | | | | (_| / ___ \ (_| |  __/ | | | |_ 
- |_| \_|\___|\__| \_/\_/ \___/|_|  |_|\_\|_|_| |_|\__, /_/   \_\__, |\___|_| |_|\__|
-                                                   |___/        |___/                
-                       Enterprise Autonomous Closed-Loop Network Agent                
-```
+![NetworkingAgent](docs/banner.png)
 
 *Diagnóstico de causa raíz autónomo (L1-L7), aprovisionamiento declarativo multi-protocolo, editor de plantillas Jinja2 con guía interactiva de variables dinámicas, validación sintáctica pre-vuelo, pruebas de conectividad en tiempo real (Ping ICMP y Socket SSH), paleta de comandos profesional y bitácora forense inmutable SHA-256.*
 
@@ -135,10 +127,10 @@ flowchart TD
 
 ```
 networkingAgent/
-├── pyproject.toml              # Dependencias (Jinja2, Textual, Netmiko, Pydantic, etc.)
+├── pyproject.toml              # Metadatos del proyecto y dependencias (v2.1.0)
 ├── uv.lock                     # Lockfile determinista
 ├── README.md                   # Documentación principal del proyecto
-├── CHANGELOG.md                # Bitácora detallada de cambios y versiones
+├── CHANGELOG.md                # Bitácora detallada de cambios y versiones (v2.1.0)
 ├── CONTRIBUTING.md             # Guía de contribución y estándares de código
 ├── LICENSE                     # Licencia Apache 2.0
 ├── .env.example                # Plantilla de variables de entorno
@@ -147,6 +139,7 @@ networkingAgent/
 ├── backups/                    # Snapshots y configuraciones de respaldo por equipo
 ├── logs/                       # Bitácora inmutable de auditoría (audit.jsonl)
 ├── docs/                       # Documentación técnica completa
+│   ├── banner.png              # Gráfico del encabezado de documentación
 │   ├── USAGE_GUIDE.md          # Manual de operación detallado y flujos paso a paso
 │   ├── ARCHITECTURE.md         # Diseño hexagonal, componentes y diagramas
 │   ├── SECURITY.md             # Modelo de amenazas, guardarraíles y hardening
