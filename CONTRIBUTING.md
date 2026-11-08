@@ -17,11 +17,12 @@ develop (Integración y desarrollo activo)
   ▲
   ├── feature/soporte-arista-eos
   ├── feature/soporte-restconf
+  ├── feature/command-palette
   └── fix/reprompt-validacion
 ```
 
 ### Reglas de Ramas:
-1. **`main` (Protegida):** Contiene el código de producción estable. Cada merge en `main` representa un release versionado (e.g. `v0.1.0`). No se permite hacer push directo a `main`.
+1. **`main` (Protegida):** Contiene el código de producción estable. Cada merge en `main` representa un release versionado (e.g. `v2.1.0`). No se permite hacer push directo a `main`.
 2. **`develop` (Integración):** Rama base para desarrollo continuo. Todas las nuevas funcionalidades e integraciones convergen aquí.
 3. **`feature/<nombre-descriptivo>`:** Se desprenden de `develop` para desarrollar nuevas capacidades (ej. `feature/driver-fortinet`, `feature/telemetry-kafka`).
 4. **`fix/<nombre-descriptivo>`:** Se desprenden de `develop` para correcciones de bugs.
@@ -32,7 +33,7 @@ develop (Integración y desarrollo activo)
 ## 🛠️ Configuración del Entorno de Desarrollo
 
 Requerimientos:
-- Python `>= 3.12`
+- Python `>= 3.12` (Certificado y probado en Python `3.14`)
 - [`uv`](https://github.com/astral-sh/uv)
 
 ```bash
@@ -83,7 +84,7 @@ Para soportar un nuevo fabricante (ej. Arista EOS, Huawei VRP):
 Antes de abrir un Pull Request, debes certificar que los tests y el linter pasen localmente:
 
 ```bash
-# Ejecutar la suite completa de 105 tests unitarios
+# Ejecutar la suite completa de 172 tests unitarios
 uv run --no-sync pytest
 
 # Verificar estilo y reglas de linter con ruff

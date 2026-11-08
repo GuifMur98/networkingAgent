@@ -1,23 +1,26 @@
-# 🏛️ Arquitectura del Sistema: NetworkingAgent Enterprise v2.0
+# 🏛️ Arquitectura del Sistema: NetworkingAgent Enterprise v2.1
 
-> **Diseño Arquitectónico Hexagonal, Patrones de Ingeniería Closed-Loop y Garantías de Confiabilidad**
+> **Diseño Arquitectónico Hexagonal, Patrones de Ingeniería Closed-Loop, Threading Model y Garantías de Confiabilidad**
 
 ---
 
 ## 1. Visión General del Diseño
 
-**NetworkingAgent Enterprise v2.0** está construido bajo el patrón de **Arquitectura Hexagonal (Puertos y Adaptadores)** combinado con automatización en **bucle cerrado (*Closed-Loop Automation*)**. 
+**NetworkingAgent Enterprise v2.1** está construido bajo el patrón de **Arquitectura Hexagonal (Puertos y Adaptadores)** combinado con automatización en **bucle cerrado (*Closed-Loop Automation*)**. 
 
-El sistema desacopla de manera rigurosa tres responsabilidades fundamentales:
-1. **Razonamiento Cognitivo:** Los Modelos de Lenguaje (LLMs) operan exclusivamente como motores de inferencia diagnóstica y síntesis lógica; **nunca** emiten comandos CLI directamente hacia los equipos sin pasar por esquemas tipados estritos (`NetworkIntent` o `ConfigurationIntent`).
+El sistema desacopla de manera rigurosa cuatro responsabilidades fundamentales:
+1. **Razonamiento Cognitivo:** Los Modelos de Lenguaje (LLMs) operan exclusivamente como motores de inferencia diagnóstica y síntesis lógica; **nunca** emiten comandos CLI directamente hacia los equipos sin pasar por esquemas tipados estrictos (`NetworkIntent` o `ConfigurationIntent`).
 2. **Defensa en Profundidad y Guardarraíles:** Ninguna instrucción generada por un operador o un modelo de IA alcanza el transporte SSH sin atravesar el análisis estático preventivo (`ConfigSyntaxValidator`), la validación de comandos prohibidos (`CommandValidator`) y la protección de interfaces de gestión y WAN (`BlastRadiusGuard`).
 3. **Ejecución Transaccional Multi-Fabricante:** Los controladores de red (*drivers*) traducen intenciones lógicas a sintaxis nativa de fabricante, gestionan la reutilización de conexiones SSH (*Connection Pooling*), generan snapshots previos al cambio y garantizan la reversión atómica (*Rollback*) si la verificación operativa posterior detecta anomalías.
+4. **Presentación Reactiva de Misión Crítica:** Una interfaz de terminal moderna construida sobre Textual desacopla las operaciones intensivas de I/O de red hacia hilos en segundo plano (`@work(thread=True)`), permitiendo una tasa de actualización constante de 60 FPS sin bloqueos ni parpadeos.
 
 ```mermaid
 flowchart TD
-    subgraph PresentationLayer ["1. Capa de Presentación e Interacción Reactiva"]
+    subgraph PresentationLayer ["1. Capa de Presentación Reactiva (Textual TUI)"]
         TUI["Terminal UI Textual: 60 FPS Asíncrona"]
+        PAL["Paleta de Comandos: NetworkAgentCommandProvider (Ctrl+P)"]
         CLI["Rich Wizard CLI Clásico"]
+        TUI --- PAL
         TUI -->|Eventos / Mensajes| AG["NetworkAssistantAgent"]
         CLI -->|Comandos| AG
     end
@@ -34,9 +37,10 @@ flowchart TD
         CLA --> CI
     end
 
-    subgraph AutomationLayer ["3. Capa de Automatización y Plantillas"]
+    subgraph AutomationLayer ["3. Capa de Automatización y Diagnóstico"]
         TE["TemplateEngine (Jinja2)"] --> SV["ConfigSyntaxValidator (Dry-Run)"]
         SV --> BD["BatchDeployer (Orquestador Multi-Host)"]
+        CON["ConnectivityEngine (Ping ICMP + Socket SSH)"]
         BD --> AG
     end
 
@@ -60,13 +64,13 @@ flowchart TD
         DRV --> D_TIK["MikroTik RouterOS (System Backup)"]
     end
 
-    subgraph ClosedLoopExecution ["6. Ejecución en Bucle Cerrado"]
+    subgraph ClosedLoopExecution ["6. Ejecución en Bucle Cerrado y Auditoría"]
         DRV --> SNAP["1. Snapshot Pre-Cambio (.cfg / Checkpoint)"]
         SNAP --> EXEC["2. Inyección Transaccional CLI"]
         EXEC --> POST["3. Verificación Post-Cambio (Health / Diag)"]
-        POST -->|Éxito| AUD["Auditoría Inmutable: SUCCESS"]
+        POST -->|Éxito| AUD["Auditoría Inmutable SHA-256: SUCCESS"]
         POST -->|Fallo| RBK["Rollback Inmediato a Snapshot"]
-        RBK --> AUD_FAIL["Auditoría Inmutable: ROLLBACK"]
+        RBK --> AUD_FAIL["Auditoría Inmutable SHA-256: ROLLBACK"]
     end
 ```
 
@@ -78,20 +82,25 @@ flowchart TD
 
 La interfaz de usuario principal está construida con el framework reactivo **Textual**:
 
-- **`app.py` (`NetworkingAgentApp`):** Controlador principal de la aplicación.
+- **`app.py` (`NetworkingAgentTUIApp`):** Controlador principal de la aplicación.
   - Orquesta el montaje y conmutación entre las 5 vistas de la plataforma sin recargas destructivas de pantalla.
   - Ejecuta operaciones de larga duración (SSH de Netmiko, consultas LLM, validación estática y despliegues en lote) en hilos de trabajo asíncronos en segundo plano utilizando el decorador `@work(thread=True)`, garantizando que la interfaz nunca se congele.
-  - Proporciona insignias de telemetría dinámica en el encabezado (`BRAIN`, `EQUIPOS`, `HITL`) y escucha atajos globales (`1-5`, `h`, `s`, `d`, `r`, `q`).
+  - Implementa filtrado dinámico de atajos mediante `check_action(action, parameters)`: dentro de los módulos únicamente se visualiza `h Inicio`, mientras que en el dashboard se presentan los atajos generales y la paleta de comandos.
+- **`commands.py` (`NetworkAgentCommandProvider`):** Proveedor del catálogo técnico para la Paleta de Comandos (`Ctrl+P`).
+  - Provee más de 15 operaciones indexadas para búsqueda difusa (*fuzzy search*).
+  - Estilizado estricto sin emojis ni iconos, adaptado al estándar NOC corporativo.
 - **Vistas Especializadas (`src/networking_agent/tui/widgets/`):**
-  - `TroubleshootingView`: Diagnóstico por síntomas en lenguaje natural, selección de router y visualización del informe técnico de causa raíz.
-  - `ConfigurationView`: Formulario declarativo para aprovisionamiento multi-protocolo, selector de categoría y visor de candidate CLI diff.
+  - `TroubleshootingWorkspace`: Diagnóstico por síntomas en lenguaje natural, selección de router, chips de síntomas rápidos y visor del informe de causa raíz.
+  - `ConfigurationView`: Formulario declarativo para aprovisionamiento multi-protocolo, selector de categoría por chips y visor de candidate CLI diff.
   - `AutomationView`: Editor de plantillas `TextArea` con números de línea, selector de templates Jinja2, botón de validación dry-run y selector múltiple de equipos (`SelectionList`).
-  - `InventoryView`: Tabla de gestión de routers y switches con ejecución de pruebas de conectividad SSH en vivo.
-  - `AuditView`: Visor en tiempo real de la bitácora inmutable JSONL.
+  - `DeviceInventoryView`: Tabla de gestión de routers y switches con ejecución en tiempo real de Ping ICMP, comprobación de socket TCP 22 SSH y diagnóstico combinado.
+  - `AuditTableWidget`: Visor forense de eventos estructurados con hashes SHA-256, filtrado en caliente por dispositivo/estado, exportación JSON y purga de pruebas.
+  - `HomeDashboard`: Tablero de control principal con 5 tarjetas interactivas de navegación.
 - **Ventanas Modales Flotantes (`src/networking_agent/tui/modals/`):**
-  - `AIOptionsModal`: Configuración adaptativa de proveedor y modelo LLM con enmascaramiento dinámico de contraseñas.
-  - `DeviceModal`: Formulario de alta de dispositivos con validación de IP/Host y cifrado automático de credenciales.
-  - `HitLApprovalModal`: Compuerta interactiva de confirmación humana con previsualización de comandos exactos a inyectar y detalles de rollback.
+  - `VaultModal`: Configuración adaptativa de proveedor y modelo LLM con escaneo en vivo de modelos locales de Ollama y enmascaramiento dinámico de llaves.
+  - `DeviceModal`: Formulario de alta de dispositivos con validación de IP/Host y cifrado automático de credenciales (Fernet).
+  - `TemplateModal`: Asistente de creación y edición de plantillas Jinja2 con Guía Interactiva de Variables Dinámicas y chips de inserción rápida.
+  - `HitLModal`: Compuerta interactiva de confirmación humana con previsualización de comandos exactos a inyectar y detalles de rollback.
 
 ---
 
@@ -101,8 +110,9 @@ La interfaz de usuario principal está construida con el framework reactivo **Te
   1. `analyze_event(telemetry_data: str) -> NetworkIntent`: Diagnóstico de incidentes y selección de acción remediadora.
   2. `synthesize_configuration(device_host, vendor_family, natural_request, protocol_hint) -> ConfigurationIntent`: Síntesis declarativa de configuración multi-protocolo.
   - Protege las entradas no confiables mediante delimitadores XML `<telemetry_event>` y directivas en `HARDENED_SYSTEM_PROMPT` y `HARDENED_CONFIG_SYSTEM_PROMPT`.
+- **`discovery.py`:** Módulo para la inspección y pre-calentamiento en caché de modelos locales de Ollama instalados en el sistema host.
 - **`ollama.py`:** Conector local y soberano que interactúa con el endpoint HTTP de Ollama utilizando salidas estructuradas en formato JSON (`format="json"`).
-- **`gemini.py`:** Conector oficial utilizando el nuevo SDK `google-genai` para invocar modelos `gemini-2.5-pro` y `gemini-2.5-flash` con forzado estricto de esquema Pydantic (`response_schema`).
+- **`gemini.py`:** Conector oficial utilizando el SDK `google-genai` para invocar modelos `gemini-2.5-pro` y `gemini-2.5-flash` con forzado estricto de esquema Pydantic (`response_schema`).
 - **`openai.py` / `anthropic.py`:** Adaptadores para OpenAI GPT-4o y Anthropic Claude 3.5 Sonnet.
 - **`factory.py`:** Factoría dinámica que resuelve el proveedor configurado en tiempo de ejecución.
 
@@ -124,21 +134,20 @@ La interfaz de usuario principal está construida con el framework reactivo **Te
 
 ---
 
-### 2.4. Capa de Automatización y Despliegue en Lote (`src/networking_agent/engine/automation.py`)
+### 2.4. Capa de Automatización y Diagnóstico de Red (`src/networking_agent/engine/`)
 
-- **`TemplateEngine`:** Gestiona el catálogo de plantillas pre-cargadas (Hardening, VLAN/SVI, OSPF, NTP/Syslog, Junos IRB) y compila plantillas Jinja2 en modo estricto (`StrictUndefined`) para evitar variables indefinidas silenciosas.
+- **`connectivity.py`:** Motor de verificación de conectividad y alcance:
+  - Ejecuta pruebas de **Ping ICMP** utilizando subprocesos asíncronos nativos (`asyncio.create_subprocess_exec`) sin bloquear el hilo principal.
+  - Ejecuta comprobaciones no invasivas de disponibilidad del puerto **SSH (TCP 22)** mediante conexiones de socket asíncronas con timeout estricto.
+- **`conflict_analyzer.py`:** Motor de análisis de colisiones y solapamiento IP:
+  - Analiza tablas de enrutamiento y configuraciones de interfaces activas para advertir al operador si una subred planificada colisiona con una interfaz existente antes de tocar el router.
+- **`TemplateEngine`:** Gestiona el catálogo de plantillas pre-cargadas (Hardening, VLAN/SVI, OSPF, NTP/Syslog, Junos IRB) y compila plantillas Jinja2 en modo estricto (`StrictUndefined`).
 - **`ConfigSyntaxValidator` (`src/networking_agent/guardrails/syntax_validator.py`):** Motor de análisis estático en seco (*Dry-Run*):
   - Evalúa línea por línea antes de abrir sockets SSH.
-  - Bloquea comandos de reinicio (`reload`, `reboot`, `system reboot`).
-  - Bloquea comandos destructivos de almacenamiento (`format flash:`, `erase startup-config`, `write erase`, `zeroize`, `reset-configuration`).
-  - Detecta variables de plantilla sin renderizar (`{{...}}`).
-  - Audita el balance de bloques jerárquicos en Junos (`{...}`).
-  - Verifica prefijos requeridos en MikroTik RouterOS (`/` o `:`).
-- **`BatchDeployer`:** Orquestador de despliegue sobre listas de dispositivos (`List[DeviceInventory]`):
-  - Aplica validación estática previa.
-  - Itera sobre cada equipo realizando un snapshot pre-cambio individual.
-  - En caso de error en un equipo específico, ejecuta un rollback aislado sobre ese equipo sin abortar ni afectar a los dispositivos que completaron exitosamente.
-  - Genera un reporte inmutable [`BatchDeploymentResult`](../src/networking_agent/models/config_intent.py).
+  - Bloquea comandos destructivos (`reload`, `reboot`, `erase`, `zeroize`, `reset-configuration`).
+  - Detecta variables Jinja2 huérfanas (`{{...}}`).
+  - Audita el balance de llaves en Junos (`{...}`).
+- **`BatchDeployer`:** Orquestador de despliegue sobre listas de dispositivos (`List[DeviceInventory]`) con transaccionalidad por equipo y reversión individualizada.
 
 ---
 
@@ -158,15 +167,42 @@ La interfaz de usuario principal está construida con el framework reactivo **Te
 
 ---
 
-## 3. Diagramas de Secuencia Operacionales
+## 3. Modelo de Hilos y Concurrencia (*Threading Model*)
 
-### 3.1. Secuencia: Troubleshooting Autónomo Closed-Loop
+El sistema combina el bucle de eventos reactivo de Textual con hilos de trabajo asíncronos para garantizar fluidez absoluta en la interfaz:
+
+```
+[Textual Event Loop (Main Thread)] ── UI Render (60 FPS) & Key Events
+               │
+               ▼ (Lanza tarea pesada vía @work(thread=True))
+[Worker Thread (Background)]        ── Netmiko SSH / LLM Request / Batch Engine
+               │
+               ▼ (Notifica progreso mediante TextualAgentObserver)
+[Observer Bridge]                   ── safe_call() / call_from_thread()
+               │
+               ▼ (Actualiza widgets de forma thread-safe)
+[UI Widgets Actualizados]          ── Log, Barras de Progreso, Status Card
+```
+
+### Protocolo Human-in-the-Loop en Concurrencia:
+Cuando el agente requiere autorización del operador:
+1. El hilo de trabajo ejecuta `observer.on_hitl_approval_required(...)`.
+2. Se programa la apertura del modal en el hilo principal mediante `call_from_thread()`.
+3. El hilo de trabajo se suspende en un `threading.Event().wait()`, **sin congelar el event loop de Textual**.
+4. El operador revisa el diff y presiona `Y` o `N`.
+5. El modal despierta al hilo de trabajo que continúa la ejecución de manera atómica.
+
+---
+
+## 4. Diagramas de Secuencia Operacionales
+
+### 4.1. Secuencia: Troubleshooting Autónomo Closed-Loop
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Operador as "👤 Operador NOC"
-    participant TUI as "🖥️ TroubleshootingView"
+    participant TUI as "🖥️ TroubleshootingWorkspace"
     participant Agent as "🤖 NetworkAssistantAgent"
     participant Driver as "🔌 NetworkOSDriver (SSH Pool)"
     participant Brain as "🧠 AI Brain (Ollama/Gemini)"
@@ -198,127 +234,29 @@ sequenceDiagram
             Guard-->>Agent: BlastRadiusViolationError
             Agent->>TUI: Alerta roja de seguridad & Bloqueo
         else Aprobado por Guardarraíles
-            Agent->>Driver: build_candidate_commands(intent)
-            Driver-->>Agent: Comandos CLI nativos
-            Agent->>TUI: Despliega Modal HitL con Diff CLI y Rollback
-            TUI->>Operador: ¿Autoriza el cambio? [s/n]
-            
-            alt Operador Rechaza
-                Operador-->>TUI: Rechazado (n)
-                Agent->>TUI: Remediación abortada (OPERATOR_REJECTED)
-            else Operador Autoriza
-                Operador-->>TUI: Autorizado (s)
-                
-                rect rgb(255, 250, 240)
-                    Note over Agent,Device: Snapshot & Ejecución Transaccional
-                    Agent->>Driver: backup_running_config()
-                    Driver->>Device: Descarga snapshot a backups/<host>.cfg
-                    Agent->>Driver: execute_commands(candidate_cli)
-                    Driver->>Device: Inyecta configuración saneada
-                end
-
-                rect rgb(240, 255, 240)
-                    Note over Agent,Device: Verificación Post-Cambio
-                    Agent->>Driver: run_health_check()
-                    Driver->>Device: Re-interroga estado operativo
-                    alt Verificación Exitosa
-                        Agent->>TUI: [OK] Remediación verificada con éxito
-                    else Verificación Fallida
-                        Agent->>Driver: rollback(backup_file)
-                        Driver->>Device: Restaura configuración original previa
-                        Agent->>TUI: [FALLO] Rollback automático ejecutado
-                    end
+            Agent->>TUI: Solicita aprobación Human-in-the-Loop
+            TUI-->>Operador: Muestra HitLModal con diff y rollback plan
+            alt Operador Rechaza (N)
+                Operador->>TUI: Rechazar (N)
+                TUI-->>Agent: False
+                Agent->>TUI: Operación cancelada & Auditada
+            else Operador Aprueba (Y)
+                Operador->>TUI: Autorizar (Y)
+                TUI-->>Agent: True
+                Agent->>Driver: take_snapshot()
+                Driver->>Device: Captura running-config previa
+                Agent->>Driver: execute_remediation(candidate_commands)
+                Driver->>Device: Inyección de comandos CLI validados
+                Agent->>Driver: verify_health()
+                Driver->>Device: Comprobación post-cambio
+                alt Verificación Exitosa
+                    Agent->>Driver: save_config()
+                    Agent->>TUI: Remediación exitosa confirmada
+                else Verificación Fallida
+                    Agent->>Driver: rollback(snapshot)
+                    Agent->>TUI: Reversión automática ejecutada
                 end
             end
         end
     end
-```
-
----
-
-### 3.2. Secuencia: Configuración Declarativa Multi-Protocolo
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Operador as "👤 Operador de Red"
-    participant TUI as "🖥️ ConfigurationView"
-    participant Agent as "🤖 NetworkAssistantAgent"
-    participant Brain as "🧠 AI Brain"
-    participant Validator as "🛡️ ConfigSyntaxValidator"
-    participant Driver as "🔌 NetworkOSDriver"
-    participant Device as "🖧 Switch / Router"
-
-    Operador->>TUI: Describe solicitud (ej. BGP Peering, OSPF, VLAN)
-    TUI->>Agent: execute_configuration(device, request, protocol_hint)
-    
-    Agent->>Brain: synthesize_configuration(device, request)
-    Brain-->>Agent: ConfigurationIntent (candidate_cmds, verif_cmds, rollback_cmds)
-    
-    Agent->>Validator: validate_script(candidate_cmds)
-    alt Error Sintáctico / Comando Destructivo
-        Validator-->>Agent: is_valid = False
-        Agent->>TUI: Alerta de validación sintáctica & Cancela
-    else Sintaxis Válida
-        Validator-->>Agent: is_valid = True (clean_commands)
-        Agent->>TUI: Despliega Modal HitL con Diff de Configuración
-        TUI->>Operador: Confirmación de despliegue [s/n]
-        
-        alt Aprobado por el Operador
-            Agent->>Driver: backup_running_config()
-            Driver->>Device: Guarda snapshot pre-cambio
-            Agent->>Driver: execute_commands(candidate_cmds)
-            Driver->>Device: Aplica configuración nativa
-            
-            opt Comandos de Verificación Presentes
-                Agent->>Driver: Ejecuta verification_commands (show)
-                Driver->>Device: show ip bgp summary / etc.
-                Device-->>Driver: Estado post-configuración
-            end
-            
-            Agent->>TUI: Configuración completada y auditada exitosamente
-        end
-    end
-```
-
----
-
-### 3.3. Secuencia: Despliegue en Lote con `BatchDeployer`
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Operador as "👤 Ingeniero de Automatización"
-    participant TUI as "🖥️ AutomationView (Editor)"
-    participant Deployer as "⚙️ BatchDeployer"
-    participant Validator as "🛡️ ConfigSyntaxValidator"
-    participant Driver as "🔌 NetworkOSDriver"
-    participant Target as "🖧 Equipos [Host 1 ... Host N]"
-
-    Operador->>TUI: Escribe/Modifica plantilla Jinja2 y selecciona equipos
-    Operador->>TUI: Clic en 'Validar Sintaxis (Dry-Run)'
-    TUI->>Validator: validate_script(raw_text)
-    Validator-->>TUI: SyntaxValidationReport (Líneas evaluadas, errores, advertencias)
-    
-    Operador->>TUI: Clic en 'Desplegar en Equipos'
-    TUI->>Deployer: deploy_to_devices(selected_devices, script)
-    
-    loop Para cada equipo en la selección
-        Deployer->>Driver: get_os_driver(device)
-        Deployer->>Driver: backup_running_config()
-        Driver->>Target: Descarga snapshot individual (.cfg)
-        
-        Deployer->>Driver: execute_commands(clean_commands)
-        alt Inyección Exitosa
-            Driver->>Target: Inyecta comandos CLI
-            Deployer->>Deployer: device_results[host] = SUCCESS
-        else Fallo durante Inyección
-            Deployer->>Driver: rollback(backup_path)
-            Driver->>Target: Restaura snapshot original
-            Deployer->>Deployer: device_results[host] = FAILED (Rollback Aplicado)
-        end
-        Deployer->>Driver: disconnect()
-    end
-
-    Deployer-->>TUI: BatchDeploymentResult (Resumen de éxitos y fallos aislados)
 ```

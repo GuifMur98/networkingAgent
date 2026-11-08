@@ -1,4 +1,4 @@
-# 🛡️ Manual de Ciberseguridad y Modelo de Amenazas: NetworkingAgent Enterprise v2.0
+# 🛡️ Manual de Ciberseguridad y Modelo de Amenazas: NetworkingAgent Enterprise v2.1
 
 > **Políticas de Hardening, Prevención de Inyecciones, Análisis Estático Pre-Flight y Protección de Infraestructura Crítica**
 
@@ -10,11 +10,11 @@ Los sistemas autónomos que administran elementos centrales de conectividad corp
 1. **Amenazas de Red y Automatización:** Inyecciones de comandos CLI, caídas accidentales de enlaces ascendentes (*uplinks*), borrado de configuraciones por plantillas defectuosas o desconexión por apagado de interfaces de gestión.
 2. **Amenazas de Inteligencia Artificial:** Inyección indirecta de prompts (*Indirect Prompt Injection*) oculta en registros de syslog o paquetes de red, alucinaciones de comandos inexistentes o dañinos, y evasión de políticas de seguridad (*jailbreaks*).
 
-Para mitigar estos riesgos de forma absoluta, **NetworkingAgent Enterprise v2.0** opera bajo el principio de **Defensa en Profundidad (*Defense-in-Depth*)**. Ningún componente confía ciegamente en otro, y el motor de IA está estructuralmente aislado de la ejecución en consola.
+Para mitigar estos riesgos de forma absoluta, **NetworkingAgent Enterprise v2.1** opera bajo el principio de **Defensa en Profundidad (*Defense-in-Depth*)**. Ningún componente confía ciegamente en otro, y el motor de IA está estructuralmente aislado de la ejecución en consola.
 
 ---
 
-## 2. Matriz de Vectores de Amenaza y Mitigaciones v2.0
+## 2. Matriz de Vectores de Amenaza y Mitigaciones v2.1
 
 | Vector de Amenaza | Riesgo / Impacto Operativo | Severidad | Mitigación Implementada |
 |---|---|:---:|---|
@@ -23,9 +23,11 @@ Para mitigar estos riesgos de forma absoluta, **NetworkingAgent Enterprise v2.0*
 | **Indirect Prompt Injection** | Cargas de syslog o descripciones de síntomas diseñadas para manipular al LLM e inyectar usuarios no autorizados. | 🔴 **CRÍTICO** | Aislamiento XML `<telemetry_event>`, directivas estrictas en `HARDENED_SYSTEM_PROMPT` y bloqueo cognitivo (`severity="CRITICAL"`, `action="none"`). |
 | **Aislamiento Accidental de Gestión** | El agente apaga o reinicia la interfaz que aloja la IP de conexión SSH o la ruta por defecto (`0.0.0.0/0`). | 🔴 **CRÍTICO** | Descubrimiento dinámico de IP de gestión (`discover_active_management_interfaces`) + bloqueo incondicional en [`BlastRadiusGuard`](../src/networking_agent/guardrails/blast_radius.py). |
 | **CLI Command Injection & Metacaracteres** | Concatenación de sentencias shell mediante metacaracteres (`&&`, `;`, `\|`, `` ` ``, `$`). | 🔴 **CRÍTICO** | Expresiones regulares estrictas en Pydantic + validación en [`CommandValidator`](../src/networking_agent/guardrails/validator.py) previa a la conexión Netmiko. |
+| **Inyección en Pruebas de Ping** | Ejecución de ping con hosts malformados (ej. `192.168.1.1; rm -rf /`). | 🔴 **CRÍTICO** | Validación estricta con Pydantic (`DeviceInventory.host`) y ejecución directa mediante `asyncio.create_subprocess_exec` sin invocar shell del SO (`shell=False`). |
 | **Sintaxis Jerárquica Desbalanceada** | Scripts de Juniper Junos con llaves impares (`{` vs `}`) que dejan al dispositivo en estado inconsistente. | 🟠 **ALTO** | Balanceo aritmético de bloques en `ConfigSyntaxValidator` (`junos_brace_balance == 0`). |
 | **Fuga de Credenciales de Equipos** | Contraseñas de acceso SSH expuestas en texto claro en logs o en disco. | 🟠 **ALTO** | Enmascaramiento con `SecretStr`, cifrado simétrico Fernet (AES-128-CBC) y permisos restrictivos `0600` en la base SQLite y en la llave maestra. |
 | **Path Traversal en Backups** | Nombres de host o archivos maliciosos (ej. `../../etc/shadow`) para sobrescribir archivos arbitrarios. | 🟠 **ALTO** | Sanitización con regex alfanumérico + validación en disco mediante `backup_file.is_relative_to(backup_dir)`. |
+| **Alteración de Auditoría** | Manipulación no autorizada de registros históricos de cambios. | 🟠 **ALTO** | Estructuración inmutable de eventos con hashes SHA-256 criptográficos y modo append-only en `audit.jsonl`. |
 | **Agotamiento de Memoria (DoS)** | Payloads masivos de telemetría enviados al agente para saturar buffers de memoria o tokens de IA. | 🟡 **MEDIO** | Límite forzado a 30,000 caracteres en `TelemetryEvent` y purga de bytes nulos (`\x00`). |
 
 ---
@@ -105,6 +107,17 @@ Directamente acoplado al método `execute_commands()` de todos los controladores
 
 ---
 
+### 3.5. Seguridad en Pruebas de Red y Paleta de Comandos
+
+1. **Subprocesos Asíncronos Seguros:**
+   - [`ConnectivityEngine`](../src/networking_agent/engine/connectivity.py) utiliza llamadas directas a subprocesos con arrays de argumentos (`["ping", "-n", "2", host]`), evitando terminantemente `shell=True` o concatenaciones de cadenas que permitan escapes shell.
+2. **Restricción de Operaciones en la Paleta:**
+   - [`NetworkAgentCommandProvider`](../src/networking_agent/tui/commands.py) expone exclusivamente acciones pre-mapeadas a métodos autorizados de la aplicación. No existe capacidad para ejecutar comandos shell arbitrarios a través de la paleta.
+3. **Protección de la Bitácora de Auditoría:**
+   - La funcionalidad de purga de pruebas valida explícitamente que los registros eliminados pertenezcan exclusivamente a sesiones sintéticas o de prueba, garantizando que el historial de despliegues en equipos de producción permanezca inalterable.
+
+---
+
 ## 4. Compuerta de Aprobación Humana (Human-in-the-Loop)
 
 Por política de diseño, **ningún cambio en configuración o remediación se ejecuta sin la confirmación explícita de un operador humano**, a menos que se active intencionalmente el modo de pruebas desatendidas (`--auto-approve`).
@@ -114,6 +127,7 @@ La ventana modal de aprobación presenta de manera inmutable:
 - Diagnóstico técnico y nivel de severidad asignado por la IA.
 - **Previsualización exacta de comandos CLI nativos a inyectar.**
 - Mecanismo de reversión y rollback garantizado en caso de fallo.
+- Atajos de confirmación rápida: `Y` para autorizar y `N` para cancelar y auditar el rechazo.
 
 ---
 
@@ -122,10 +136,10 @@ La ventana modal de aprobación presenta de manera inmutable:
 La suite de pruebas contiene tests automatizados diseñados específicamente para certificar la resistencia ante vectores de ataque:
 
 ```bash
-uv run --no-sync pytest tests/test_guardrails.py tests/test_syntax_validator.py tests/test_crypto.py
+uv run --no-sync pytest tests/test_guardrails.py tests/test_automation_module.py tests/test_crypto.py tests/test_models.py
 ```
 
-### Casos Verificados en la Suite:
+### Casos Verificados en la Suite (172 pruebas):
 - [x] Inyección de comandos shell con tuberías `|`, operadores `&&`, y punto y coma `;`.
 - [x] Intentos de borrado de almacenamiento o reinicio (`write erase`, `zeroize`, `reset-configuration`).
 - [x] Detección de variables Jinja2 huérfanas sin sustitución en plantillas de automatización.
@@ -135,3 +149,4 @@ uv run --no-sync pytest tests/test_guardrails.py tests/test_syntax_validator.py 
 - [x] Cargas de telemetría de gran tamaño (>30k caracteres) o con bytes nulos (`\x00`).
 - [x] Aislamiento estricto de prompts manipulados dentro de etiquetas XML.
 - [x] Cifrado y descifrado verificado con Fernet y permisos de archivo `0600`.
+- [x] Pruebas de conectividad con hosts no válidos o maliciosos rechazadas de forma segura.

@@ -1,4 +1,4 @@
-# 🖧 Matriz de Hardware y Compatibilidad Multi-Fabricante v2.0
+# 🖧 Matriz de Hardware y Compatibilidad Multi-Fabricante v2.1
 
 > **Dispositivos Certificados, Comandos de Diagnóstico Especializados por Protocolo, Síntesis Declarativa y Mecanismos de Reversión**
 
@@ -6,7 +6,7 @@
 
 ## 1. Resumen de Soporte Multi-Vendor
 
-**NetworkingAgent Enterprise v2.0** incorpora controladores especializados (*drivers*) diseñados para interactuar de forma nativa con los principales sistemas operativos de red del mercado corporativo y de telecomunicaciones:
+**NetworkingAgent Enterprise v2.1** incorpora controladores especializados (*drivers*) diseñados para interactuar de forma nativa con los principales sistemas operativos de red del mercado corporativo y de telecomunicaciones:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
@@ -221,8 +221,10 @@ commit confirmed 3
 | **SSH Connection Pooling** | ✅ Sí | ✅ Sí | ✅ Sí | ✅ Sí | ✅ Sí |
 | **Descubrimiento Dinámico de Mgmt IP** | ✅ Sí | ✅ Sí | ✅ Sí | ✅ Sí | ✅ Sí |
 | **Diagnóstico Dinámico por Síntoma** | ✅ Sí | ✅ Sí | ✅ Sí | ✅ Sí | ✅ Sí |
-| **Configuración Declarativa BGP/OSPF** | ✅ Sí | ✅ Sí | ✅ Sí | ✅ Sí | ✅ Sí |
-| **Validación Sintáctica Pre-Flight** | ✅ Sí | ✅ Sí | ✅ Sí | ✅ Sí | ✅ Sí |
+| **Configuración Declarativa Multi-Protocolo** | ✅ Sí | ✅ Sí | ✅ Sí | ✅ Sí | ✅ Sí |
+| **Detección de Solapamiento IP y Colisiones** | ✅ Sí | ✅ Sí | ✅ Sí | ✅ Sí | ✅ Sí |
+| **Validación Sintáctica Pre-Flight (Dry-Run)** | ✅ Sí | ✅ Sí | ✅ Sí | ✅ Sí | ✅ Sí |
+| **Diagnóstico de Conectividad (Ping/SSH 22)** | ✅ Sí | ✅ Sí | ✅ Sí | ✅ Sí | ✅ Sí |
 | **Commit Confirmado Nativo** | ❌ (Replace) | ❌ (Checkpoint) | ✅ Sí (180s) | ✅ Sí (3 min) | ❌ (Backup binario) |
 | **Rollback Atómico en Caliente** | ✅ Sí | ✅ Sí | ✅ Sí | ✅ Sí | ✅ Sí |
 | **Soporte Despliegue en Lote (Batch)** | ✅ Sí | ✅ Sí | ✅ Sí | ✅ Sí | ✅ Sí |

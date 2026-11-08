@@ -7,6 +7,51 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [2.1.0] - 2026-11-08
+
+### 🚀 Paleta de Comandos y Operaciones Globales (Added)
+- **Paleta de Comandos Unificada (`Ctrl+P`):**
+  - Implementación de [`NetworkAgentCommandProvider`](src/networking_agent/tui/commands.py) integrado de forma nativa en Textual.
+  - Catálogo de más de 15 operaciones técnicas organizadas sin emojis ni iconos decorativos, respetando los estándares de diseño corporativo NOC / Mission Control.
+  - Soporte de búsqueda difusa (*fuzzy search*) por palabras clave para navegación instantánea a los 5 módulos, alta de equipos, pruebas de conectividad, cambio en caliente de modo HitL y presets de diagnóstico (BGP, OSPF, VLAN).
+  - Indicador de acceso rápido `^p Paleta` anclado de forma fija en la esquina inferior derecha del Dashboard de Inicio.
+
+### 🖧 Diagnóstico de Conectividad en Tiempo Real (Added)
+- **Motor de Verificación de Red (`engine/connectivity.py`):**
+  - Implementación de pruebas asíncronas de **Ping ICMP** con medición precisa de latencia de ida y vuelta (RTT) en milisegundos y cálculo de tasa de éxito/pérdida de paquetes.
+  - Prueba de disponibilidad de servicio **SSH (TCP 22)** mediante conexión de socket no invasiva, previniendo intentos de conexión fallidos antes de invocar Netmiko.
+  - Integración en la tabla del Módulo de Inventario (`DeviceInventoryView`) mediante botones de acción directa: `Hacer Ping (ICMP)`, `Probar Conexión (SSH)` y `Test Completo`.
+
+### ⚡ Asistente de Plantillas Jinja2 y Variables Dinámicas (Added)
+- **Guía Interactiva de Parámetros en Modal de Plantillas (`TemplateModal`):**
+  - Panel visual de referencia rápida para la sintaxis de variables dinámicas Jinja2 (`{{ nombre_variable }}`).
+  - Botones tipo chip clickeables para inserción automática en el cursor de variables de uso frecuente (`vlan_id`, `vlan_name`, `ip_address`, `netmask`, `gateway`, `interface`, `description`, `bgp_as`).
+  - Botón **Detectar Variables** para analizar el contenido CLI del script y confirmar al operador los parámetros parametrizados reconocidos por el motor de automatización.
+  - Ajustes ergonómicos de espaciado y márgenes visuales para evitar solapamientos con la barra de desplazamiento.
+
+### 🛡️ Auditoría Forense y Gestión de Bitácora (Added)
+- **Herramientas de Exportación y Limpieza de Auditoría (`AuditTableWidget`):**
+  - Botón **Exportar JSON** para volcar el historial de operaciones forenses (con hashes criptográficos SHA-256) en archivos JSON estructurados para integración con sistemas SIEM.
+  - Botón **Purgar Tests** con cuadro de diálogo de confirmación de seguridad para eliminar eventos de prueba generados por ejecuciones sintéticas o de desarrollo, manteniendo intactos los registros de producción.
+  - Filtrado reactivo en caliente por equipo y por resultado operacional (`ALL`, `SUCCESS`, `FAILED`, `ROLLBACK`, `BLOCKED`).
+
+### ⌨️ Ergonomía y Navegación Contextual (Changed)
+- **Indicadores de Atajos en Botones:**
+  - Actualización de todos los botones con atajo asignado para reflejar la tecla entre paréntesis: `Volver al Inicio (h)`, `+ Registrar Equipo (d)`, `Recargar (r)`, `Cancelar (Esc)`, `Cerrar (Esc)`, `Autorizar y Aplicar (Y)`, `Rechazar y Abortar (N)`.
+- **Filtrado Dinámico de Pie de Página:**
+  - En los 5 módulos operacionales, el único atajo visible en el pie de página es `h Inicio`, reduciendo distracciones y evitando activaciones accidentales.
+  - En el Dashboard de Inicio se visualizan todos los atajos generales a la izquierda (`h`, `q`, `d`, `s`, `r`) y la Paleta de Comandos a la derecha (`^p`).
+
+### 🧪 Calidad y Pruebas Automatizadas (Changed)
+- **Suite de Pruebas Ampliada:** La cobertura creció de 125 a **172 pruebas automatizadas** (`pytest`) con 100% de aprobación.
+- **Nuevas Pruebas Unitarias y de Integración:**
+  - `tests/test_connectivity.py`: Pruebas de Ping, comprobación de socket TCP 22 e interacción en la TUI de inventario.
+  - `tests/test_command_palette.py`: Pruebas de catálogo, búsqueda difusa, ausencia de emojis, apertura de la paleta y anclaje inferior derecho.
+  - `tests/test_audit_table.py`: Pruebas de renderizado de tabla, filtros, exportación JSON y purga de registros de prueba.
+  - `tests/test_conflict_analyzer.py`: Pruebas de detección de colisión de subredes y solapamientos IP.
+
+---
+
 ## [2.0.0] - 2026-11-06
 
 ### 🚀 Evolución Mayor de Arquitectura y Modos Operativos (Added)
@@ -17,7 +62,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 - **Modernización y Rediseño Completo de la TUI (Textual):**
   - Acceso directo a los 5 pilares operativos mediante botones numéricos `[1-5]` y atajos de teclado globales (`1-5`, `h` Inicio, `q` Salir, `d` Nuevo Equipo, `s` Ajustes IA, `r` Recargar).
   - Encabezado ultra-limpio con insignias de telemetría en tiempo real (`BRAIN`, `EQUIPOS`, `HITL`), eliminando títulos redundantes y pestañas que restaban espacio vertical.
-  - Modal dinámico de Configuración de IA (`AIOptionsModal`): actualización en tiempo real de campos, etiquetas, enmascaramiento y modelos sugeridos según el proveedor seleccionado (Ollama, Gemini, OpenAI, Claude).
+  - Modal dinámico de Configuración de IA (`VaultModal` / `AIOptionsModal`): actualización en tiempo real de campos, etiquetas, enmascaramiento y modelos sugeridos según el proveedor seleccionado (Ollama, Gemini, OpenAI, Claude).
   - Solución total de recorte (*clipping*) en barras de botones y contenedores de herramientas mediante alturas CSS adaptativas (`height: 4` en barras de navegación, `height: 5` en barra de automatización).
   - Ancho de barra lateral garantizado (`width: 32`) en inventarios y selectores de equipo, evitando desplazamientos involuntarios fuera de la pantalla.
   - Eliminación de botones redundantes de retorno en las vistas secundarias.
