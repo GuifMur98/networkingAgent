@@ -15,4 +15,17 @@ if str(src_dir) not in sys.path:
 from networking_agent.cli.main import cli_entrypoint  # noqa: E402
 
 if __name__ == "__main__":
-    cli_entrypoint()
+    try:
+        cli_entrypoint()
+    except KeyboardInterrupt:
+        sys.exit(0)
+    except Exception:
+        import traceback
+
+        traceback.print_exc()
+        if getattr(sys, "frozen", False):
+            try:
+                input("\nPresione [Enter] para salir...")
+            except (EOFError, KeyboardInterrupt):
+                pass
+        sys.exit(1)

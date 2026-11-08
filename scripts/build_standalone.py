@@ -88,6 +88,25 @@ def package_artifacts():
         if src.exists():
             shutil.copy2(src, bundle_dir / doc)
 
+    # Copy scripts and launchers
+    if system == "windows":
+        bat_content = (
+            "@echo off\r\n"
+            "title NetworkingAgent Enterprise v2.1.0\r\n"
+            '"%~dp0networking-agent.exe" %*\r\n'
+            "if %ERRORLEVEL% NEQ 0 (\r\n"
+            "    echo.\r\n"
+            "    echo [ERROR] NetworkingAgent se cerro con codigo de salida %ERRORLEVEL%.\r\n"
+            "    pause\r\n"
+            ")\r\n"
+        )
+        (bundle_dir / "iniciar.bat").write_text(bat_content, encoding="ascii")
+        if (PROJECT_ROOT / "install.ps1").exists():
+            shutil.copy2(PROJECT_ROOT / "install.ps1", bundle_dir / "install.ps1")
+    else:
+        if (PROJECT_ROOT / "install.sh").exists():
+            shutil.copy2(PROJECT_ROOT / "install.sh", bundle_dir / "install.sh")
+
     # Create archive
     print(f"[*] Creating release archive for {system}-{arch}...")
     if system == "windows":
@@ -117,10 +136,8 @@ def main():
     check_prerequisites()
     clean_previous_builds()
     build_binary()
-    archive = package_artifacts()
-    print("=========================================================")
-    print(f"[SUCCESS] Standalone artifact ready at:\n  {archive}")
-    print("=========================================================")
+    package_artifacts()
+    print("[SUCCESS] Build and packaging complete.")
 
 
 if __name__ == "__main__":

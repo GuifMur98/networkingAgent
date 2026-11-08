@@ -3,57 +3,23 @@
 
 import os
 from pathlib import Path
+from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 block_cipher = None
 PROJECT_ROOT = Path(os.path.abspath(SPEC)).parent
 
 datas = [
     (str(PROJECT_ROOT / "src" / "networking_agent" / "tui" / "styles.tcss"), "networking_agent/tui"),
+    (str(PROJECT_ROOT / "src" / "networking_agent" / "tui" / "styles.tcss"), "."),
     (str(PROJECT_ROOT / "docs" / "banner.png"), "docs"),
     (str(PROJECT_ROOT / "LICENSE"), "."),
     (str(PROJECT_ROOT / "README.md"), "."),
 ]
+datas += collect_data_files("textual")
+datas += collect_data_files("rich")
+datas += collect_data_files("ntc_templates")
 
 hiddenimports = [
-    # Textual TUI and components
-    "textual",
-    "textual.app",
-    "textual.binding",
-    "textual.command",
-    "textual.containers",
-    "textual.events",
-    "textual.geometry",
-    "textual.message",
-    "textual.screen",
-    "textual.widget",
-    "textual.widgets",
-    "textual.widgets._footer",
-    "textual.widgets._tabbed_content",
-    "textual.widgets._text_area",
-    "textual.widgets._data_table",
-    "textual.widgets._selection_list",
-
-    # Rich formatting
-    "rich",
-    "rich.panel",
-    "rich.text",
-    "rich.table",
-    "rich.syntax",
-    "rich.align",
-    "rich.box",
-
-    # Netmiko vendor drivers
-    "netmiko",
-    "netmiko.cisco",
-    "netmiko.cisco.cisco_ios",
-    "netmiko.cisco.cisco_nxos_ssh",
-    "netmiko.cisco.cisco_xr",
-    "netmiko.juniper",
-    "netmiko.juniper.juniper",
-    "netmiko.mikrotik",
-    "netmiko.mikrotik.mikrotik_ssh",
-
-    # Core & Cryptography
     "cryptography",
     "cryptography.fernet",
     "jinja2",
@@ -62,13 +28,15 @@ hiddenimports = [
     "pydantic_settings",
     "sqlite3",
     "yaml",
-
-    # AI Brains connectors
     "ollama",
     "google.genai",
     "openai",
     "anthropic",
 ]
+hiddenimports += collect_submodules("textual")
+hiddenimports += collect_submodules("rich")
+hiddenimports += collect_submodules("netmiko")
+hiddenimports += collect_submodules("networking_agent")
 
 a = Analysis(
     [str(PROJECT_ROOT / "main.py")],
