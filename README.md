@@ -129,17 +129,23 @@ flowchart TD
 networkingAgent/
 ├── pyproject.toml              # Metadatos del proyecto y dependencias (v2.1.0)
 ├── uv.lock                     # Lockfile determinista
+├── install.ps1                 # Instalador One-Click automatizado para Windows (PowerShell)
+├── install.sh                  # Instalador One-Click automatizado para Linux / macOS (Bash)
+├── networking_agent.spec       # Especificación PyInstaller para binario independiente
 ├── README.md                   # Documentación principal del proyecto
 ├── CHANGELOG.md                # Bitácora detallada de cambios y versiones (v2.1.0)
 ├── CONTRIBUTING.md             # Guía de contribución y estándares de código
 ├── LICENSE                     # Licencia Apache 2.0
 ├── .env.example                # Plantilla de variables de entorno
-├── main.py                     # Entrypoint TUI / CLI
+├── main.py                     # Entrypoint TUI / CLI reactivo
+├── scripts/                    # Scripts de empaquetado y utilidades
+│   └── build_standalone.py     # Compilador standalone y generador de release .zip/.tar.gz
 ├── data/                       # Almacenamiento local SQLite cifrado (WAL mode)
 ├── backups/                    # Snapshots y configuraciones de respaldo por equipo
 ├── logs/                       # Bitácora inmutable de auditoría (audit.jsonl)
 ├── docs/                       # Documentación técnica completa
 │   ├── banner.png              # Gráfico del encabezado de documentación
+│   ├── INSTALLATION_GUIDE.md   # Guía definitiva de instalación y despliegue
 │   ├── USAGE_GUIDE.md          # Manual de operación detallado y flujos paso a paso
 │   ├── ARCHITECTURE.md         # Diseño hexagonal, componentes y diagramas
 │   ├── SECURITY.md             # Modelo de amenazas, guardarraíles y hardening
@@ -218,7 +224,16 @@ networkingAgent/
 
 ### 2. Opciones de Instalación
 
-#### Opción A: Instalador Automatizado One-Click (Recomendado)
+> [!TIP]
+> Para instrucciones detalladas paso a paso sobre cada sistema operativo y resolución de incidencias, consulta la **[📘 Guía Definitiva de Instalación (`docs/INSTALLATION_GUIDE.md`)](docs/INSTALLATION_GUIDE.md)**.
+
+#### Opción A: Paquete Standalone de GitHub Releases (Recomendado para Windows - Sin Python)
+Descarga el paquete precompilado desde los [Releases de GitHub](https://github.com/GuifMur98/networkingAgent/releases/tag/v2.1.0):
+- Descarga **`networking-agent-v2.1.0-windows-x64.zip`** y descomprímelo.
+- **Para instalar en el sistema (1 clic):** Haz doble clic en **`instalar.bat`** para registrar el comando `networking-agent` en tu `PATH` y crear los accesos directos en el **Escritorio** y **Menú Inicio**.
+- **Para usar en modo portable (sin instalar):** Haz doble clic en **`iniciar.bat`** o en `networking-agent.exe`.
+
+#### Opción B: Instalador Automatizado One-Click por Terminal
 - **Windows (PowerShell):**
   ```powershell
   irm https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.ps1 | iex
@@ -227,11 +242,6 @@ networkingAgent/
   ```bash
   curl -sSL https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.sh | bash
   ```
-
-#### Opción B: Ejecutable Autónomo Portable (Sin dependencias de Python)
-Descarga el paquete precompilado desde los [Releases de GitHub](https://github.com/GuifMur98/networkingAgent/releases/tag/v2.1.0):
-- `networking-agent-v2.1.0-windows-x64.zip` (Windows)
-- `networking-agent-v2.1.0-linux-x64.tar.gz` (Linux)
 
 #### Opción C: Instalación Manual para Desarrolladores
 ```bash
@@ -290,6 +300,7 @@ uv run --no-sync ruff check .
 
 ## 📚 Documentación Técnica Detallada
 
+- **[📘 Guía Definitiva de Instalación (`docs/INSTALLATION_GUIDE.md`)](docs/INSTALLATION_GUIDE.md)**: Instalación con 1 clic (`instalar.bat`), paquetes standalone, integración de PATH, shortcuts y resolución de incidencias.
 - **[📖 Manual de Uso y Operaciones (`docs/USAGE_GUIDE.md`)](docs/USAGE_GUIDE.md)**: Flujos paso a paso para los 5 módulos, paleta de comandos y ejemplos operativos.
 - **[🏛️ Arquitectura del Sistema (`docs/ARCHITECTURE.md`)](docs/ARCHITECTURE.md)**: Diseño hexagonal, bucle cerrado, threading model y componentes internos.
 - **[🛡️ Manual de Ciberseguridad (`docs/SECURITY.md`)](docs/SECURITY.md)**: Modelo de amenazas, contención de radio de impacto, cifrado Fernet y guardarraíles pre-vuelo.

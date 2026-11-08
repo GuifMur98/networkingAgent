@@ -35,6 +35,14 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/lang/es/).
   - Botón **Purgar Tests** con cuadro de diálogo de confirmación de seguridad para eliminar eventos de prueba generados por ejecuciones sintéticas o de desarrollo, manteniendo intactos los registros de producción.
   - Filtrado reactivo en caliente por equipo y por resultado operacional (`ALL`, `SUCCESS`, `FAILED`, `ROLLBACK`, `BLOCKED`).
 
+### 📦 Empaquetado, Instaladores y Despliegue Empresarial (Added)
+- **Instaladores Automatizados y Paquetes Standalone:**
+  - Creación de [`install.ps1`](install.ps1): instalador inteligente para Windows con soporte dual (código fuente y binario compilado), registro automático en el `PATH` del usuario y generación de accesos directos en el Escritorio y Menú Inicio.
+  - Creación de [`install.sh`](install.sh): instalador para Linux y macOS con enlace simbólico en `~/.local/bin/` y actualización automática de `.bashrc` o `.zshrc`.
+  - Especificación [`networking_agent.spec`](networking_agent.spec): empaquetado PyInstaller con inclusión automática de los 236 submódulos de Textual (controladores `windows_driver`, `linux_driver`) y 270 submódulos de Netmiko (`ntc_templates`).
+  - Herramienta de compilación [`scripts/build_standalone.py`](scripts/build_standalone.py): generación automatizada de paquetes `.zip` (Windows) y `.tar.gz` (Linux) que incorporan `instalar.bat` (instalador de 1 clic) e `iniciar.bat` (lanzador portable).
+  - Publicación de la **Guía Definitiva de Instalación y Despliegue** ([`docs/INSTALLATION_GUIDE.md`](docs/INSTALLATION_GUIDE.md)).
+
 ### ⌨️ Ergonomía y Navegación Contextual (Changed)
 - **Indicadores de Atajos en Botones:**
   - Actualización de todos los botones con atajo asignado para reflejar la tecla entre paréntesis: `Volver al Inicio (h)`, `+ Registrar Equipo (d)`, `Recargar (r)`, `Cancelar (Esc)`, `Cerrar (Esc)`, `Autorizar y Aplicar (Y)`, `Rechazar y Abortar (N)`.

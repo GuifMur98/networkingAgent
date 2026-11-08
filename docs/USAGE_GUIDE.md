@@ -59,7 +59,17 @@ Bienvenido a la guía oficial de usuario y operaciones para **NetworkingAgent En
 
 ## 3. Métodos de Instalación
 
-### 3.1. Instalador Automatizado One-Click
+> [!TIP]
+> Consulta la **[📘 Guía Definitiva de Instalación (`docs/INSTALLATION_GUIDE.md`)](INSTALLATION_GUIDE.md)** para una explicación exhaustiva de cada método, variables de entorno y solución de problemas.
+
+### 3.1. Paquete Autónomo Precompilado Standalone (GitHub Releases - Sin Python)
+Descarga el paquete precompilado desde los [Releases de GitHub](https://github.com/GuifMur98/networkingAgent/releases/tag/v2.1.0):
+- **Windows:** Descarga `networking-agent-v2.1.0-windows-x64.zip` y descomprímelo.
+  - **Instalación en 1 Clic (`instalar.bat`):** Registra permanentemente `networking-agent` en tu variable de entorno `PATH` y genera los accesos directos en el **Escritorio** y **Menú Inicio**.
+  - **Uso Portable Directo (`iniciar.bat`):** Ejecuta el agente inmediatamente sin modificar el sistema.
+- **Linux:** Descarga `networking-agent-v2.1.0-linux-x64.tar.gz` y ejecuta `./install.sh` para instalar el binario en `~/.local/bin/networking-agent`.
+
+### 3.2. Instalador Automatizado One-Click por Terminal (Web Stream)
 - **Windows (PowerShell):**
   ```powershell
   irm https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.ps1 | iex
@@ -68,9 +78,6 @@ Bienvenido a la guía oficial de usuario y operaciones para **NetworkingAgent En
   ```bash
   curl -sSL https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.sh | bash
   ```
-
-### 3.2. Paquete Autónomo Precompilado (GitHub Releases)
-Descarga el binario portátil desde los [Releases de GitHub](https://github.com/GuifMur98/networkingAgent/releases/tag/v2.1.0) sin necesidad de configurar Python ni entornos virtuales.
 
 ### 3.3. Instalación para Desarrolladores (uv)
 ```bash

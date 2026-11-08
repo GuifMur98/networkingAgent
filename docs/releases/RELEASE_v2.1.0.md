@@ -64,7 +64,19 @@
 
 ## ⚡ Instaladores y Métodos de Instalación
 
-### 📥 1. Instalador Automatizado One-Click (Recomendado)
+> [!TIP]
+> Consulta la **[📘 Guía Definitiva de Instalación (`docs/INSTALLATION_GUIDE.md`)](../INSTALLATION_GUIDE.md)** para una explicación detallada paso a paso.
+
+### 📦 1. Binarios Autónomos Standalone (Assets del Release - Sin Python)
+No requieren Python, Git ni dependencias previas:
+- **`networking-agent-v2.1.0-windows-x64.zip` (Windows x64):**
+  - **`instalar.bat`**: Instalador de 1 solo clic. Registra `networking-agent` en tu variable de entorno `PATH` permanente y crea accesos directos en el **Escritorio** y **Menú Inicio**.
+  - **`iniciar.bat`**: Ejecución directa en modo portable sin modificar el sistema.
+  - **`networking-agent.exe`**: Binario standalone que incluye Python 3.12 y todas las dependencias.
+- **`networking-agent-v2.1.0-linux-x64.tar.gz` (Linux x64):**
+  - Incluye `install.sh` para registrar el binario en `~/.local/bin/networking-agent` y actualizar tu `.bashrc` o `.zshrc`.
+
+### 📥 2. Instalador Automatizado One-Click por Terminal (Web Stream)
 - **Windows (PowerShell):**
   ```powershell
   irm https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.ps1 | iex
@@ -73,11 +85,6 @@
   ```bash
   curl -sSL https://raw.githubusercontent.com/GuifMur98/networkingAgent/main/install.sh | bash
   ```
-
-### 📦 2. Binarios Autónomos Precompilados (Assets del Release)
-No requieren Python ni dependencias previas:
-- `networking-agent-v2.1.0-windows-x64.zip` (Ejecutable `.exe` portátil)
-- `networking-agent-v2.1.0-linux-x64.tar.gz` (Binario Linux x64)
 
 ### 🛠️ 3. Instalación Manual para Desarrolladores
 ```bash
