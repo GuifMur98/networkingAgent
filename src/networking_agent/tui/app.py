@@ -6,8 +6,9 @@ from typing import Any, List, Optional
 from textual import work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
+from textual.command import CommandPalette
 from textual.containers import Horizontal
-from textual.widgets import Footer, TabbedContent, TabPane
+from textual.widgets import Footer, Log, TabbedContent, TabPane
 
 from networking_agent.core.config import settings
 from networking_agent.core.crypto import vault
@@ -18,6 +19,7 @@ from networking_agent.engine.observer import AgentObserver
 from networking_agent.models.device import DeviceInventory
 from networking_agent.models.intent import NetworkIntent
 from networking_agent.models.telemetry import TelemetryEvent
+from networking_agent.tui.commands import NetworkAgentCommandProvider
 from networking_agent.tui.modals.device_modal import DeviceModal
 from networking_agent.tui.modals.hitl_modal import HitLModal
 from networking_agent.tui.modals.vault_modal import VaultModal
@@ -127,6 +129,7 @@ class NetworkingAgentTUIApp(App):
     TITLE = "NetworkingAgent Enterprise AI"
     SUB_TITLE = "Autonomous & Closed-Loop Network Assistant"
     CSS_PATH = "styles.tcss"
+    COMMANDS = {NetworkAgentCommandProvider}
 
     BINDINGS = [
         Binding("h", "go_home", "Inicio", show=True),
@@ -134,6 +137,7 @@ class NetworkingAgentTUIApp(App):
         Binding("d", "add_device", "Nuevo Equipo", show=True),
         Binding("s", "open_settings", "Ajustes IA", show=True),
         Binding("r", "refresh_all", "Recargar", show=True),
+        Binding("ctrl+p", "command_palette", "Paleta", show=True),
         Binding("f5", "refresh_all", "Recargar", show=False),
         Binding("ctrl+r", "refresh_all", "Recargar", show=False),
         Binding("1", "nav_tab_1", "Troubleshooting", show=False),
@@ -453,6 +457,180 @@ class NetworkingAgentTUIApp(App):
             title="SISTEMA RECARGADO",
             severity="information",
             timeout=2.5,
+        )
+
+    def action_command_palette(self) -> None:
+        """Show the Command Palette with customized placeholder and without emojis."""
+        if self.use_command_palette and not CommandPalette.is_open(self):
+            self.push_screen(
+                CommandPalette(
+                    id="--command-palette",
+                    placeholder="Escriba un comando o búsqueda (ej: ping, equipos, hitl, auditoria)...",
+                )
+            )
+
+    def action_test_connectivity(self) -> None:
+        """Switch to inventory view and execute full reachability test (Ping + SSH)."""
+        self.action_nav_tab_4()
+        try:
+            inv = self.query_one(DeviceInventoryView)
+            self.set_timer(0.1, inv.action_test_full_connectivity)
+        except Exception:
+            pass
+
+    def action_ping_device(self) -> None:
+        """Switch to inventory view and execute ICMP ping probe."""
+        self.action_nav_tab_4()
+        try:
+            inv = self.query_one(DeviceInventoryView)
+            self.set_timer(0.1, inv.action_ping_device)
+        except Exception:
+            pass
+
+    def action_test_ssh_port(self) -> None:
+        """Switch to inventory view and execute TCP port 22 SSH connection test."""
+        self.action_nav_tab_4()
+        try:
+            inv = self.query_one(DeviceInventoryView)
+            self.set_timer(0.1, inv.action_test_connection)
+        except Exception:
+            pass
+
+    def action_new_template(self) -> None:
+        """Switch to automation view and open new Jinja2 template modal."""
+        self.action_nav_tab_3()
+        try:
+            auto_view = self.query_one(AutomationView)
+            self.set_timer(0.1, auto_view._open_new_template_modal)
+        except Exception:
+            pass
+
+    def action_validate_automation_script(self) -> None:
+        """Switch to automation view and run dry-run syntax validation."""
+        self.action_nav_tab_3()
+        try:
+            auto_view = self.query_one(AutomationView)
+            self.set_timer(0.1, auto_view._run_syntax_validation)
+        except Exception:
+            pass
+
+    def action_select_all_automation_devices(self) -> None:
+        """Switch to automation view and select all devices for batch deployment."""
+        self.action_nav_tab_3()
+        try:
+            auto_view = self.query_one(AutomationView)
+            self.set_timer(0.1, lambda: auto_view._set_all_devices_selection(True))
+        except Exception:
+            pass
+
+    def action_deselect_all_automation_devices(self) -> None:
+        """Switch to automation view and deselect all devices in batch list."""
+        self.action_nav_tab_3()
+        try:
+            auto_view = self.query_one(AutomationView)
+            self.set_timer(0.1, lambda: auto_view._set_all_devices_selection(False))
+        except Exception:
+            pass
+
+    def action_toggle_hitl(self) -> None:
+        """Toggle Human-in-the-Loop vs Auto-Approve execution mode."""
+        current = db.get_setting("auto_approve") == "true" or settings.auto_approve
+        new_val = not current
+        db.set_setting("auto_approve", "true" if new_val else "false")
+        try:
+            status_bar = self.query_one(TopStatusBar)
+            status_bar.update_hitl_mode(new_val)
+        except Exception:
+            pass
+        try:
+            home = self.query_one(HomeDashboard)
+            home.update_status_card()
+        except Exception:
+            pass
+        mode_str = "AUTO-APROBACION DIRECTA (HITL Desactivado)" if new_val else "HITL ACTIVO (Supervision Humana)"
+        sev = "warning" if new_val else "information"
+        self.notify(f"Modo de operacion cambiado a: {mode_str}", title="GUARDARRAILES", severity=sev, timeout=3.0)
+
+    def action_export_audit(self) -> None:
+        """Switch to audit view and trigger export to JSON."""
+        self.action_nav_tab_5()
+        try:
+            audit = self.query_one(AuditTableWidget)
+            self.set_timer(0.1, audit.export_audit_to_json)
+        except Exception:
+            pass
+
+    def action_purge_audit_tests(self) -> None:
+        """Switch to audit view and purge synthetic automated test records."""
+        self.action_nav_tab_5()
+        try:
+            audit = self.query_one(AuditTableWidget)
+            self.set_timer(0.1, audit.purge_test_records)
+        except Exception:
+            pass
+
+    def action_clear_active_console(self) -> None:
+        """Clear logs and terminal outputs in active workspaces."""
+        cleared = False
+        for selector in ["#log-terminal", "#config-log-terminal", "#automation-log-terminal"]:
+            try:
+                log_widget = self.query_one(selector, Log)
+                log_widget.clear()
+                cleared = True
+            except Exception:
+                pass
+        if cleared:
+            self.notify(
+                "Terminal de salida y bitacora de pantalla limpiadas.",
+                title="CONSOLA LIMPIA",
+                severity="information",
+            )
+
+    def action_load_symptom_bgp(self) -> None:
+        """Switch to troubleshooting and load BGP symptom preset."""
+        self.action_nav_tab_1()
+        try:
+            tb = self.query_one(TroubleshootingWorkspace)
+            tb._fill_symptom("El vecino BGP 10.0.0.2 no establece sesion y permanece en estado Idle / Active.")
+        except Exception:
+            pass
+
+    def action_load_symptom_ospf(self) -> None:
+        """Switch to troubleshooting and load OSPF symptom preset."""
+        self.action_nav_tab_1()
+        try:
+            tb = self.query_one(TroubleshootingWorkspace)
+            tb._fill_symptom("Adyacencia OSPF en Gi0/1 estancada en estado EXSTART/EXCHANGE.")
+        except Exception:
+            pass
+
+    def action_load_symptom_packetloss(self) -> None:
+        """Switch to troubleshooting and load packet loss symptom preset."""
+        self.action_nav_tab_1()
+        try:
+            tb = self.query_one(TroubleshootingWorkspace)
+            tb._fill_symptom("Perdida recurrente de paquetes y errores CRC reportados en el enlace Gi0/1.")
+        except Exception:
+            pass
+
+    def action_load_symptom_vlan(self) -> None:
+        """Switch to troubleshooting and load VLAN symptom preset."""
+        self.action_nav_tab_1()
+        try:
+            tb = self.query_one(TroubleshootingWorkspace)
+            tb._fill_symptom("El trafico entre switches de la VLAN 100 no cruza el enlace troncal Gi0/2.")
+        except Exception:
+            pass
+
+    def action_show_shortcuts(self) -> None:
+        """Display quick keyboard shortcuts reference."""
+        self.notify(
+            "Atajos principales:\n"
+            "h: Inicio | 1..5: Modulos | d: Nuevo Equipo | s: Ajustes IA | r/F5: Recargar\n"
+            "^p: Paleta de Comandos | q: Salir",
+            title="ATAJOS DE TECLADO // GUIA RAPIDA",
+            severity="information",
+            timeout=5.0,
         )
 
     # --- Background Workers ---

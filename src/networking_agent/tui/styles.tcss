@@ -1525,3 +1525,73 @@ Footer > .footer--description {
     background: transparent;
     color: #e2e8f0;
 }
+
+
+/* ==========================================================================
+   COMMAND PALETTE STYLING (Mission Control Enterprise - No Icons / No Emojis)
+   ========================================================================== */
+
+CommandPalette {
+    background: rgba(8, 12, 20, 0.88);
+    align-horizontal: center;
+}
+
+/* Strictly hide search icon / emoji */
+CommandPalette SearchIcon {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+CommandPalette > Vertical {
+    background: #0d1527;
+    border: tall #00b4d8;
+    width: 80%;
+    max-width: 110;
+    height: auto;
+    max-height: 26;
+    margin-top: 2;
+    padding: 0;
+}
+
+CommandPalette #--input {
+    background: #090e18;
+    border-bottom: heavy #005f73;
+    height: 3;
+    padding: 0 1;
+}
+
+CommandPalette CommandInput {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+}
+
+CommandPalette CommandInput:focus {
+    border: none;
+}
+
+CommandPalette CommandList {
+    background: #0d1527;
+    scrollbar-gutter: stable;
+    color: #cbd5e1;
+}
+
+CommandPalette CommandList:focus {
+    border: none;
+}
+
+CommandPalette .command-palette--highlight {
+    color: #00e5ff;
+    text-style: bold;
+}
+
+CommandPalette .command-palette--help-text {
+    color: #8da2c0;
+}
+
+CommandPalette OptionList > .option-list--option.-highlighted {
+    background: #14223d;
+    color: #00e5ff;
+    text-style: bold;
+}
