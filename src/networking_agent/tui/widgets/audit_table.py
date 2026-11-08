@@ -447,6 +447,7 @@ class AuditTableWidget(Widget):
         try:
             # Create safety backup before purging
             backup_path = Path("logs") / "audit_backup_pre_purge.jsonl"
+            backup_path.parent.mkdir(parents=True, exist_ok=True)
             backup_path.write_bytes(audit_file.read_bytes())
 
             # Rewrite clean audit file
@@ -456,11 +457,15 @@ class AuditTableWidget(Widget):
 
             self.reload_audit_data(render_detail=False)
 
+            preserved_hosts = sorted({str(r.get("device_host") or "N/A") for r in authentic_records})
+            hosts_detail = ", ".join(preserved_hosts) if preserved_hosts else "Ninguno"
+
             diag.update(
                 Panel(
                     f"[bold green][OK] Depuración de registros sintéticos completada exitosamente:[/bold green]\n\n"
                     f"  * Registros de prueba purgados: [bold yellow]{purged_count}[/bold yellow]\n"
-                    f"  * Registros auténticos conservados: [bold cyan]{len(authentic_records)}[/bold cyan]\n"
+                    f"  * Registros auténticos conservados: [bold cyan]{len(authentic_records)}[/bold cyan] "
+                    f"([bold white]{hosts_detail}[/bold white])\n"
                     f"  * Respaldo previo creado en: [dim white]{backup_path.name}[/dim white]\n\n"
                     f"[dim cyan]A partir de ahora, todas las pruebas automatizadas se ejecutan en un entorno aislado "
                     f"sin alterar esta bitácora inmutable.[/dim cyan]",
