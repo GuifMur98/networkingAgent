@@ -64,22 +64,22 @@ TabPane {
 }
 
 .status-divider {
-    color: #38bdf8;
+    color: $secondary;
     background: transparent;
     text-style: dim;
     padding: 0;
 }
 
 .badge-brain {
-    color: #c084fc;
+    color: $accent;
 }
 
 .badge-device {
-    color: #38bdf8;
+    color: $secondary;
 }
 
 .badge-hitl {
-    color: #4ade80;
+    color: $success;
 }
 
 /* Home / Welcome Dashboard */
@@ -93,7 +93,7 @@ TabPane {
     width: 100%;
     padding: 0 1;
     overflow-y: auto;
-    background: #080c14;
+    background: $background;
 }
 
 #home-banner {
@@ -131,42 +131,42 @@ TabPane {
     width: 1fr;
     height: 100%;
     min-height: 7;
-    background: #080c14;
+    background: $background;
     border: none;
     padding: 0;
     margin: 0 1;
 }
 
 .home-nav-card:hover {
-    background: #0f172a;
+    background: $surface-lighten-1;
     border: none;
 }
 
 .home-nav-card:focus {
-    background: #0f172a;
+    background: $surface-lighten-1;
     border: none;
 }
 
 /* Global Interactive Button Styles with Cyberpunk Hover & Focus */
 Button {
-    background: #0d1527;
-    color: #e2e8f0;
-    border: round #00b4d8;
+    background: $surface;
+    color: $foreground;
+    border: round $primary;
     height: 3;
     text-style: bold;
 }
 
 Button:hover {
-    background: #1e293b;
-    color: #ffffff;
-    border: round #00e5ff;
+    background: $panel;
+    color: $foreground;
+    border: round $accent;
     text-style: bold;
 }
 
 Button:focus {
-    background: #0f172a;
-    color: #00e5ff;
-    border: round #00e5ff;
+    background: $surface-lighten-1;
+    color: $primary;
+    border: round $accent;
     text-style: bold;
 }
 
@@ -180,9 +180,9 @@ Button.-primary,
 #btn-inv-add,
 #btn-refresh-audit,
 #btn-add-device {
-    background: #0369a1;
-    color: #ffffff;
-    border: round #00e5ff;
+    background: $primary;
+    color: $background;
+    border: round $accent;
     text-style: bold;
 }
 
@@ -195,9 +195,9 @@ Button.-primary:hover,
 #btn-inv-add:hover,
 #btn-refresh-audit:hover,
 #btn-add-device:hover {
-    background: #0284c7;
-    color: #ffffff;
-    border: round #38bdf8;
+    background: $primary-lighten-1;
+    color: $background;
+    border: round $primary-lighten-1;
     text-style: bold;
 }
 
@@ -210,34 +210,34 @@ Button.-primary:focus,
 #btn-inv-add:focus,
 #btn-refresh-audit:focus,
 #btn-add-device:focus {
-    background: #0ea5e9;
-    border: round #a5f3fc;
+    background: $accent;
+    border: round $accent;
 }
 
 /* Error / Destructive Action Buttons */
 Button.-error,
 #btn-hitl-reject,
 #btn-inv-delete {
-    background: #881337;
-    color: #ffe4e6;
-    border: round #f43f5e;
+    background: $error;
+    color: $foreground;
+    border: round $error;
     text-style: bold;
 }
 
 Button.-error:hover,
 #btn-hitl-reject:hover,
 #btn-inv-delete:hover {
-    background: #be123c;
-    color: #ffffff;
-    border: round #fb7185;
+    background: $error-lighten-1;
+    color: $foreground;
+    border: round $error-lighten-1;
     text-style: bold;
 }
 
 Button.-error:focus,
 #btn-hitl-reject:focus,
 #btn-inv-delete:focus {
-    background: #e11d48;
-    border: round #fda4af;
+    background: $error-lighten-2;
+    border: round $error-lighten-2;
 }
 
 /* Secondary & Back Navigation Buttons */
@@ -249,9 +249,9 @@ Button.-error:focus,
 #btn-validate-script,
 #btn-inv-refresh,
 #btn-cancel {
-    background: #080c14;
-    color: #38bdf8;
-    border: round #00b4d8;
+    background: $background;
+    color: $secondary;
+    border: round $primary;
     text-style: bold;
 }
 
@@ -263,9 +263,9 @@ Button.-error:focus,
 #btn-validate-script:hover,
 #btn-inv-refresh:hover,
 #btn-cancel:hover {
-    background: #0f172a;
-    color: #00e5ff;
-    border: round #00e5ff;
+    background: $surface-lighten-1;
+    color: $primary;
+    border: round $accent;
     text-style: bold;
 }
 
@@ -277,8 +277,8 @@ Button.-error:focus,
 #btn-validate-script:focus,
 #btn-inv-refresh:focus,
 #btn-cancel:focus {
-    background: #1e293b;
-    border: round #38bdf8;
+    background: $panel;
+    border: round $primary-lighten-1;
 }
 
 /* View Header Navigation Bars */
@@ -289,8 +289,8 @@ Button.-error:focus,
 #audit-top-bar {
     height: 4;
     min-height: 4;
-    background: #080c14;
-    border-bottom: solid #00b4d8;
+    background: $background;
+    border-bottom: solid $primary;
     padding: 0 1;
     margin-bottom: 1;
     align-vertical: middle;
@@ -303,7 +303,7 @@ Button.-error:focus,
 #lbl-audit-header {
     width: 1fr;
     text-style: bold;
-    color: #00e5ff;
+    color: $primary;
     content-align: left middle;
 }
 
@@ -324,14 +324,14 @@ Button.-error:focus,
 .device-sidebar {
     width: 32;
     height: 100%;
-    background: #080c14;
-    border-right: solid #00b4d8;
+    background: $background;
+    border-right: solid $primary;
     padding: 1;
 }
 
 #sidebar-title {
     text-style: bold;
-    color: #00e5ff;
+    color: $primary;
     margin-bottom: 1;
     text-align: center;
 }
@@ -346,20 +346,20 @@ Button.-error:focus,
     height: 3;
     padding: 0 1;
     margin-bottom: 1;
-    background: #0d1527;
-    border-left: wide #1e293b;
+    background: $surface;
+    border-left: wide $secondary;
 }
 
 .device-item:hover {
-    background: #0f172a;
-    border-left: wide #00e5ff;
-    color: #ffffff;
+    background: $surface-lighten-1;
+    border-left: wide $primary;
+    color: $foreground;
 }
 
 .device-item.-selected {
-    background: #1e293b;
-    border-left: wide #00e5ff;
-    color: #38bdf8;
+    background: $panel;
+    border-left: wide $primary;
+    color: $secondary;
     text-style: bold;
 }
 
@@ -381,7 +381,7 @@ Button.-error:focus,
     height: 100%;
     width: 1fr;
     padding: 1 2 1 1;
-    background: #080c14;
+    background: $background;
 }
 
 #diagnostic-container,
@@ -392,7 +392,7 @@ Button.-error:focus,
     height: 100%;
     width: 100%;
     overflow-y: auto;
-    background: #080c14;
+    background: $background;
     padding: 1;
 }
 
@@ -407,8 +407,8 @@ Button.-error:focus,
 
 /* Section Panels & Target Cards */
 .section-panel {
-    background: #0d1527;
-    border: round #00b4d8;
+    background: $surface;
+    border: round $primary;
     padding: 0 1;
     margin-bottom: 1;
     align-vertical: middle;
@@ -417,21 +417,21 @@ Button.-error:focus,
 #target-device-card,
 #config-target-card {
     height: 3;
-    background: #0d1527;
-    border-left: heavy #00e5ff;
-    border: round #1e293b;
+    background: $surface;
+    border-left: heavy $primary;
+    border: round $secondary;
     padding: 0 1;
     margin-bottom: 1;
 }
 
 #config-target-card {
-    border-left: heavy #4ade80;
+    border-left: heavy $success;
 }
 
 #mode-selector-container {
     height: auto;
-    background: #0d1527;
-    border: round #00b4d8;
+    background: $surface;
+    border: round $primary;
     padding: 1;
     margin-bottom: 1;
 }
@@ -450,10 +450,10 @@ Button.-error:focus,
 
 #mode-description-banner {
     height: auto;
-    background: #080c14;
-    border-left: thick #00e5ff;
+    background: $background;
+    border-left: thick $primary;
     padding: 1;
-    color: #94a3b8;
+    color: $foreground-muted;
 }
 
 #lbl-mode,
@@ -464,7 +464,7 @@ Button.-error:focus,
 #lbl-console,
 #lbl-config-console,
 #lbl-editor {
-    color: #38bdf8;
+    color: $secondary;
     text-style: bold;
     margin-bottom: 1;
 }
@@ -478,15 +478,15 @@ Button.-error:focus,
 
 #radio-mode RadioButton {
     margin-right: 2;
-    color: #94a3b8;
+    color: $foreground-muted;
 }
 
 #radio-mode RadioButton:hover {
-    color: #00e5ff;
+    color: $primary;
 }
 
 #radio-mode RadioButton.-selected {
-    color: #38bdf8;
+    color: $secondary;
     text-style: bold;
 }
 
@@ -510,9 +510,9 @@ Button.-error:focus,
     width: 1fr;
     height: 3;
     margin-right: 1;
-    background: #080c14;
-    color: #94a3b8;
-    border: round #1e293b;
+    background: $background;
+    color: $foreground-muted;
+    border: round $secondary;
     text-align: center;
     content-align: center middle;
 }
@@ -524,17 +524,17 @@ Button.-error:focus,
 
 .symptom-chips-row .chip-btn:hover,
 .proto-chips-row .chip-btn:hover {
-    background: #0f172a;
-    color: #00e5ff;
-    border: round #00e5ff;
+    background: $surface-lighten-1;
+    color: $primary;
+    border: round $accent;
     text-style: bold;
 }
 
 .symptom-chips-row .chip-btn:focus,
 .proto-chips-row .chip-btn:focus {
-    background: #1e293b;
-    color: #00e5ff;
-    border: round #00e5ff;
+    background: $panel;
+    color: $primary;
+    border: round $accent;
 }
 
 .symptom-chips {
@@ -545,44 +545,44 @@ Button.-error:focus,
 
 .chip-btn {
     margin-right: 1;
-    background: #080c14;
-    color: #94a3b8;
-    border: round #1e293b;
+    background: $background;
+    color: $foreground-muted;
+    border: round $secondary;
     height: 3;
 }
 
 .chip-btn:hover {
-    background: #0f172a;
-    color: #38bdf8;
-    border: round #00e5ff;
+    background: $surface-lighten-1;
+    color: $secondary;
+    border: round $accent;
     text-style: bold;
 }
 
 .chip-btn:focus {
-    background: #1e293b;
-    color: #00e5ff;
-    border: round #00e5ff;
+    background: $panel;
+    color: $primary;
+    border: round $accent;
 }
 
 /* Text Inputs and TextAreas */
 Input,
 TextArea {
-    background: #080c14;
-    border: round #1e293b;
-    color: #e2e8f0;
+    background: $background;
+    border: round $secondary;
+    color: $foreground;
 }
 
 Input:hover,
 TextArea:hover {
-    background: #0a0e1a;
-    border: round #00b4d8;
+    background: $panel;
+    border: round $primary;
 }
 
 Input:focus,
 TextArea:focus {
-    background: #0f172a;
-    border: round #00e5ff;
-    color: #ffffff;
+    background: $surface-lighten-1;
+    border: round $accent;
+    color: $foreground;
 }
 
 #symptom-input,
@@ -628,14 +628,14 @@ TextArea:focus {
     width: 1fr;
     text-align: right;
     margin-right: 2;
-    color: #94a3b8;
+    color: $foreground-muted;
 }
 
 #lbl-telemetry-pct,
 #lbl-config-pct {
     width: 8;
     text-align: right;
-    color: #00e5ff;
+    color: $primary;
     text-style: bold;
 }
 
@@ -645,7 +645,7 @@ TextArea:focus {
     height: 1;
     margin-top: 0;
     margin-bottom: 0;
-    background: #080c14;
+    background: $background;
 }
 
 #telemetry-progress-bar Bar,
@@ -655,14 +655,14 @@ TextArea:focus {
 
 #telemetry-progress-bar Bar > .bar--bar,
 #config-progress-bar Bar > .bar--bar {
-    color: #00e5ff;
-    background: #0d1e38;
+    color: $primary;
+    background: $surface-lighten-1;
 }
 
 #telemetry-progress-bar Bar > .bar--complete,
 #config-progress-bar Bar > .bar--complete {
-    color: #4ade80;
-    background: #080c14;
+    color: $success;
+    background: $background;
 }
 
 #log-terminal,
@@ -670,9 +670,9 @@ TextArea:focus {
 #automation-log-terminal {
     height: 15;
     min-height: 12;
-    background: #050811;
-    border: round #00b4d8;
-    color: #a5f3fc;
+    background: $panel;
+    border: round $primary;
+    color: $primary-lighten-1;
     padding: 1;
     margin-bottom: 1;
 }
@@ -681,8 +681,8 @@ TextArea:focus {
 #automation-toolbar {
     height: 5;
     min-height: 5;
-    background: #0d1527;
-    border: round #00b4d8;
+    background: $surface;
+    border: round $primary;
     padding: 0 1;
     align-vertical: middle;
     margin-bottom: 1;
@@ -706,7 +706,7 @@ TextArea:focus {
     height: 3;
     content-align: left middle;
     text-style: bold;
-    color: #00e5ff;
+    color: $primary;
     margin-right: 1;
 }
 
@@ -731,22 +731,22 @@ TextArea:focus {
     height: 3;
     min-width: 9;
     margin-left: 1;
-    background: #080c14;
-    border: round #00b4d8;
-    color: #38bdf8;
+    background: $background;
+    border: round $primary;
+    color: $secondary;
     text-style: bold;
 }
 
 #tpl-crud-buttons .chip-btn:hover {
-    border: round #00e5ff;
-    color: #ffffff;
-    background: #0e2038;
+    border: round $accent;
+    color: $foreground;
+    background: $surface-lighten-1;
 }
 
 #tpl-variables-card {
     height: auto;
-    background: #080c14;
-    border: round #00b4d8;
+    background: $background;
+    border: round $primary;
     padding: 1;
     margin-bottom: 1;
 }
@@ -759,7 +759,7 @@ TextArea:focus {
 
 #lbl-tpl-vars {
     width: 1fr;
-    color: #38bdf8;
+    color: $secondary;
     text-style: bold;
     content-align: left middle;
 }
@@ -799,7 +799,7 @@ TextArea:focus {
 
 .tpl-var-label {
     width: 18;
-    color: #00e5ff;
+    color: $primary;
     text-style: bold;
     content-align: left middle;
 }
@@ -807,13 +807,13 @@ TextArea:focus {
 .tpl-var-field-group Input {
     width: 1fr;
     height: 3;
-    border: round #00b4d8;
-    background: #050811;
-    color: #e2e8f0;
+    border: round $primary;
+    background: $panel;
+    color: $foreground;
 }
 
 .tpl-var-field-group Input:focus {
-    border: round #00e5ff;
+    border: round $accent;
 }
 
 #automation-split {
@@ -837,18 +837,18 @@ TextArea:focus {
     height: 3;
     content-align: left middle;
     text-style: bold;
-    color: #00e5ff;
+    color: $primary;
 }
 
 #automation-editor {
     height: 20;
-    border: round #00b4d8;
-    background: #080c14;
-    color: #e2e8f0;
+    border: round $primary;
+    background: $background;
+    color: $foreground;
 }
 
 #automation-editor:focus {
-    border: round #00e5ff;
+    border: round $accent;
 }
 
 #devices-header-row {
@@ -858,7 +858,7 @@ TextArea:focus {
 
 #lbl-target-devices {
     width: 1fr;
-    color: #00e5ff;
+    color: $primary;
     text-style: bold;
     content-align: left middle;
 }
@@ -869,9 +869,9 @@ TextArea:focus {
     height: 3;
     min-height: 3;
     margin-left: 1;
-    background: #080c14;
-    border: round #00b4d8;
-    color: #38bdf8;
+    background: $background;
+    border: round $primary;
+    color: $secondary;
     text-style: bold;
     text-align: center;
     content-align: center middle;
@@ -879,27 +879,27 @@ TextArea:focus {
 
 #btn-select-all-devices:hover,
 #btn-deselect-all-devices:hover {
-    border: round #00e5ff;
-    color: #ffffff;
-    background: #0e2038;
+    border: round $accent;
+    color: $foreground;
+    background: $surface-lighten-1;
 }
 
 #device-selection-list {
     height: 8;
-    border: round #00b4d8;
-    background: #080c14;
+    border: round $primary;
+    background: $background;
     margin-bottom: 1;
 }
 
 #device-selection-list:hover {
-    border: round #00e5ff;
+    border: round $accent;
 }
 
 #lbl-syntax-header {
     height: 2;
     content-align: left middle;
     text-style: bold;
-    color: #00e5ff;
+    color: $primary;
 }
 
 #syntax-status-card {
@@ -945,19 +945,19 @@ TextArea:focus {
 
 #lbl-auto-console {
     width: 1fr;
-    color: #00e5ff;
+    color: $primary;
     text-style: bold;
 }
 
 #lbl-auto-step {
     width: auto;
-    color: #a5f3fc;
+    color: $primary-lighten-1;
     margin-right: 2;
 }
 
 #lbl-auto-pct {
     width: auto;
-    color: #00e5ff;
+    color: $primary;
     text-style: bold;
 }
 
@@ -971,8 +971,8 @@ TextArea:focus {
     width: 96;
     height: auto;
     max-height: 90%;
-    background: #0a0e17;
-    border: round #00e5ff;
+    background: $surface;
+    border: round $accent;
     padding: 1 3 1 2;
     overflow-y: auto;
     overflow-x: hidden;
@@ -1018,9 +1018,9 @@ TextArea:focus {
 .tpl-guide-card {
     height: auto;
     width: 100%;
-    background: #080c14;
-    border-left: thick #00e5ff;
-    border: round #1e293b;
+    background: $background;
+    border-left: thick $primary;
+    border: round $secondary;
     padding: 1 2;
     margin-bottom: 1;
     margin-right: 1;
@@ -1035,20 +1035,20 @@ TextArea:focus {
 
 #lbl-guide-title {
     width: 1fr;
-    color: #00e5ff;
+    color: $primary;
     text-style: bold;
 }
 
 #lbl-guide-syntax {
     width: auto;
-    color: #38bdf8;
+    color: $secondary;
     text-style: bold;
 }
 
 #lbl-guide-desc {
     width: 100%;
     height: auto;
-    color: #94a3b8;
+    color: $foreground-muted;
     margin-top: 0;
     margin-bottom: 1;
 }
@@ -1056,7 +1056,7 @@ TextArea:focus {
 #lbl-chips-tag {
     width: 100%;
     height: 1;
-    color: #cbd5e1;
+    color: $foreground;
     text-style: bold;
     margin-bottom: 1;
 }
@@ -1076,9 +1076,9 @@ TextArea:focus {
     width: 1fr;
     height: 3;
     margin-right: 1;
-    background: #0d1527;
-    border: round #00b4d8;
-    color: #38bdf8;
+    background: $surface;
+    border: round $primary;
+    color: $secondary;
     text-style: bold;
     text-align: center;
     content-align: center middle;
@@ -1089,9 +1089,9 @@ TextArea:focus {
 }
 
 .tpl-var-chip:hover {
-    background: #0e2038;
-    border: round #00e5ff;
-    color: #ffffff;
+    background: $surface-lighten-1;
+    border: round $accent;
+    color: $foreground;
 }
 
 #modal-editor-row {
@@ -1109,7 +1109,7 @@ TextArea:focus {
 
 #lbl-modal-editor {
     width: 1fr;
-    color: #00e5ff;
+    color: $primary;
     text-style: bold;
     content-align: left middle;
 }
@@ -1125,13 +1125,13 @@ TextArea:focus {
 #input-tpl-content {
     height: 11;
     width: 100%;
-    border: round #00b4d8;
-    background: #050811;
-    color: #e2e8f0;
+    border: round $primary;
+    background: $panel;
+    color: $foreground;
 }
 
 #input-tpl-content:focus {
-    border: round #00e5ff;
+    border: round $accent;
 }
 
 #lbl-tpl-feedback {
@@ -1174,8 +1174,8 @@ TextArea:focus {
 #inventory-toolbar {
     height: auto;
     min-height: 5;
-    background: #0d1527;
-    border: round #00b4d8;
+    background: $surface;
+    border: round $primary;
     padding: 0 1;
     margin-bottom: 1;
     align-vertical: middle;
@@ -1203,32 +1203,32 @@ TextArea:focus {
 #inventory-diagnostic-actions Button {
     margin-left: 1;
     height: 3;
-    background: #080c14;
-    border: round #00b4d8;
-    color: #38bdf8;
+    background: $background;
+    border: round $primary;
+    color: $secondary;
     text-style: bold;
 }
 
 #inventory-diagnostic-actions Button:hover {
-    background: #0e2038;
-    border: round #00e5ff;
-    color: #ffffff;
+    background: $surface-lighten-1;
+    border: round $accent;
+    color: $foreground;
 }
 
 #inventory-data-table {
     height: 13;
     min-height: 8;
     max-height: 16;
-    border: round #00b4d8;
-    background: #080c14;
+    border: round $primary;
+    background: $background;
     margin-bottom: 1;
 }
 
 #audit-toolbar {
     height: auto;
     min-height: 5;
-    background: #0d1527;
-    border: round #00b4d8;
+    background: $surface;
+    border: round $primary;
     padding: 0 1;
     margin-bottom: 1;
     align-vertical: middle;
@@ -1242,7 +1242,7 @@ TextArea:focus {
 
 .audit-filter-label {
     width: auto;
-    color: #00e5ff;
+    color: $primary;
     text-style: bold;
     margin-right: 1;
     margin-left: 1;
@@ -1265,9 +1265,9 @@ TextArea:focus {
 #audit-search-input {
     width: 1fr;
     height: 3;
-    background: #080c14;
-    border: round #00b4d8;
-    color: #e2e8f0;
+    background: $background;
+    border: round $primary;
+    color: $foreground;
 }
 
 #audit-action-buttons {
@@ -1286,8 +1286,8 @@ TextArea:focus {
     height: 13;
     min-height: 8;
     max-height: 16;
-    border: round #00b4d8;
-    background: #080c14;
+    border: round $primary;
+    background: $background;
     margin-bottom: 1;
 }
 
@@ -1299,7 +1299,7 @@ TextArea:focus {
 
 #inventory-data-table:focus,
 #audit-data-table:focus {
-    border: round #00e5ff;
+    border: round $accent;
 }
 
 #inventory-diagnostic-card {
@@ -1309,32 +1309,32 @@ TextArea:focus {
 }
 
 DataTable {
-    background: #080c14;
+    background: $background;
 }
 
 DataTable > .datatable--header {
-    background: #0d1527;
-    color: #00e5ff;
+    background: $surface;
+    color: $primary;
     text-style: bold;
     padding: 0 1;
 }
 
 DataTable > .datatable--cursor {
-    background: #1e293b;
-    color: #ffffff;
+    background: $primary;
+    color: $background;
     text-style: bold;
 }
 
 DataTable > .datatable--hover {
-    background: #0f172a;
+    background: $surface-lighten-1;
 }
 
 DataTable > .datatable--even {
-    background: #080c14;
+    background: $background;
 }
 
 DataTable > .datatable--odd {
-    background: #0b1120;
+    background: $surface;
 }
 
 .audit-actions {
@@ -1362,46 +1362,46 @@ Select:focus {
 }
 
 SelectCurrent {
-    border: round #00b4d8;
-    background: #080c14;
-    color: #e2e8f0;
+    border: round $primary;
+    background: $background;
+    color: $foreground;
     height: 3;
     padding: 0 1;
 }
 
 SelectCurrent:hover {
-    border: round #00e5ff;
-    color: #00e5ff;
+    border: round $accent;
+    color: $primary;
 }
 
 SelectCurrent:focus {
-    border: round #00e5ff;
+    border: round $accent;
 }
 
 SelectOverlay {
-    background: #080c14;
-    border: round #00e5ff;
+    background: $background;
+    border: round $accent;
 }
 
 OptionList {
-    background: #080c14;
+    background: $background;
 }
 
 OptionList > .option-list--option:hover {
-    background: #0f172a;
-    color: #00e5ff;
+    background: $surface-lighten-1;
+    color: $primary;
     text-style: bold;
 }
 
 OptionList > .option-list--option.-selected {
-    background: #1e293b;
-    color: #38bdf8;
+    background: $panel;
+    color: $secondary;
     text-style: bold;
 }
 
 /* Modals */
 ModalScreen {
-    background: rgba(8, 12, 20, 0.85);
+    background: $background 80%;
     align: center middle;
 }
 
@@ -1409,8 +1409,8 @@ ModalScreen {
     width: 84;
     height: auto;
     max-height: 90%;
-    background: #0a0e17;
-    border: round #00e5ff;
+    background: $surface;
+    border: round $accent;
     padding: 1 2;
     overflow-y: auto;
 }
@@ -1418,7 +1418,7 @@ ModalScreen {
 .modal-title {
     text-style: bold;
     text-align: center;
-    color: #00e5ff;
+    color: $primary;
     margin-bottom: 1;
 }
 
@@ -1449,8 +1449,8 @@ ModalScreen {
     width: 82;
     height: auto;
     max-height: 90%;
-    background: #0a0e17;
-    border: round #f43f5e;
+    background: $surface;
+    border: round $error;
     padding: 1 2;
     overflow-y: auto;
 }
@@ -1467,7 +1467,7 @@ ModalScreen {
 }
 
 .provider-help-text {
-    color: #38bdf8;
+    color: $secondary;
     text-style: italic;
     margin-top: 1;
     margin-bottom: 1;
@@ -1476,16 +1476,16 @@ ModalScreen {
 #btn-scan-models {
     width: 100%;
     height: 3;
-    background: #080c14;
-    border: round #00b4d8;
-    color: #38bdf8;
+    background: $background;
+    border: round $primary;
+    color: $secondary;
     content-align: center middle;
 }
 
 #btn-scan-models:hover {
-    background: #0f172a;
-    border: round #00e5ff;
-    color: #ffffff;
+    background: $surface-lighten-1;
+    border: round $accent;
+    color: $foreground;
     text-style: bold;
 }
 
@@ -1496,15 +1496,15 @@ ModalScreen {
 }
 
 Checkbox:hover {
-    color: #00e5ff;
+    color: $primary;
 }
 
 Checkbox.-on {
-    color: #4ade80;
+    color: $success;
 }
 
 .error-label {
-    color: #f43f5e;
+    color: $error;
     text-style: bold;
     margin-top: 1;
 }
@@ -1521,13 +1521,13 @@ FooterKey {
 
 FooterKey > .footer-key--key {
     background: transparent;
-    color: #fbbf24;
+    color: $accent;
     text-style: bold;
 }
 
 FooterKey > .footer-key--description {
     background: transparent;
-    color: #e2e8f0;
+    color: $foreground;
 }
 
 FooterKey.-command-palette {
@@ -1539,13 +1539,13 @@ FooterKey.-command-palette {
 
 FooterKey.-command-palette > .footer-key--key {
     background: transparent;
-    color: #fbbf24;
+    color: $accent;
     text-style: bold;
 }
 
 FooterKey.-command-palette > .footer-key--description {
     background: transparent;
-    color: #e2e8f0;
+    color: $foreground;
 }
 
 
@@ -1554,7 +1554,7 @@ FooterKey.-command-palette > .footer-key--description {
    ========================================================================== */
 
 CommandPalette {
-    background: rgba(8, 12, 20, 0.88);
+    background: $background 85%;
     align-horizontal: center;
 }
 
@@ -1566,8 +1566,8 @@ CommandPalette SearchIcon {
 }
 
 CommandPalette > Vertical {
-    background: #0d1527;
-    border: tall #00b4d8;
+    background: $surface;
+    border: tall $primary;
     width: 80%;
     max-width: 110;
     height: auto;
@@ -1577,8 +1577,8 @@ CommandPalette > Vertical {
 }
 
 CommandPalette #--input {
-    background: #090e18;
-    border-bottom: heavy #005f73;
+    background: $panel;
+    border-bottom: heavy $secondary;
     height: 3;
     padding: 0 1;
 }
@@ -1586,7 +1586,7 @@ CommandPalette #--input {
 CommandPalette CommandInput {
     background: transparent;
     border: none;
-    color: #ffffff;
+    color: $foreground;
 }
 
 CommandPalette CommandInput:focus {
@@ -1594,9 +1594,9 @@ CommandPalette CommandInput:focus {
 }
 
 CommandPalette CommandList {
-    background: #0d1527;
+    background: $surface;
     scrollbar-gutter: stable;
-    color: #cbd5e1;
+    color: $foreground;
 }
 
 CommandPalette CommandList:focus {
@@ -1604,16 +1604,16 @@ CommandPalette CommandList:focus {
 }
 
 CommandPalette .command-palette--highlight {
-    color: #00e5ff;
+    color: $primary;
     text-style: bold;
 }
 
 CommandPalette .command-palette--help-text {
-    color: #8da2c0;
+    color: $foreground-muted;
 }
 
 CommandPalette OptionList > .option-list--option.-highlighted {
-    background: #14223d;
-    color: #00e5ff;
+    background: $surface-lighten-2;
+    color: $primary;
     text-style: bold;
 }

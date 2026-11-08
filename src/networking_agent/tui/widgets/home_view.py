@@ -17,6 +17,14 @@ from networking_agent.core.db import db
 from networking_agent.tui.widgets.banner_widget import BannerWidget
 
 
+def _resolve_theme_color(color_val: Optional[str], fallback: str) -> str:
+    if not color_val:
+        return fallback
+    if color_val.startswith("ansi_"):
+        return color_val.replace("ansi_", "")
+    return color_val
+
+
 class HomeNavCard(Button):
     """Futuristic Cyberpunk / Mission Control navigation card for the 5 core modules."""
 
@@ -25,16 +33,16 @@ class HomeNavCard(Button):
         width: 1fr;
         height: 100%;
         min-height: 8;
-        background: transparent;
+        background: $surface;
         border: none;
         padding: 0;
         margin: 0 1;
     }
     HomeNavCard:focus {
-        background: #0f172a;
+        background: $panel;
     }
     HomeNavCard:hover {
-        background: #0d1527;
+        background: $surface-lighten-1;
     }
     """
 
@@ -65,17 +73,29 @@ class HomeNavCard(Button):
         width = self.size.width if self.size.width > 20 else default_w
         inner_width = max(24, width - 4)
 
+        # Dynamic theme colors
+        theme = getattr(self.app, "current_theme", None)
+        is_dark = getattr(theme, "dark", True) if theme else True
+        primary_color = _resolve_theme_color(getattr(theme, "primary", None), "#00e5ff")
+        secondary_color = _resolve_theme_color(getattr(theme, "secondary", None), "#00b4d8")
+        accent_color = _resolve_theme_color(getattr(theme, "accent", None), "#fbbf24")
+        success_color = _resolve_theme_color(getattr(theme, "success", None), "#22c55e")
+        error_color = _resolve_theme_color(getattr(theme, "error", None), "#f43f5e")
+        fg_raw = getattr(theme, "foreground", None)
+        fg_color = _resolve_theme_color(fg_raw, "#e2e8f0" if is_dark else "#111827")
+        dim_color = "#94a3b8" if is_dark else "#4b5563"
+
         is_active = self.has_focus or self.has_pseudo_class("hover")
-        border_color = "#00e5ff" if is_active else "#00b4d8"
+        border_color = primary_color if is_active else secondary_color
 
         t = Text()
         # 1. Title line: [1] TROUBLESHOOTING
-        t.append(f"[{self.card_number}] ", style="bold #fbbf24")
-        t.append(f"{self.card_title}\n", style="bold white")
+        t.append(f"[{self.card_number}] ", style=f"bold {accent_color}")
+        t.append(f"{self.card_title}\n", style=f"bold {fg_color}")
 
         # 2. Subtitle lines
         for line in self.subtitle_lines:
-            t.append(f"{line}\n", style="#cbd5e1")
+            t.append(f"{line}\n", style=dim_color)
         t.append("\n")
 
         # 3. Bottom indicators & graphics
@@ -84,55 +104,52 @@ class HomeNavCard(Button):
             left_part = "● ACTIVO"
             right_part = "___/|¯\\_"
             spaces = max(2, inner_width - len(left_part) - len(right_part))
-            t.append(left_part, style="bold #22c55e")
+            t.append(left_part, style=f"bold {success_color}")
             t.append(" " * spaces)
-            t.append(right_part, style="bold #f43f5e")
+            t.append(right_part, style=f"bold {error_color}")
 
         elif self.graphic_type == "gear_sliders":
             # Card 2: ● LISTO ... ⚙ ⊸
             left_part = "● LISTO"
             right_part = "⚙ ⊸"
             spaces = max(2, inner_width - len(left_part) - 4)
-            t.append(left_part, style="bold #22c55e")
+            t.append(left_part, style=f"bold {success_color}")
             t.append(" " * spaces)
-            t.append(right_part, style="bold #00e5ff")
+            t.append(right_part, style=f"bold {primary_color}")
 
         elif self.graphic_type == "terminal_box":
             # Card 3: ● LISTO ... [>_]
             left_part = "● LISTO"
             right_part = "[>_]"
             spaces = max(2, inner_width - len(left_part) - len(right_part))
-            t.append(left_part, style="bold #22c55e")
+            t.append(left_part, style=f"bold {success_color}")
             t.append(" " * spaces)
-            t.append(right_part, style="bold #00e5ff")
+            t.append(right_part, style=f"bold {primary_color}")
 
         elif self.graphic_type == "inventory":
-            # Card 4: [████████████████░░░░] 15/15 ... (((•)))
-            #         ░░░░░░░░░░░░░░░░░░░░░░        [ ... ]
             count_str = f"{self.device_count}/{self.device_count}" if self.device_count > 0 else "0/0"
             bar = "[████████████████░░░░] " + count_str
             wifi_top = "(((•)))"
             spaces_1 = max(4, inner_width - len(bar) - len(wifi_top))
-            t.append(bar, style="bold #00e5ff")
+            t.append(bar, style=f"bold {primary_color}")
             t.append(" " * spaces_1)
-            t.append(wifi_top + "\n", style="bold #38bdf8")
+            t.append(wifi_top + "\n", style=f"bold {secondary_color}")
 
             hatch = "░" * 22
             wifi_bot = "[ ... ]"
             spaces_2 = max(4, inner_width - len(hatch) - len(wifi_bot))
-            t.append(hatch, style="dim #00e5ff")
+            t.append(hatch, style=f"dim {primary_color}")
             t.append(" " * spaces_2)
-            t.append(wifi_bot, style="bold #00e5ff")
+            t.append(wifi_bot, style=f"bold {primary_color}")
 
         elif self.graphic_type == "audit":
-            # Card 5: |===| ==================== |:::::
             col_bar_width = max(10, inner_width - 18)
             equals = "=" * col_bar_width
-            t.append(f"|===| {equals} |:::::\n", style="#00b4d8")
-            t.append(f"|===| {equals} |:::::\n", style="#0077b6")
-            t.append(f"|===| {equals} \\:::::", style="#023e8a")
+            t.append(f"|===| {equals} |:::::\n", style=primary_color)
+            t.append(f"|===| {equals} |:::::\n", style=secondary_color)
+            t.append(f"|===| {equals} \\:::::", style=f"dim {secondary_color}")
 
-        top_title = f"[bold #38bdf8]● {self.top_badge}[/]" if self.top_badge else None
+        top_title = f"[bold {secondary_color}]● {self.top_badge}[/]" if self.top_badge else None
 
         return Panel(
             t,
@@ -245,6 +262,17 @@ class HomeDashboard(Widget):
         devices = db.list_devices()
         auto_approve = db.get_setting("auto_approve") == "true" or settings.auto_approve
 
+        # Dynamic theme colors
+        theme = getattr(self.app, "current_theme", None)
+        is_dark = getattr(theme, "dark", True) if theme else True
+        primary_color = _resolve_theme_color(getattr(theme, "primary", None), "#00e5ff")
+        accent_color = _resolve_theme_color(getattr(theme, "accent", None), "#fbbf24")
+        success_color = _resolve_theme_color(getattr(theme, "success", None), "#4ade80")
+        error_color = _resolve_theme_color(getattr(theme, "error", None), "#ef4444")
+        fg_raw = getattr(theme, "foreground", None)
+        fg_color = _resolve_theme_color(fg_raw, "#e2e8f0" if is_dark else "#111827")
+        dim_color = "#94a3b8" if is_dark else "#6b7280"
+
         # Truncate model name only if extremely long (> 32 chars) to keep on 1 line
         if len(model) > 32:
             model_display = f"{model[:18]}...{model[-10:]}"
@@ -252,27 +280,27 @@ class HomeDashboard(Widget):
             model_display = model
 
         hitl_status = (
-            "[bold #4ade80]ACTIVO (Confirmación Requerida)[/]"
+            f"[bold {success_color}]ACTIVO (Confirmación Requerida)[/]"
             if not auto_approve
-            else "[bold #ef4444]DESACTIVADO (Auto-Approve ON)[/]"
+            else f"[bold {error_color}]DESACTIVADO (Auto-Approve ON)[/]"
         )
 
         status_text = Text.from_markup(
-            f"[bold #00e5ff]ESTADO DEL SISTEMA:[/] IA: [bold #bc8cff]{provider.upper()}[/] "
-            f"([#94a3b8]{model_display}[/]) | "
-            f"Inventario: [bold #00e5ff]{len(devices)} equipos[/] | "
+            f"[bold {primary_color}]ESTADO DEL SISTEMA:[/] IA: [bold {accent_color}]{provider.upper()}[/] "
+            f"([{dim_color}]{model_display}[/]) | "
+            f"Inventario: [bold {primary_color}]{len(devices)} equipos[/] | "
             f"HitL: {hitl_status}\n"
-            f"[#64748b]Atajos:[/] [bold #fbbf24][1-5][/] [#e2e8f0]Seleccionar Módulo[/] | "
-            f"[bold #fbbf24][H][/] [#e2e8f0]Inicio[/] | "
-            f"[bold #fbbf24][S][/] [#e2e8f0]Ajustes IA[/] | "
-            f"[bold #fbbf24][D][/] [#e2e8f0]Nuevo Equipo[/] | "
-            f"[bold #fbbf24][Q][/] [#e2e8f0]Salir[/]"
+            f"[{dim_color}]Atajos:[/] [bold {accent_color}][1-5][/] [{fg_color}]Seleccionar Módulo[/] | "
+            f"[bold {accent_color}][H][/] [{fg_color}]Inicio[/] | "
+            f"[bold {accent_color}][S][/] [{fg_color}]Ajustes IA[/] | "
+            f"[bold {accent_color}][D][/] [{fg_color}]Nuevo Equipo[/] | "
+            f"[bold {accent_color}][Q][/] [{fg_color}]Salir[/]"
         )
 
         panel = Panel(
             status_text,
             title="PANEL DE CONTROL OPERACIONAL",
-            border_style="#00b4d8",
+            border_style=primary_color,
             box=box.ROUNDED,
             padding=(0, 1),
         )

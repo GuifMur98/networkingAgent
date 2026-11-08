@@ -20,8 +20,8 @@ class DeviceSidebar(Widget):
     DeviceSidebar {
         width: 32;
         height: 100%;
-        background: #080c14;
-        border-right: solid #00b4d8;
+        background: $surface;
+        border-right: solid $primary;
         padding: 1;
     }
     """
@@ -70,7 +70,7 @@ class DeviceSidebar(Widget):
                 vendor_badge = "MikroTik"
 
             label_text = Text()
-            label_text.append(f"{dev.host}\n", style="bold white")
+            label_text.append(f"{dev.host}\n", style="bold")
             label_text.append(f"[{vendor_badge}]", style=f"bold {badge_color}")
             label_text.append(f" :{dev.port} ({dev.username})", style="dim")
 

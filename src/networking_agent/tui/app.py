@@ -25,10 +25,11 @@ from networking_agent.tui.modals.hitl_modal import HitLModal
 from networking_agent.tui.modals.vault_modal import VaultModal
 from networking_agent.tui.widgets.audit_table import AuditTableWidget
 from networking_agent.tui.widgets.automation_view import AutomationView
+from networking_agent.tui.widgets.banner_widget import BannerWidget
 from networking_agent.tui.widgets.configuration_view import ConfigurationView
 from networking_agent.tui.widgets.device_inventory_view import DeviceInventoryView
 from networking_agent.tui.widgets.device_sidebar import DeviceSidebar
-from networking_agent.tui.widgets.home_view import HomeDashboard
+from networking_agent.tui.widgets.home_view import HomeDashboard, HomeNavCard
 from networking_agent.tui.widgets.status_bar import TopStatusBar
 from networking_agent.tui.widgets.troubleshooting_view import TroubleshootingWorkspace
 
@@ -219,9 +220,32 @@ class NetworkingAgentTUIApp(App):
         self._prewarm_ai_cache()
 
     def watch_theme(self, new_theme: str) -> None:
-        """Persist chosen theme in SQLite database."""
+        """Persist chosen theme in SQLite database and refresh custom rendered widgets."""
         try:
             db.set_setting("app_theme", new_theme)
+        except Exception:
+            pass
+        self.call_after_refresh(self._refresh_theme_widgets)
+
+    def _refresh_theme_widgets(self) -> None:
+        """Re-render dynamic widgets when theme or dark/light mode changes."""
+        try:
+            home = self.query_one(HomeDashboard)
+            home.update_status_card()
+            for card in home.query(HomeNavCard):
+                card.refresh()
+            banner = self.query_one(BannerWidget)
+            banner.refresh()
+        except Exception:
+            pass
+        try:
+            status_bar = self.query_one(TopStatusBar)
+            status_bar.refresh()
+        except Exception:
+            pass
+        try:
+            for sidebar in self.query(DeviceSidebar):
+                sidebar.reload_devices()
         except Exception:
             pass
 
@@ -528,28 +552,40 @@ class NetworkingAgentTUIApp(App):
 
     def action_toggle_dark(self) -> None:
         """Toggle between dark and light variants of the current theme."""
-        if "dark" in self.theme:
-            candidate = self.theme.replace("dark", "light")
-            if candidate in self.available_themes:
-                self.theme = candidate
+        is_dark = getattr(self.current_theme, "dark", True)
+        if is_dark:
+            light_map = {
+                "textual-dark": "textual-light",
+                "catppuccin-mocha": "catppuccin-latte",
+                "catppuccin-frappe": "catppuccin-latte",
+                "catppuccin-macchiato": "catppuccin-latte",
+                "solarized-dark": "solarized-light",
+                "rose-pine": "rose-pine-dawn",
+                "rose-pine-moon": "rose-pine-dawn",
+                "atom-one-dark": "atom-one-light",
+                "ansi-dark": "ansi-light",
+            }
+            if self.theme in light_map:
+                self.theme = light_map[self.theme]
+            elif "dark" in self.theme and self.theme.replace("dark", "light") in self.available_themes:
+                self.theme = self.theme.replace("dark", "light")
             else:
                 self.theme = "textual-light"
-        elif "light" in self.theme:
-            candidate = self.theme.replace("light", "dark")
-            if candidate in self.available_themes:
-                self.theme = candidate
+        else:
+            dark_map = {
+                "textual-light": "textual-dark",
+                "catppuccin-latte": "catppuccin-mocha",
+                "solarized-light": "solarized-dark",
+                "rose-pine-dawn": "rose-pine",
+                "atom-one-light": "atom-one-dark",
+                "ansi-light": "ansi-dark",
+            }
+            if self.theme in dark_map:
+                self.theme = dark_map[self.theme]
+            elif "light" in self.theme and self.theme.replace("light", "dark") in self.available_themes:
+                self.theme = self.theme.replace("light", "dark")
             else:
                 self.theme = "textual-dark"
-        elif self.theme == "catppuccin-mocha":
-            self.theme = "catppuccin-latte"
-        elif self.theme == "catppuccin-latte":
-            self.theme = "catppuccin-mocha"
-        elif self.theme == "solarized-dark":
-            self.theme = "solarized-light"
-        elif self.theme == "solarized-light":
-            self.theme = "solarized-dark"
-        else:
-            self.theme = "textual-light" if "dark" in self.theme else "textual-dark"
         self.notify(f"Tema activo: {self.theme}", title="APARIENCIA", timeout=2.5)
 
     def action_reset_theme(self) -> None:

@@ -12,8 +12,8 @@ class TopStatusBar(Static):
     TopStatusBar {
         height: 1;
         dock: top;
-        background: #080c14;
-        color: #e6edf3;
+        background: $surface;
+        color: $foreground;
         border: none;
         padding: 0 1;
     }
@@ -36,19 +36,19 @@ class TopStatusBar(Static):
         text-style: bold;
     }
     .status-divider {
-        color: #38bdf8;
+        color: $secondary;
         background: transparent;
         text-style: dim;
         padding: 0;
     }
     .badge-brain {
-        color: #c084fc;
+        color: $accent;
     }
     .badge-device {
-        color: #38bdf8;
+        color: $primary;
     }
     .badge-hitl {
-        color: #4ade80;
+        color: $success;
     }
     """
 
