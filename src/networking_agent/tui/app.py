@@ -133,6 +133,8 @@ class NetworkingAgentTUIApp(App):
 
     BINDINGS = [
         Binding("h", "go_home", "Inicio", show=True),
+        Binding("escape", "escape_or_home", "Inicio", show=False),
+        Binding("ctrl+h", "go_home", "Inicio", show=False),
         Binding("q", "quit", "Salir", show=True),
         Binding("d", "add_device", "Nuevo Equipo", show=True),
         Binding("s", "open_settings", "Ajustes IA", show=True),
@@ -187,7 +189,7 @@ class NetworkingAgentTUIApp(App):
             with TabPane("Auditoria", id="pane-audit"):
                 yield AuditTableWidget(id="audit-widget")
 
-        yield Footer()
+        yield Footer(show_command_palette=False)
 
     def on_mount(self) -> None:
         """Trigger initial device sync across sidebars and views."""
@@ -230,13 +232,37 @@ class NetworkingAgentTUIApp(App):
         except Exception:
             pass
 
+    def action_escape_or_home(self) -> None:
+        """Handle escape: unfocus active input/editor to back button, or return to Home."""
+        from textual.widgets import Input, TextArea
+
+        if self.focused and isinstance(self.focused, (TextArea, Input)):
+            tabs = self.query_one("#main-tabs", TabbedContent)
+            active = tabs.active
+            btn_map = {
+                "pane-troubleshooting": "#btn-back-to-home",
+                "pane-configuration": "#btn-back-from-config",
+                "pane-automation": "#btn-back-from-automation",
+                "pane-inventory": "#btn-back-from-inventory",
+                "pane-audit": "#btn-back-from-audit",
+            }
+            if active in btn_map:
+                try:
+                    self.query_one(btn_map[active]).focus()
+                    return
+                except Exception:
+                    pass
+            self.set_focus(None)
+        else:
+            self.action_go_home()
+
     def action_nav_tab_1(self) -> None:
         """Switch navigation to Troubleshooting workspace."""
         self.set_focus(None)
         tabs = self.query_one("#main-tabs", TabbedContent)
         tabs.active = "pane-troubleshooting"
         try:
-            self.query_one("#symptom-input").focus()
+            self.query_one("#btn-back-to-home").focus()
         except Exception:
             pass
 
@@ -246,7 +272,7 @@ class NetworkingAgentTUIApp(App):
         tabs = self.query_one("#main-tabs", TabbedContent)
         tabs.active = "pane-configuration"
         try:
-            self.query_one("#config-request-input").focus()
+            self.query_one("#btn-back-from-config").focus()
         except Exception:
             pass
 
@@ -256,7 +282,7 @@ class NetworkingAgentTUIApp(App):
         tabs = self.query_one("#main-tabs", TabbedContent)
         tabs.active = "pane-automation"
         try:
-            self.query_one("#automation-editor").focus()
+            self.query_one("#btn-back-from-automation").focus()
         except Exception:
             pass
 
@@ -266,7 +292,7 @@ class NetworkingAgentTUIApp(App):
         tabs = self.query_one("#main-tabs", TabbedContent)
         tabs.active = "pane-inventory"
         try:
-            self.query_one("#inventory-data-table").focus()
+            self.query_one("#btn-back-from-inventory").focus()
         except Exception:
             pass
 
@@ -276,7 +302,7 @@ class NetworkingAgentTUIApp(App):
         tabs = self.query_one("#main-tabs", TabbedContent)
         tabs.active = "pane-audit"
         try:
-            self.query_one("#audit-data-table").focus()
+            self.query_one("#btn-back-from-audit").focus()
         except Exception:
             pass
 
@@ -292,15 +318,15 @@ class NetworkingAgentTUIApp(App):
         tabs.active = target_tab
         try:
             if target_tab == "pane-troubleshooting":
-                self.query_one("#symptom-input").focus()
+                self.query_one("#btn-back-to-home").focus()
             elif target_tab == "pane-configuration":
-                self.query_one("#config-request-input").focus()
+                self.query_one("#btn-back-from-config").focus()
             elif target_tab == "pane-automation":
-                self.query_one("#automation-editor").focus()
+                self.query_one("#btn-back-from-automation").focus()
             elif target_tab == "pane-inventory":
-                self.query_one("#inventory-data-table").focus()
+                self.query_one("#btn-back-from-inventory").focus()
             elif target_tab == "pane-audit":
-                self.query_one("#audit-data-table").focus()
+                self.query_one("#btn-back-from-audit").focus()
         except Exception:
             pass
 

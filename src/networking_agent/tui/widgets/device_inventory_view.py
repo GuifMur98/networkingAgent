@@ -45,7 +45,7 @@ class DeviceInventoryView(Widget):
                         "INVENTARIO DE EQUIPOS // GESTION DE INFRAESTRUCTURA Y CONECTIVIDAD",
                         id="inventory-title",
                     )
-                    yield Button("Volver al Inicio", id="btn-back-from-inventory")
+                    yield Button("Volver al Inicio (h)", id="btn-back-from-inventory")
 
                 # 2. Operational Actions Toolbar (Sleek unified card)
                 with Horizontal(id="inventory-toolbar", classes="section-panel"):

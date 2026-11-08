@@ -39,7 +39,7 @@ class AuditTableWidget(Widget):
                         "AUDITORIA CRIPTOGRAFICA // BITACORA DE OPERACIONES Y REMEDIACIONES",
                         id="lbl-audit-header",
                     )
-                    yield Button("Volver al Inicio", id="btn-back-from-audit")
+                    yield Button("Volver al Inicio (h)", id="btn-back-from-audit")
 
                 # 2. Unified Toolbar (Filters, Search, and Operational Actions)
                 with Horizontal(id="audit-toolbar", classes="section-panel"):

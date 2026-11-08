@@ -263,6 +263,7 @@ class HomeDashboard(Widget):
             f"Inventario: [bold #00e5ff]{len(devices)} equipos[/] | "
             f"HitL: {hitl_status}\n"
             f"[#64748b]Atajos:[/] [bold #fbbf24][1-5][/] [#e2e8f0]Seleccionar Módulo[/] | "
+            f"[bold #fbbf24][H][/] [#e2e8f0]Inicio[/] | "
             f"[bold #fbbf24][S][/] [#e2e8f0]Ajustes IA[/] | "
             f"[bold #fbbf24][D][/] [#e2e8f0]Nuevo Equipo[/] | "
             f"[bold #fbbf24][Q][/] [#e2e8f0]Salir[/]"

@@ -42,7 +42,7 @@ class ConfigurationView(Widget):
                 # Navigation Header with Back button
                 with Horizontal(id="config-nav-bar"):
                     yield Label("CONFIGURACION // APROVISIONAMIENTO EN LENGUAJE NATURAL", id="config-title")
-                    yield Button("Volver al Inicio", id="btn-back-from-config")
+                    yield Button("Volver al Inicio (h)", id="btn-back-from-config")
 
                 # Selected Device Card
                 yield Static(id="config-target-card")

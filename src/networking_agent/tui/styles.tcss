@@ -1526,6 +1526,10 @@ Footer > .footer--description {
     color: #e2e8f0;
 }
 
+Footer > FooterKey.-command-palette {
+    display: none;
+}
+
 
 /* ==========================================================================
    COMMAND PALETTE STYLING (Mission Control Enterprise - No Icons / No Emojis)

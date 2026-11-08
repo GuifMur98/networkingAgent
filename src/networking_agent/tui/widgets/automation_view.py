@@ -52,7 +52,7 @@ class AutomationView(Widget):
                 # 1. Header Navigation Bar
                 with Horizontal(id="automation-top-bar"):
                     yield Label("AUTOMATIZACION // GESTOR DE PLANTILLAS Y DESPLIEGUE MASIVO", id="automation-title")
-                    yield Button("Volver al Inicio", id="btn-back-from-automation")
+                    yield Button("Volver al Inicio (h)", id="btn-back-from-automation")
 
                 # 2. Template Catalog & Selection Bar (Sleek horizontal panel)
                 with Horizontal(id="automation-toolbar", classes="section-panel"):

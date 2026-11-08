@@ -57,7 +57,7 @@ class TroubleshootingWorkspace(Widget):
                 # Navigation Header with Back button
                 with Horizontal(id="diagnostic-nav-bar"):
                     yield Label("TROUBLESHOOTING // DIAGNOSTICO EN LENGUAJE NATURAL", id="diagnostic-title")
-                    yield Button("Volver al Inicio", id="btn-back-to-home")
+                    yield Button("Volver al Inicio (h)", id="btn-back-to-home")
 
                 # Selected Device Card
                 yield Static(id="target-device-card")
