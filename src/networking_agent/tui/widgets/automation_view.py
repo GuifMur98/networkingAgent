@@ -314,14 +314,16 @@ class AutomationView(Widget):
             return
 
         vars_row.display = True
+        new_cols = []
         for var_name in vars_list:
             default_val = str(defaults.get(var_name, ""))
-            item_col = Vertical(classes="tpl-var-item")
             lbl = Label(f"{{ {var_name} }}:", classes="tpl-var-label")
             inp = Input(value=default_val, placeholder=var_name, id=f"var-inp-{var_name}")
-            item_col.mount(lbl)
-            item_col.mount(inp)
-            inputs_container.mount(item_col)
+            item_col = Vertical(lbl, inp, classes="tpl-var-item")
+            new_cols.append(item_col)
+
+        if new_cols:
+            inputs_container.mount(*new_cols)
 
     def _render_variables_to_editor(self) -> None:
         """Collects parameter inputs and renders the template into the editor."""
