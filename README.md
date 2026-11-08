@@ -63,15 +63,11 @@ La plataforma incorpora una **Paleta de Comandos** global accesible desde cualqu
 
 - **Diseño Sobrio Enterprise NOC:** Cero emojis e iconos decorativos, priorizando etiquetas técnicas de alta densidad.
 - **Búsqueda Difusa (Fuzzy Search):** Localización inmediata de operaciones tecleando palabras clave.
-- **Catálogo Exhaustivo de Operaciones:**
-  - Navegación instantánea a cualquiera de los 5 módulos (`1` a `5`).
-  - Registro y alta rápida de nuevos dispositivos de red (`add_device`).
-  - Diagnóstico completo de conectividad (Ping + SSH), prueba exclusiva de Ping ICMP y prueba de socket TCP 22.
-  - Sincronización y recarga de catálogo (`refresh_all`).
-  - Creación y edición de plantillas de configuración Jinja2 (`new_template`).
-  - Conmutación en caliente de guardarraíl Human-in-the-Loop (`toggle_hitl`).
-  - Presets de síntomas de diagnóstico para BGP, OSPF y VLAN.
-  - Exportación de bitácora y purga de eventos de auditoría.
+- **Catálogo Exhaustivo de Operaciones del Sistema:**
+  - **Temas Visuales:** Selector interactivo de más de 20 temas de Textual (Nord, Dracula, Tokyo Night, Gruvbox, etc.) con persistencia en SQLite (`app_theme`), conmutación claro/oscuro y restauración predeterminada.
+  - **Navegación Global:** Desplazamiento instantáneo al Dashboard Principal o a los 5 módulos operacionales (`1` al `5`).
+  - **Seguridad y Configuración:** Configuración de IA y bóveda criptográfica, alternancia de guardarraíles (HITL) y registro de equipos.
+  - **Utilidades de Terminal:** Captura vectorial de pantalla en formato SVG (`logs/screenshot_*.svg`), limpieza de consola activa y recarga/sincronización global del sistema (`F5` / `r`).
 
 ---
 

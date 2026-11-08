@@ -13,179 +13,124 @@ class PaletteCommand(NamedTuple):
 
 
 class NetworkAgentCommandProvider(Provider):
-    """Command palette provider exposing all network assistant operations.
+    """Command palette provider exposing system-level and navigation operations.
 
     Strictly complies with enterprise mission-control styling:
     no emojis, no decorative icons, clean technical labels.
+    Focuses exclusively on system utilities, visual themes, and global navigation.
     """
 
     COMMANDS: List[PaletteCommand] = [
+        # --- Apariencia y Temas ---
+        PaletteCommand(
+            "Tema: Cambiar Tema Visual...",
+            "Explora y aplica mas de 20 temas visuales (Nord, Dracula, Tokyo Night, Gruvbox, etc.).",
+            "change_theme",
+            "tema temas color colores apariencia interfaz aspecto visual dracula nord tokyo gruvbox",
+        ),
+        PaletteCommand(
+            "Tema: Alternar Modo Oscuro / Claro",
+            "Conmuta entre la paleta de modo oscuro y modo claro del sistema.",
+            "toggle_dark",
+            "oscuro claro modo dark light contraste blanco negro tema",
+        ),
+        PaletteCommand(
+            "Tema: Restaurar Tema Predeterminado",
+            "Restaura la apariencia original corporativa (Textual Dark).",
+            "reset_theme",
+            "restaurar tema default original reset reiniciar apariencia",
+        ),
         # --- Navegacion a Modulos ---
         PaletteCommand(
             "Navegar: Inicio (Dashboard Principal)",
             "Ir a la vista general con estado de red, KPIs y accesos rapidos.",
             "go_home",
-            "inicio dashboard home kpi metricas panel general",
+            "inicio dashboard home kpi metricas panel general vista",
         ),
         PaletteCommand(
             "Navegar: Modulo 1 - Diagnostico y Troubleshooting",
             "Espacio de trabajo para analisis reactivo y proactivo asistido por IA.",
             "nav_tab_1",
-            "troubleshooting diagnostico fallas ai asistente reactivo proactivo",
+            "troubleshooting diagnostico fallas ai asistente reactivo proactivo modulo 1",
         ),
         PaletteCommand(
             "Navegar: Modulo 2 - Configuracion de Red",
             "Sintetizar y aplicar comandos CLI en lenguaje natural con guardarrailes.",
             "nav_tab_2",
-            "configuracion cli lenguaje natural aplicar rollback sintesis",
+            "configuracion cli lenguaje natural aplicar rollback sintesis modulo 2",
         ),
         PaletteCommand(
             "Navegar: Modulo 3 - Automatizacion y Plantillas",
             "Gestor de plantillas Jinja2 y despliegue masivo por lotes.",
             "nav_tab_3",
-            "automatizacion plantillas jinja2 batch despliegue lotes scripts",
+            "automatizacion plantillas jinja2 batch despliegue lotes scripts modulo 3",
         ),
         PaletteCommand(
             "Navegar: Modulo 4 - Inventario de Equipos",
             "Catalogo de routers, switches y firewalls con prueba de conectividad.",
             "nav_tab_4",
-            "inventario equipos dispositivos catalogo hardware switches routers ping",
+            "inventario equipos dispositivos catalogo hardware switches routers modulo 4",
         ),
         PaletteCommand(
             "Navegar: Modulo 5 - Auditoria y Bitacora",
             "Registro forense criptografico SHA-256 inmutable de operaciones.",
             "nav_tab_5",
-            "auditoria bitacora sha256 forense logs inmutable registros trazabilidad",
+            "auditoria bitacora sha256 forense logs inmutable registros trazabilidad modulo 5",
         ),
-        # --- Operaciones de Equipos y Conectividad ---
+        # --- Configuracion y Seguridad Global ---
         PaletteCommand(
-            "Equipos: Registrar Nuevo Dispositivo en Catalogo",
-            "Abre el formulario para anadir un equipo con credenciales seguras.",
-            "add_device",
-            "nuevo equipo registrar agregar dispositivo host ssh ip",
-        ),
-        PaletteCommand(
-            "Equipos: Diagnostico Completo de Conectividad (Ping + SSH)",
-            "Verifica accesibilidad ICMP y estado del puerto 22 TCP (SSH).",
-            "test_connectivity",
-            "ping ssh conectividad probar conexion alcanzar icmp tcp 22 socket",
+            "Sistema: Configurar IA y Boveda Criptografica",
+            "Configura proveedor de IA (Ollama / Gemini / APIs) y almacena claves en la boveda.",
+            "open_settings",
+            "ajustes ia boveda vault ollama gemini api key modelo cerebro configuracion",
         ),
         PaletteCommand(
-            "Equipos: Probar Ping ICMP a Dispositivo",
-            "Envia paquetes ICMP Echo Request al equipo seleccionado para medir latencia.",
-            "ping_device",
-            "ping icmp echo latencia respuesta alcanzar prueba",
-        ),
-        PaletteCommand(
-            "Equipos: Comprobar Puerto 22 TCP (SSH)",
-            "Verifica si el servicio SSH responde conexiones TCP en el host objetivo.",
-            "test_ssh_port",
-            "ssh tcp puerto 22 socket conexion servicio demonio",
-        ),
-        PaletteCommand(
-            "Equipos: Sincronizar Catalogo y Recargar Estado",
-            "Recarga equipos desde la base de datos SQLite y refresca vistas.",
-            "refresh_all",
-            "recargar sincronizar refrescar base de datos equipos f5",
-        ),
-        # --- Automatizacion y Plantillas ---
-        PaletteCommand(
-            "Automatizacion: Crear Nueva Plantilla de Configuracion",
-            "Abre el asistente para redactar una plantilla Jinja2 con variables dinamicas.",
-            "new_template",
-            "nueva plantilla crear jinja2 wizard formulario template",
-        ),
-        PaletteCommand(
-            "Automatizacion: Validar Sintaxis de Script (Dry-Run)",
-            "Ejecuta analisis estatico y verificacion de guardarrailes sin enviar trafico.",
-            "validate_automation_script",
-            "validar dry run sintaxis seguridad parseo verificacion",
-        ),
-        PaletteCommand(
-            "Automatizacion: Seleccionar Todos los Equipos",
-            "Marca todas las casillas de equipos para despliegue por lotes.",
-            "select_all_automation_devices",
-            "seleccionar todos marcar lista despliegue all",
-        ),
-        PaletteCommand(
-            "Automatizacion: Deseleccionar Todos los Equipos",
-            "Desmarca todas las casillas de equipos en el panel de despliegue.",
-            "deselect_all_automation_devices",
-            "deseleccionar desmarcar limpiar seleccion lista none",
-        ),
-        # --- Seguridad e Inteligencia Artificial ---
-        PaletteCommand(
-            "Seguridad: Alternar Modo Guardarrailes (HITL / Auto-Aprobacion)",
-            "Alterna entre validacion humana obligatoria y aprobacion automatica.",
+            "Sistema: Alternar Modo Guardarrailes (HITL / Auto-Aprobacion)",
+            "Alterna entre validacion humana obligatoria y aprobacion automatica de cambios.",
             "toggle_hitl",
             "hitl auto approve human in the loop guardarrailes seguridad modo toggle",
         ),
         PaletteCommand(
-            "IA: Configurar Boveda Cifrada y Modelos de Lenguaje",
-            "Configura proveedor de IA (Ollama / Gemini) y almacena claves en la boveda.",
-            "open_settings",
-            "ajustes ia boveda vault ollama gemini api key modelo cerebro",
-        ),
-        # --- Auditoria y Exportacion ---
-        PaletteCommand(
-            "Auditoria: Exportar Bitacora Forense a Archivo JSON",
-            "Genera un archivo JSON con todos los eventos criptograficos registrados.",
-            "export_audit",
-            "exportar auditoria json bitacora archivo respaldo descargar",
+            "Sistema: Registrar Nuevo Dispositivo en Catalogo",
+            "Abre el formulario para anadir un equipo con credenciales seguras a la boveda.",
+            "add_device",
+            "nuevo equipo registrar agregar dispositivo host ssh ip alta",
         ),
         PaletteCommand(
-            "Auditoria: Purgar Registros Sinteticos de Prueba",
-            "Elimina registros automaticos de test conservando los eventos reales.",
-            "purge_audit_tests",
-            "purgar limpiar borrar pruebas test registros auditoria eliminar",
+            "Sistema: Crear Nueva Plantilla de Automatizacion",
+            "Abre el asistente para redactar una plantilla Jinja2 con variables dinamicas.",
+            "new_template",
+            "nueva plantilla crear jinja2 wizard formulario template script",
         ),
-        # --- Diagnostico Rapido y Presets de Sintomas ---
-        PaletteCommand(
-            "Troubleshooting: Cargar Sintoma de Ejemplo - BGP Flapping",
-            "Carga reporte de falla de sesion BGP Idle/Active en el equipo seleccionado.",
-            "load_symptom_bgp",
-            "bgp flapping sesion idle active peering enrutamiento ejemplo",
-        ),
-        PaletteCommand(
-            "Troubleshooting: Cargar Sintoma de Ejemplo - Adyacencia OSPF",
-            "Carga reporte de adyacencia OSPF atascada en EXSTART/EXCHANGE.",
-            "load_symptom_ospf",
-            "ospf adyacencia exstart exchange mtus vecindad ejemplo",
-        ),
-        PaletteCommand(
-            "Troubleshooting: Cargar Sintoma de Ejemplo - Perdida de Paquetes",
-            "Carga reporte de errores CRC y descarte de paquetes en interfaces.",
-            "load_symptom_packetloss",
-            "paquetes perdida crc errores interfaz caida drop ejemplo",
-        ),
-        PaletteCommand(
-            "Troubleshooting: Cargar Sintoma de Ejemplo - Troncal VLAN",
-            "Carga reporte de falla de trafico en enlaces troncales 802.1Q.",
-            "load_symptom_vlan",
-            "vlan troncal trunk 802.1q encapsulacion nativa ejemplo",
-        ),
+        # --- Utilidades de Terminal ---
         PaletteCommand(
             "Consola: Limpiar Pantalla y Registros de Consola",
-            "Limpia la terminal de telemetria y ejecucion en el espacio activo.",
+            "Limpia la terminal de telemetria y bitacora de salida en el espacio activo.",
             "clear_active_console",
-            "limpiar consola pantalla log terminal cls clear borrar",
+            "limpiar consola pantalla log terminal cls clear borrar reset",
         ),
-        # --- Sistema y Sesion ---
         PaletteCommand(
-            "Sistema: Recargar Toda la Aplicacion (F5 / r)",
-            "Sincroniza bases de datos, sidebars, tablas y barra de estado.",
+            "Terminal: Capturar Pantalla (Guardar Screenshot SVG)",
+            "Guarda una captura vectorial SVG de la pantalla actual en la carpeta logs.",
+            "screenshot",
+            "screenshot captura pantalla exportar svg imagen foto snapshot",
+        ),
+        PaletteCommand(
+            "Terminal: Sincronizar y Recargar Todo el Sistema (F5 / r)",
+            "Sincroniza bases de datos, sidebars, tablas y barra de telemetria.",
             "refresh_all",
-            "recargar todo refrescar sincronizar f5 r update reload",
+            "recargar todo refrescar sincronizar f5 r update reload actualizar",
         ),
+        # --- Sesion ---
         PaletteCommand(
-            "Sistema: Ver Resumen de Atajos de Teclado",
+            "Sesion: Ver Resumen de Atajos de Teclado",
             "Muestra una guia rapida con los accesos directos principales del sistema.",
             "show_shortcuts",
             "ayuda atajos teclado teclas help shortcuts hotkeys guia",
         ),
         PaletteCommand(
             "Sesion: Salir de NetworkingAgent (q)",
-            "Cierra la aplicacion y desconecta de forma segura todas las sesiones.",
+            "Cierra la aplicacion y desconecta de forma segura todas las sesiones SSH.",
             "quit",
             "salir cerrar quit exit cerrar sesion terminate",
         ),

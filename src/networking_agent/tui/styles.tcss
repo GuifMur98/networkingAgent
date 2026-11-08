@@ -1,8 +1,8 @@
 /* NetworkingAgent Cyberpunk Mission Control Enterprise Theme */
 
 Screen {
-    background: #080c14;
-    color: #e2e8f0;
+    background: $background;
+    color: $foreground;
 }
 
 /* Tabbed Navigation Layout */
@@ -35,8 +35,8 @@ TabPane {
 #top-bar {
     dock: top;
     height: 1;
-    background: #080c14;
-    color: #e2e8f0;
+    background: $surface;
+    color: $foreground;
     border: none;
     padding: 0 1;
 }
@@ -1511,8 +1511,8 @@ Checkbox.-on {
 
 /* Sleek Cyberpunk Footer */
 Footer {
-    background: #080c14;
-    color: #cbd5e1;
+    background: $surface;
+    color: $foreground;
 }
 
 FooterKey {

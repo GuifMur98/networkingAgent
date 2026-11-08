@@ -4,7 +4,7 @@ import re
 
 import pytest
 from textual.command import CommandPalette, SearchIcon
-from textual.widgets import Footer, TabbedContent, TextArea
+from textual.widgets import Footer, TabbedContent
 
 from networking_agent.core.db import db
 from networking_agent.tui.app import NetworkingAgentTUIApp
@@ -54,13 +54,14 @@ async def test_command_provider_discover_and_search(tmp_path, monkeypatch):
         assert len(discover_hits) == len(NetworkAgentCommandProvider.COMMANDS)
         names = [str(h.display) for h in discover_hits]
         assert "Navegar: Inicio (Dashboard Principal)" in names
-        assert "Equipos: Registrar Nuevo Dispositivo en Catalogo" in names
-        assert "Seguridad: Alternar Modo Guardarrailes (HITL / Auto-Aprobacion)" in names
+        assert "Sistema: Registrar Nuevo Dispositivo en Catalogo" in names
+        assert "Sistema: Alternar Modo Guardarrailes (HITL / Auto-Aprobacion)" in names
+        assert "Tema: Cambiar Tema Visual..." in names
 
         # 2. Test search by direct title match
-        ping_hits = [hit async for hit in provider.search("ping")]
-        assert len(ping_hits) > 0
-        assert any("Ping" in str(h.prompt) for h in ping_hits)
+        tema_hits = [hit async for hit in provider.search("tema")]
+        assert len(tema_hits) > 0
+        assert any("Tema" in str(h.prompt) for h in tema_hits)
 
         # 3. Test search by keywords
         hitl_hits = [hit async for hit in provider.search("hitl")]
@@ -68,9 +69,9 @@ async def test_command_provider_discover_and_search(tmp_path, monkeypatch):
         assert any("Guardarrailes" in str(h.prompt) for h in hitl_hits)
 
         # 4. Test search by help text / concept
-        json_hits = [hit async for hit in provider.search("json")]
-        assert len(json_hits) > 0
-        assert any("Auditoria" in str(h.prompt) for h in json_hits)
+        svg_hits = [hit async for hit in provider.search("svg")]
+        assert len(svg_hits) > 0
+        assert any("Capturar Pantalla" in str(h.prompt) for h in svg_hits)
 
 
 @pytest.mark.anyio
@@ -130,22 +131,40 @@ async def test_palette_action_toggle_hitl(tmp_path, monkeypatch):
 
 
 @pytest.mark.anyio
-async def test_palette_action_symptom_preset(tmp_path, monkeypatch):
-    """Executing symptom preset command populates troubleshooting symptom text area."""
+async def test_palette_theme_actions(tmp_path, monkeypatch):
+    """Theme switching and reset actions update app theme and persist in database."""
     app = NetworkingAgentTUIApp()
     async with app.run_test() as pilot:
-        await pilot.press("ctrl+p")
+        # 1. Change theme triggers search_themes palette
+        app.action_change_theme()
         await pilot.pause()
-        await pilot.press("b", "g", "p")
-        await pilot.pause()
-        await pilot.press("enter")
+        assert isinstance(app.screen, CommandPalette)
+        await pilot.press("escape")
         await pilot.pause()
 
-        tabs = app.query_one("#main-tabs", TabbedContent)
-        assert tabs.active == "pane-troubleshooting"
+        # 2. Reset theme restores textual-dark
+        app.theme = "nord"
+        app.action_reset_theme()
+        assert app.theme == "textual-dark"
+        assert db.get_setting("app_theme") == "textual-dark"
 
-        input_box = app.query_one("#symptom-input", TextArea)
-        assert "BGP" in input_box.text
+        # 3. Toggle dark toggles theme light/dark
+        app.action_toggle_dark()
+        assert app.theme == "textual-light"
+        assert db.get_setting("app_theme") == "textual-light"
+
+
+@pytest.mark.anyio
+async def test_palette_action_screenshot(tmp_path, monkeypatch):
+    """Executing screenshot action saves an SVG file into logs directory."""
+    app = NetworkingAgentTUIApp()
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        app.action_screenshot()
+        from pathlib import Path
+
+        svg_files = list(Path("logs").glob("screenshot_*.svg"))
+        assert len(svg_files) > 0
 
 
 @pytest.mark.anyio

@@ -170,41 +170,55 @@ Para mantener un entorno de trabajo limpio y libre de distracciones operativas:
 
 ---
 
-## 6. Paleta de Comandos Profesional (`Ctrl+P`)
+## 6. Paleta de Comandos Profesional (`Ctrl+P` / `F1`)
 
-La **Paleta de Comandos** proporciona acceso centralizado e instantáneo a todas las funciones críticas de la plataforma mediante búsqueda difusa (*fuzzy search*):
+La **Paleta de Comandos** proporciona acceso centralizado e instantáneo a operaciones del sistema, navegación global, gestión de temas visuales y utilidades de terminal mediante búsqueda difusa (*fuzzy search*):
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
 │  > buscar comando...                                                  │
 ├────────────────────────────────────────────────────────────────────────┤
+│  Tema: Cambiar Tema Visual...                                         │
+│  Tema: Alternar Modo Oscuro / Claro                                   │
+│  Tema: Restaurar Tema Predeterminado                                  │
 │  Navegar: Inicio (Dashboard Principal)                                │
 │  Navegar: Modulo 1 - Diagnostico y Troubleshooting                    │
 │  Navegar: Modulo 2 - Configuracion de Red                             │
 │  Navegar: Modulo 3 - Automatizacion y Plantillas                      │
 │  Navegar: Modulo 4 - Inventario de Equipos                            │
 │  Navegar: Modulo 5 - Auditoria y Bitacora                             │
-│  Equipos: Registrar Nuevo Dispositivo en Catalogo                     │
-│  Equipos: Diagnostico Completo de Conectividad (Ping + SSH)           │
-│  Equipos: Probar Ping ICMP a Dispositivo                              │
-│  Equipos: Comprobar Puerto 22 TCP (SSH)                               │
-│  Equipos: Sincronizar Catalogo y Recargar Estado                      │
-│  Automatizacion: Crear Nueva Plantilla de Configuracion               │
-│  Seguridad: Alternar Modo Human-in-the-Loop (Auto-Approve / Manual)   │
-│  Diagnostico: Cargar Sintoma Predefinido BGP Caido / Idle             │
-│  Diagnostico: Cargar Sintoma Predefinido Duplex Mismatch              │
-│  Diagnostico: Cargar Sintoma Predefinido Perdida de Paquetes / CRC   │
-│  Auditoria: Exportar Bitacora Forense a Archivo JSON                  │
-│  Auditoria: Purgar Registros de Prueba (Limpieza de Auditoria)        │
+│  Sistema: Configurar IA y Boveda Criptografica                        │
+│  Sistema: Alternar Modo Guardarrailes (HITL / Auto-Aprobacion)        │
+│  Sistema: Registrar Nuevo Dispositivo en Catalogo                     │
+│  Sistema: Crear Nueva Plantilla de Automatizacion                     │
+│  Consola: Limpiar Pantalla y Registros de Consola                     │
+│  Terminal: Capturar Pantalla (Guardar Screenshot SVG)                 │
+│  Terminal: Sincronizar y Recargar Todo el Sistema (F5 / r)            │
+│  Sesion: Ver Resumen de Atajos de Teclado                             │
+│  Sesion: Salir de NetworkingAgent (q)                                 │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Operaciones Disponibles:
-1. **Navegación:** Cambia al instante a cualquier módulo sin tocar el ratón.
-2. **Equipos y Red:** Ejecuta ping, valida puertos SSH o abre el formulario de alta.
-3. **Guardarraíles:** Alterna entre modo manual y auto-aprobación en caliente.
-4. **Presets de Síntomas:** Carga rápidamente problemas de red típicos en el área de diagnóstico.
-5. **Auditoría:** Descarga o depura eventos de auditoría con un solo comando.
+### Categorías de Operaciones:
+
+1. **Apariencia y Temas Visuales:**
+   - **Cambiar Tema Visual:** Despliega el catálogo de más de 20 temas profesionales de Textual (Nord, Dracula, Tokyo Night, Gruvbox, Catppuccin, Monokai, Solarized, etc.). El tema seleccionado se guarda de forma persistente en SQLite (`app_theme`) y se restaura automáticamente en los siguientes inicios.
+   - **Alternar Modo Oscuro / Claro:** Conmuta al instante entre las variantes clara y oscura del tema activo.
+   - **Restaurar Tema Predeterminado:** Regresa a la apariencia corporativa `textual-dark`.
+2. **Navegación Global:**
+   - Salto instantáneo al Dashboard Principal o a cualquiera de los 5 módulos operacionales (`1` al `5`).
+3. **Configuración y Seguridad Global del Sistema:**
+   - **Configurar IA y Bóveda:** Abre el modal de configuración de modelos locales (Ollama) o en la nube (Gemini/OpenAI/Claude) y credenciales cifradas.
+   - **Alternar Guardarraíles (HITL):** Conmuta en caliente entre aprobación humana obligatoria y auto-aprobación.
+   - **Registrar Nuevo Dispositivo:** Lanza el asistente modal para registrar un nuevo equipo con credenciales seguras.
+   - **Crear Nueva Plantilla:** Abre el editor de plantillas de automatización Jinja2.
+4. **Utilidades de Terminal y Consola:**
+   - **Limpiar Consola:** Borra los registros y telemetría de la consola activa en pantalla.
+   - **Capturar Pantalla (SVG):** Exporta una captura vectorial de alta fidelidad en formato SVG en la carpeta `logs/` (`screenshot_YYYYMMDD_HHMMSS.svg`).
+   - **Sincronizar y Recargar Todo:** Recarga simultáneamente catálogos, barras laterales, tablas y telemetría (equivalente a `F5` / `r`).
+5. **Control de Sesión:**
+   - **Resumen de Atajos:** Muestra la guía rápida de combinaciones de teclas.
+   - **Salir:** Cierra la aplicación desconectando ordenadamente las sesiones SSH activas.
 
 ---
 

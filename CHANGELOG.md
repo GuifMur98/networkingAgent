@@ -9,11 +9,14 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [2.1.0] - 2026-11-08
 
-### 🚀 Paleta de Comandos y Operaciones Globales (Added)
-- **Paleta de Comandos Unificada (`Ctrl+P`):**
-  - Implementación de [`NetworkAgentCommandProvider`](src/networking_agent/tui/commands.py) integrado de forma nativa en Textual.
-  - Catálogo de más de 15 operaciones técnicas organizadas sin emojis ni iconos decorativos, respetando los estándares de diseño corporativo NOC / Mission Control.
-  - Soporte de búsqueda difusa (*fuzzy search*) por palabras clave para navegación instantánea a los 5 módulos, alta de equipos, pruebas de conectividad, cambio en caliente de modo HitL y presets de diagnóstico (BGP, OSPF, VLAN).
+### 🚀 Paleta de Comandos, Temas Visuales y Operaciones Globales (Added)
+- **Paleta de Comandos Depurada y Selector de Temas Visuales (`Ctrl+P` / `F1`):**
+  - Rediseño centrado exclusivamente en operaciones del sistema, temas y navegación global, eliminando acciones redundantes que ya contaban con botones dedicados en pantalla.
+  - **Selector de más de 20 Temas Visuales (`change_theme`):** Integración nativa de la biblioteca de paletas de Textual (Nord, Dracula, Tokyo Night, Gruvbox, Catppuccin, Monokai, Solarized, etc.).
+  - **Persistencia en Base de Datos:** El tema elegido se guarda automáticamente en SQLite (`app_theme`) y se restaura sin pérdida de configuración entre reinicios de la aplicación.
+  - **Conmutador Modo Oscuro / Claro (`toggle_dark`)** y acción de restauración a valores corporativos de fábrica (`reset_theme`).
+  - **Captura Vectorial de Pantalla SVG (`screenshot`):** Herramienta integrada para capturar y exportar la vista actual de la terminal a formato SVG en `logs/screenshot_<timestamp>.svg`.
+  - Catálogo depurado a 18 comandos de alto valor operativo sin emojis ni iconos decorativos, respetando los estándares de diseño corporativo NOC / Mission Control.
   - Indicador de acceso rápido `^p Paleta` anclado de forma fija en la esquina inferior derecha del Dashboard de Inicio.
 
 ### 🖧 Diagnóstico de Conectividad en Tiempo Real (Added)

@@ -193,6 +193,13 @@ class NetworkingAgentTUIApp(App):
 
     def on_mount(self) -> None:
         """Trigger initial device sync across sidebars and views."""
+        saved_theme = db.get_setting("app_theme")
+        if saved_theme and saved_theme in self.available_themes:
+            try:
+                self.theme = saved_theme
+            except Exception:
+                pass
+
         first_dev = None
         for sidebar in self.query(DeviceSidebar):
             sidebar.reload_devices()
@@ -210,6 +217,13 @@ class NetworkingAgentTUIApp(App):
                 pass
 
         self._prewarm_ai_cache()
+
+    def watch_theme(self, new_theme: str) -> None:
+        """Persist chosen theme in SQLite database."""
+        try:
+            db.set_setting("app_theme", new_theme)
+        except Exception:
+            pass
 
     @work(thread=True)
     def _prewarm_ai_cache(self) -> None:
@@ -504,9 +518,56 @@ class NetworkingAgentTUIApp(App):
             self.push_screen(
                 CommandPalette(
                     id="--command-palette",
-                    placeholder="Escriba un comando o búsqueda (ej: ping, equipos, hitl, auditoria)...",
+                    placeholder="Escriba un comando o búsqueda (ej: tema, inicio, hitl, ajustes)...",
                 )
             )
+
+    def action_change_theme(self) -> None:
+        """Open theme search palette to choose from 21 professional themes."""
+        self.search_themes()
+
+    def action_toggle_dark(self) -> None:
+        """Toggle between dark and light variants of the current theme."""
+        if "dark" in self.theme:
+            candidate = self.theme.replace("dark", "light")
+            if candidate in self.available_themes:
+                self.theme = candidate
+            else:
+                self.theme = "textual-light"
+        elif "light" in self.theme:
+            candidate = self.theme.replace("light", "dark")
+            if candidate in self.available_themes:
+                self.theme = candidate
+            else:
+                self.theme = "textual-dark"
+        elif self.theme == "catppuccin-mocha":
+            self.theme = "catppuccin-latte"
+        elif self.theme == "catppuccin-latte":
+            self.theme = "catppuccin-mocha"
+        elif self.theme == "solarized-dark":
+            self.theme = "solarized-light"
+        elif self.theme == "solarized-light":
+            self.theme = "solarized-dark"
+        else:
+            self.theme = "textual-light" if "dark" in self.theme else "textual-dark"
+        self.notify(f"Tema activo: {self.theme}", title="APARIENCIA", timeout=2.5)
+
+    def action_reset_theme(self) -> None:
+        """Reset theme to default textual-dark."""
+        self.theme = "textual-dark"
+        self.notify("Tema restaurado a: textual-dark", title="APARIENCIA", timeout=2.5)
+
+    def action_screenshot(self) -> None:
+        """Save SVG screenshot of current terminal view into logs directory."""
+        from datetime import datetime, timezone
+        from pathlib import Path
+
+        ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        logs_dir = Path("logs")
+        logs_dir.mkdir(parents=True, exist_ok=True)
+        out_path = logs_dir / f"screenshot_{ts}.svg"
+        self.save_screenshot(str(out_path))
+        self.notify(f"Captura guardada en: {out_path.name}", title="SCREENSHOT SVG", timeout=4.0)
 
     def action_test_connectivity(self) -> None:
         """Switch to inventory view and execute full reachability test (Ping + SSH)."""
