@@ -677,53 +677,98 @@ TextArea:focus {
 }
 
 /* Automation Suite */
-#automation-toolbar {
-    height: 5;
-    min-height: 5;
-    background: #0d1527;
+#auto-progress-container {
+    height: auto;
+    background: #080c14;
     border: round #00b4d8;
-    padding: 0 1;
-    align-vertical: middle;
+    padding: 1;
     margin-bottom: 1;
 }
 
-#automation-selectors {
+#auto-progress-header {
+    height: 1;
+    margin-bottom: 1;
+}
+
+#lbl-auto-step {
     width: 1fr;
+    color: #a5f3fc;
+    text-style: bold;
+}
+
+#lbl-auto-pct {
+    width: auto;
+    color: #00e5ff;
+    text-style: bold;
+}
+
+#auto-progress-bar {
+    height: 1;
+    width: 100%;
+}
+
+#automation-toolbar {
+    height: auto;
+    background: #0d1527;
+    border: round #00b4d8;
+    padding: 1;
+    margin-bottom: 1;
+}
+
+#automation-selectors-row {
     height: 3;
+    margin-bottom: 1;
     align-vertical: middle;
 }
 
-#lbl-tpl-picker,
-#lbl-vendor-picker {
+.auto-field-pair {
+    width: auto;
     height: 3;
-    content-align: left middle;
-    margin-right: 1;
-    text-style: bold;
-    color: #00e5ff;
+    align-vertical: middle;
+    margin-right: 2;
 }
 
-#lbl-vendor-picker {
-    margin-left: 2;
+.auto-field-label {
+    width: auto;
+    height: 3;
+    content-align: left middle;
+    text-style: bold;
+    color: #00e5ff;
+    margin-right: 1;
 }
 
 #select-template {
-    width: 36;
+    width: 38;
     height: 3;
-    border: none;
-    padding: 0;
-    margin: 0;
 }
 
 #select-vendor-auto {
     width: 26;
     height: 3;
-    border: none;
-    padding: 0;
-    margin: 0;
+}
+
+#tpl-crud-buttons {
+    width: auto;
+    height: 3;
+    align-vertical: middle;
+}
+
+#tpl-crud-buttons .chip-btn {
+    height: 3;
+    margin-right: 1;
+    background: #080c14;
+    border: round #00b4d8;
+    color: #38bdf8;
+    text-style: bold;
+}
+
+#tpl-crud-buttons .chip-btn:hover {
+    border: round #00e5ff;
+    color: #ffffff;
+    background: #0e2038;
 }
 
 #automation-actions {
-    width: auto;
     height: 3;
     align-vertical: middle;
     align-horizontal: right;
@@ -746,20 +791,25 @@ TextArea:focus {
 
 #automation-split {
     height: 1fr;
-    min-height: 16;
+    min-height: 18;
     width: 100%;
     margin-bottom: 1;
 }
 
 #editor-col {
-    width: 65%;
+    width: 62%;
     height: 100%;
     margin-right: 1;
 }
 
 #devices-and-status-col {
-    width: 35%;
+    width: 38%;
     height: 100%;
+}
+
+#editor-header-bar {
+    height: 2;
+    align-vertical: middle;
 }
 
 #automation-editor {
@@ -774,8 +824,81 @@ TextArea:focus {
     border: round #00e5ff;
 }
 
+#tpl-variables-container {
+    height: auto;
+    max-height: 10;
+    background: #080c14;
+    border: round #00b4d8;
+    padding: 1;
+    margin-top: 1;
+    overflow-y: auto;
+}
+
+#tpl-vars-header {
+    height: 3;
+    align-vertical: middle;
+    margin-bottom: 1;
+}
+
+#lbl-tpl-vars {
+    width: 1fr;
+    color: #38bdf8;
+    text-style: bold;
+}
+
+#btn-render-variables {
+    width: 24;
+    height: 3;
+    text-align: center;
+    content-align: center middle;
+}
+
+.tpl-var-row {
+    height: 3;
+    margin-bottom: 1;
+    align-vertical: middle;
+}
+
+.tpl-var-label {
+    width: 20;
+    color: #00e5ff;
+    content-align: left middle;
+    text-style: bold;
+}
+
+.tpl-var-row Input {
+    width: 1fr;
+    height: 3;
+    border: round #00b4d8;
+    background: #050811;
+    color: #e2e8f0;
+}
+
+.tpl-var-row Input:focus {
+    border: round #00e5ff;
+}
+
+#devices-header-row {
+    height: 3;
+    align-vertical: middle;
+    margin-bottom: 1;
+}
+
+#lbl-target-devices {
+    width: 1fr;
+    color: #00e5ff;
+    text-style: bold;
+}
+
+#btn-select-all-devices,
+#btn-deselect-all-devices {
+    width: 10;
+    height: 3;
+    margin-left: 1;
+}
+
 #device-selection-list {
-    height: 8;
+    height: 9;
     border: round #00b4d8;
     background: #080c14;
     margin-bottom: 1;
@@ -787,8 +910,52 @@ TextArea:focus {
 
 #syntax-status-card {
     height: auto;
-    max-height: 8;
+    max-height: 12;
     margin-bottom: 1;
+}
+
+/* Template Modal Dialog */
+#template-modal-dialog {
+    width: 82;
+    height: auto;
+    max-height: 90%;
+    background: #080c14;
+    border: double #00e5ff;
+    padding: 1 2;
+    overflow-y: auto;
+}
+
+#modal-editor-row {
+    height: 14;
+    margin-bottom: 1;
+}
+
+#modal-editor-header {
+    height: 3;
+    align-vertical: middle;
+}
+
+#modal-editor-header Label {
+    width: 1fr;
+    color: #00e5ff;
+    text-style: bold;
+}
+
+#btn-detect-vars {
+    width: 24;
+    height: 3;
+    margin-left: 1;
+}
+
+#input-tpl-content {
+    height: 10;
+    border: round #00b4d8;
+    background: #050811;
+    color: #e2e8f0;
+}
+
+#input-tpl-content:focus {
+    border: round #00e5ff;
 }
 
 /* DataTables for Inventory and Audit */

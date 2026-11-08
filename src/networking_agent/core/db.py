@@ -1,5 +1,6 @@
 """SQLite Database Manager for persistent, encrypted settings and device inventory."""
 
+import json
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
@@ -57,6 +58,19 @@ class DatabaseManager:
                     use_keys INTEGER DEFAULT 0,
                     created_at TEXT,
                     last_used_at TEXT
+                )
+            """)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS templates (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL UNIQUE,
+                    vendor_family TEXT NOT NULL,
+                    description TEXT,
+                    template_content TEXT NOT NULL,
+                    parameters_schema TEXT,
+                    is_builtin INTEGER DEFAULT 0,
+                    created_at TEXT,
+                    updated_at TEXT
                 )
             """)
             conn.commit()
@@ -190,6 +204,96 @@ class DatabaseManager:
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM devices WHERE id = ?", (device_id,))
+            conn.commit()
+            return cursor.rowcount > 0
+
+    # =========================================================================
+    # TEMPLATES STORAGE API
+    # =========================================================================
+    def list_templates(self) -> List[Dict[str, Any]]:
+        """Returns all saved configuration templates (both builtin and custom)."""
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM templates ORDER BY is_builtin DESC, name ASC")
+            rows = cursor.fetchall()
+            results = []
+            for r in rows:
+                row_dict = dict(r)
+                if row_dict.get("parameters_schema"):
+                    try:
+                        row_dict["parameters_schema"] = json.loads(row_dict["parameters_schema"])
+                    except Exception:
+                        row_dict["parameters_schema"] = {}
+                else:
+                    row_dict["parameters_schema"] = {}
+                results.append(row_dict)
+            return results
+
+    def get_template_by_name(self, name: str) -> Optional[Dict[str, Any]]:
+        """Retrieves a single template by its unique name."""
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM templates WHERE name = ?", (name,))
+            row = cursor.fetchone()
+            if not row:
+                return None
+            result = dict(row)
+            if result.get("parameters_schema"):
+                try:
+                    result["parameters_schema"] = json.loads(result["parameters_schema"])
+                except Exception:
+                    result["parameters_schema"] = {}
+            else:
+                result["parameters_schema"] = {}
+            return result
+
+    def save_template(
+        self,
+        name: str,
+        vendor_family: str,
+        description: str,
+        template_content: str,
+        parameters_schema: Optional[Dict[str, Any]] = None,
+        is_builtin: bool = False,
+    ) -> int:
+        """Creates or updates a configuration template."""
+        now = datetime.now(timezone.utc).isoformat()
+        schema_json = json.dumps(parameters_schema or {})
+
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                INSERT INTO templates (
+                    name, vendor_family, description, template_content,
+                    parameters_schema, is_builtin, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(name) DO UPDATE SET
+                    vendor_family = excluded.vendor_family,
+                    description = excluded.description,
+                    template_content = excluded.template_content,
+                    parameters_schema = excluded.parameters_schema,
+                    updated_at = excluded.updated_at
+                """,
+                (
+                    name.strip(),
+                    vendor_family.strip(),
+                    description.strip(),
+                    template_content,
+                    schema_json,
+                    1 if is_builtin else 0,
+                    now,
+                    now,
+                ),
+            )
+            conn.commit()
+            return cursor.lastrowid or 0
+
+    def delete_template_by_name(self, name: str) -> bool:
+        """Deletes a custom template by name. Refuses to delete builtin templates."""
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM templates WHERE name = ? AND is_builtin = 0", (name,))
             conn.commit()
             return cursor.rowcount > 0
 
