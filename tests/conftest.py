@@ -3,6 +3,7 @@
 import pytest
 from pydantic import SecretStr
 
+from networking_agent.core.audit import audit_logger
 from networking_agent.core.db import db
 from networking_agent.models.device import DeviceInventory
 from networking_agent.models.intent import NetworkIntent
@@ -18,6 +19,17 @@ def isolate_database_for_tests(tmp_path):
         yield
     finally:
         db.db_path = original_path
+
+
+@pytest.fixture(autouse=True)
+def isolate_audit_log_for_tests(tmp_path):
+    """Ensure all tests write audit records to an isolated temp path, protecting logs/audit.jsonl."""
+    original_path = audit_logger.log_path
+    audit_logger.log_path = tmp_path / "test_isolated_audit.jsonl"
+    try:
+        yield
+    finally:
+        audit_logger.log_path = original_path
 
 
 @pytest.fixture
