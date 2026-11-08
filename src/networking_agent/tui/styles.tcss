@@ -398,10 +398,11 @@ Button.-error:focus,
 
 .workspace-content-wrapper,
 #diagnostic-content-wrapper,
-#config-content-wrapper {
+#config-content-wrapper,
+#automation-content-wrapper {
     height: auto;
     width: 100%;
-    padding-right: 2;
+    padding: 0 2;
 }
 
 /* Section Panels & Target Cards */
@@ -678,14 +679,17 @@ TextArea:focus {
 
 /* Automation Suite */
 #automation-toolbar {
-    height: auto;
+    height: 5;
+    min-height: 5;
     background: #0d1527;
     border: round #00b4d8;
-    padding: 1;
+    padding: 0 1;
+    align-vertical: middle;
     margin-bottom: 1;
 }
 
 #automation-selectors-row {
+    width: 1fr;
     height: 3;
     align-vertical: middle;
 }
@@ -720,12 +724,13 @@ TextArea:focus {
     width: auto;
     height: 3;
     align-vertical: middle;
+    align-horizontal: right;
 }
 
 #tpl-crud-buttons .chip-btn {
     height: 3;
     min-width: 9;
-    margin-right: 1;
+    margin-left: 1;
     background: #080c14;
     border: round #00b4d8;
     color: #38bdf8;
@@ -738,14 +743,15 @@ TextArea:focus {
     background: #0e2038;
 }
 
-#tpl-variables-row {
+#tpl-variables-card {
     height: auto;
-    margin-top: 1;
-    padding-top: 1;
-    border-top: solid #1e293b;
+    background: #080c14;
+    border: round #00b4d8;
+    padding: 1;
+    margin-bottom: 1;
 }
 
-#tpl-vars-subhead {
+#tpl-vars-header {
     height: 3;
     align-vertical: middle;
     margin-bottom: 1;
@@ -755,41 +761,58 @@ TextArea:focus {
     width: 1fr;
     color: #38bdf8;
     text-style: bold;
+    content-align: left middle;
 }
 
 #btn-render-variables {
-    width: 24;
+    width: 26;
     height: 3;
     text-align: center;
     content-align: center middle;
 }
 
-#tpl-vars-inputs {
+#tpl-vars-form {
     height: auto;
+    width: 100%;
+}
+
+.tpl-vars-form-row {
+    height: 3;
+    width: 100%;
+    margin-bottom: 1;
     align-vertical: middle;
 }
 
-.tpl-var-item {
-    width: auto;
-    height: auto;
+.tpl-var-field-group {
+    width: 1fr;
+    height: 3;
+    align-vertical: middle;
     margin-right: 2;
 }
 
-.tpl-var-item .tpl-var-label {
-    color: #a5f3fc;
-    text-style: bold;
-    margin-bottom: 0;
+.tpl-var-field-group-spacer {
+    width: 1fr;
+    height: 3;
+    border: none;
+    background: transparent;
 }
 
-.tpl-var-item Input {
-    width: 22;
+.tpl-var-label {
+    width: 18;
+    color: #00e5ff;
+    text-style: bold;
+    content-align: left middle;
+}
+
+.tpl-var-field-group Input {
+    width: 1fr;
     height: 3;
     border: round #00b4d8;
     background: #050811;
     color: #e2e8f0;
 }
 
-.tpl-var-item Input:focus {
+.tpl-var-field-group Input:focus {
     border: round #00e5ff;
 }
 
@@ -800,26 +823,25 @@ TextArea:focus {
 }
 
 #editor-col {
-    width: 58%;
+    width: 11fr;
     height: auto;
-    margin-right: 1;
+    margin-right: 2;
 }
 
 #devices-and-status-col {
-    width: 42%;
+    width: 9fr;
     height: auto;
 }
 
 #lbl-editor {
-    height: 2;
+    height: 3;
     content-align: left middle;
     text-style: bold;
     color: #00e5ff;
 }
 
 #automation-editor {
-    height: 16;
-    min-height: 12;
+    height: 20;
     border: round #00b4d8;
     background: #080c14;
     color: #e2e8f0;
@@ -830,28 +852,40 @@ TextArea:focus {
 }
 
 #devices-header-row {
-    height: 2;
+    height: 3;
     align-vertical: middle;
-    margin-bottom: 0;
 }
 
 #lbl-target-devices {
     width: 1fr;
     color: #00e5ff;
     text-style: bold;
+    content-align: left middle;
 }
 
 #btn-select-all-devices,
 #btn-deselect-all-devices {
-    width: 10;
-    height: 2;
-    min-height: 2;
-    padding: 0 1;
+    width: 12;
+    height: 3;
+    min-height: 3;
     margin-left: 1;
+    background: #080c14;
+    border: round #00b4d8;
+    color: #38bdf8;
+    text-style: bold;
+    text-align: center;
+    content-align: center middle;
+}
+
+#btn-select-all-devices:hover,
+#btn-deselect-all-devices:hover {
+    border: round #00e5ff;
+    color: #ffffff;
+    background: #0e2038;
 }
 
 #device-selection-list {
-    height: 7;
+    height: 8;
     border: round #00b4d8;
     background: #080c14;
     margin-bottom: 1;
@@ -869,9 +903,9 @@ TextArea:focus {
 }
 
 #syntax-status-card {
-    height: auto;
-    min-height: 6;
-    max-height: 8;
+    height: 9;
+    min-height: 9;
+    max-height: 9;
     margin-bottom: 0;
 }
 
@@ -892,7 +926,7 @@ TextArea:focus {
 }
 
 #btn-deploy-batch {
-    width: 32;
+    width: 36;
     height: 3;
     text-align: center;
     content-align: center middle;
