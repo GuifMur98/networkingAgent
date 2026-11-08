@@ -530,6 +530,7 @@ def prompt_telemetry_event(allow_back: bool = False) -> Tuple[Optional[str], Opt
 def display_main_menu() -> str:
     """Renders the main menu with ASCII banner, operational status, and navigation options."""
     from networking_agent.cli.ui_theme import print_main_banner
+
     print_main_banner()
 
     saved_provider = db.get_setting("ai_provider") or settings.ai_provider or "ollama"
@@ -549,6 +550,7 @@ def display_main_menu() -> str:
     status_table.add_row("Control Humano:", hitl_status)
 
     from rich.panel import Panel
+
     console.print(Panel(status_table, title="ESTADO OPERACIONAL DEL ASISTENTE", border_style="cyan"))
 
     menu_table = Table(

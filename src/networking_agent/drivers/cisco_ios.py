@@ -93,4 +93,3 @@ class CiscoIOSDriver(NetworkOSDriver):
 
     def _acl_diag_commands(self) -> List[str]:
         return ["show access-lists"]
-

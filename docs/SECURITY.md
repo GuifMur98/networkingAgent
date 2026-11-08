@@ -41,18 +41,24 @@ Antes de que un script manual, una plantilla Jinja2 o un conjunto de comandos ge
 #### 1. Detección de Patrones Destructivos y Shell Injections:
 ```python
 FORBIDDEN_PATTERNS = [
-    (re.compile(r"\b(reload|reboot|system\s+reboot)\b", re.IGNORECASE),
-     "Comando de reinicio de equipo no permitido."),
-    (re.compile(r"\b(format\s+flash:|erase\s+startup-config|write\s+erase)\b", re.IGNORECASE),
-     "Comando destructivo de almacenamiento no permitido."),
-    (re.compile(r"\b(request\s+system\s+zeroize|zeroize)\b", re.IGNORECASE),
-     "Comando destructivo de borrado seguro (zeroize) bloqueado."),
-    (re.compile(r"\b(/system\s+reset-configuration)\b", re.IGNORECASE),
-     "Reset a valores de fábrica bloqueado en RouterOS."),
-    (re.compile(r"[;&|`]", re.IGNORECASE),
-     "Metacarácter de encadenamiento de comandos detectado."),
-    (re.compile(r"\b(rm\s+-rf|nc\s+-e|/bin/sh|/bin/bash)\b", re.IGNORECASE),
-     "Comando de ejecución de shell no permitido."),
+    (re.compile(r"\b(reload|reboot|system\s+reboot)\b", re.IGNORECASE), "Comando de reinicio de equipo no permitido."),
+    (
+        re.compile(r"\b(format\s+flash:|erase\s+startup-config|write\s+erase)\b", re.IGNORECASE),
+        "Comando destructivo de almacenamiento no permitido.",
+    ),
+    (
+        re.compile(r"\b(request\s+system\s+zeroize|zeroize)\b", re.IGNORECASE),
+        "Comando destructivo de borrado seguro (zeroize) bloqueado.",
+    ),
+    (
+        re.compile(r"\b(/system\s+reset-configuration)\b", re.IGNORECASE),
+        "Reset a valores de fábrica bloqueado en RouterOS.",
+    ),
+    (re.compile(r"[;&|`]", re.IGNORECASE), "Metacarácter de encadenamiento de comandos detectado."),
+    (
+        re.compile(r"\b(rm\s+-rf|nc\s+-e|/bin/sh|/bin/bash)\b", re.IGNORECASE),
+        "Comando de ejecución de shell no permitido.",
+    ),
 ]
 ```
 

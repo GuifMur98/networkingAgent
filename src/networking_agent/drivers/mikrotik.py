@@ -113,4 +113,3 @@ class MikrotikRouterOSDriver(NetworkOSDriver):
 
     def _acl_diag_commands(self) -> List[str]:
         return ["/ip firewall filter print"]
-

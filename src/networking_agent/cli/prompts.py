@@ -18,9 +18,10 @@ def prompt_hitl_approval() -> bool:
     """
     while True:
         try:
-            raw = Prompt.ask(
+            prompt_text = (
                 "\n[bold yellow]¿Autorizas la inyección de esta configuración en el equipo? [s=Sí / n=No][/bold yellow]"
-            ).strip().lower()
+            )
+            raw = Prompt.ask(prompt_text).strip().lower()
         except (KeyboardInterrupt, EOFError):
             console.print("\n[yellow]Interrupción detectada. Operación cancelada por seguridad.[/yellow]")
             return False

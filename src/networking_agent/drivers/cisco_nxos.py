@@ -103,4 +103,3 @@ class CiscoNXOSDriver(NetworkOSDriver):
 
     def _acl_diag_commands(self) -> List[str]:
         return ["show ip access-lists"]
-

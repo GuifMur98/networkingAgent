@@ -20,6 +20,7 @@ def check_prerequisites():
     """Ensure PyInstaller is installed."""
     try:
         import PyInstaller
+
         print(f"[*] Found PyInstaller version: {PyInstaller.__version__}")
     except ImportError:
         print("[!] PyInstaller is not installed. Installing via uv / pip...")

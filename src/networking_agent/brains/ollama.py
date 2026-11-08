@@ -99,4 +99,3 @@ class OllamaBrain(LLMBrain):
         except Exception as e:
             logger.error(f"[bold red]Ollama Brain configuration synthesis failed:[/bold red] {e}")
             raise AIAnalysisError(f"Ollama configuration synthesis error: {e}") from e
-

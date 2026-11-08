@@ -46,9 +46,7 @@ class NetworkAssistantAgent:
     ) -> bool:
         """Executes the closed-loop remediation workflow."""
         self.observer.on_progress(15, f"[{mode}] Ingestando telemetría de {device.host}...")
-        self.observer.on_status_update(
-            f"[{mode}] Ingesting telemetry for {device.host} ({device.device_type})..."
-        )
+        self.observer.on_status_update(f"[{mode}] Ingesting telemetry for {device.host} ({device.device_type})...")
 
         analysis_payload = telemetry.raw_text
         driver = get_os_driver(device)
@@ -238,13 +236,9 @@ class NetworkAssistantAgent:
                     return False
 
             # 9. Success Audit Record
-            logger.info(
-                "[bold green][OK] Configuration successfully applied and verified in closed-loop.[/bold green]"
-            )
+            logger.info("[bold green][OK] Configuration successfully applied and verified in closed-loop.[/bold green]")
             self.observer.on_progress(100, f"Remediación completada y verificada en {device.host}.")
-            self.observer.on_completion(
-                True, "Configuration successfully applied and verified in closed-loop."
-            )
+            self.observer.on_completion(True, "Configuration successfully applied and verified in closed-loop.")
             audit_logger.record_event(
                 event_type="REMEDIATION_SUCCESS",
                 device_host=device.host,
@@ -410,13 +404,9 @@ class NetworkAssistantAgent:
             device_host=device.host,
         )
         if "[!]" in config_intent.conflict_analysis:
-            self.observer.on_execution_progress(
-                f"[bold yellow]{config_intent.conflict_analysis}[/bold yellow]"
-            )
+            self.observer.on_execution_progress(f"[bold yellow]{config_intent.conflict_analysis}[/bold yellow]")
         else:
-            self.observer.on_execution_progress(
-                f"[bold green]{config_intent.conflict_analysis}[/bold green]"
-            )
+            self.observer.on_execution_progress(f"[bold green]{config_intent.conflict_analysis}[/bold green]")
 
         # 5. Syntax & Command Validation
         self.observer.on_progress(70, "Validando sintaxis de comandos y salvaguardas operacionales...")
@@ -507,4 +497,3 @@ class NetworkAssistantAgent:
             return None
         finally:
             driver.disconnect()
-

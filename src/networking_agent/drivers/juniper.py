@@ -15,7 +15,7 @@ class JuniperJunosDriver(NetworkOSDriver):
         return [
             "show interfaces terse",
             "show chassis routing-engine",
-            "show interfaces extensive | match \"Errors|Drops|Duplex\"",
+            'show interfaces extensive | match "Errors|Drops|Duplex"',
             "show route summary",
             "show system uptime",
             "show ospf neighbor",
@@ -105,4 +105,3 @@ class JuniperJunosDriver(NetworkOSDriver):
 
     def _acl_diag_commands(self) -> List[str]:
         return ["show firewall"]
-

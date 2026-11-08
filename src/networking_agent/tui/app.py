@@ -216,6 +216,7 @@ class NetworkingAgentTUIApp(App):
         """Silently pre-warm local Ollama models cache in background thread so opening modal is instantaneous."""
         try:
             from networking_agent.brains.discovery import get_installed_ollama_models
+
             get_installed_ollama_models(force_refresh=True)
         except Exception:
             pass
@@ -334,9 +335,7 @@ class NetworkingAgentTUIApp(App):
         tabs = self.query_one("#main-tabs", TabbedContent)
         # Handle alias
         target_tab = (
-            "pane-troubleshooting"
-            if event.tab_id in ["pane-diagnostic", "pane-troubleshooting"]
-            else event.tab_id
+            "pane-troubleshooting" if event.tab_id in ["pane-diagnostic", "pane-troubleshooting"] else event.tab_id
         )
         tabs.active = target_tab
         try:
@@ -362,29 +361,19 @@ class NetworkingAgentTUIApp(App):
     ) -> None:
         self.action_go_home()
 
-    def on_configuration_view_return_home_requested(
-        self, event: ConfigurationView.ReturnHomeRequested
-    ) -> None:
+    def on_configuration_view_return_home_requested(self, event: ConfigurationView.ReturnHomeRequested) -> None:
         self.action_go_home()
 
-    def on_automation_view_return_home_requested(
-        self, event: AutomationView.ReturnHomeRequested
-    ) -> None:
+    def on_automation_view_return_home_requested(self, event: AutomationView.ReturnHomeRequested) -> None:
         self.action_go_home()
 
-    def on_device_inventory_view_return_home_requested(
-        self, event: DeviceInventoryView.ReturnHomeRequested
-    ) -> None:
+    def on_device_inventory_view_return_home_requested(self, event: DeviceInventoryView.ReturnHomeRequested) -> None:
         self.action_go_home()
 
-    def on_device_inventory_view_add_device_requested(
-        self, event: DeviceInventoryView.AddDeviceRequested
-    ) -> None:
+    def on_device_inventory_view_add_device_requested(self, event: DeviceInventoryView.AddDeviceRequested) -> None:
         self.action_add_device()
 
-    def on_device_inventory_view_device_deleted(
-        self, event: DeviceInventoryView.DeviceDeleted
-    ) -> None:
+    def on_device_inventory_view_device_deleted(self, event: DeviceInventoryView.DeviceDeleted) -> None:
         for sidebar in self.query(DeviceSidebar):
             sidebar.reload_devices()
         try:
@@ -395,9 +384,7 @@ class NetworkingAgentTUIApp(App):
         status_bar = self.query_one(TopStatusBar)
         status_bar.update_device_count(len(db.list_devices()))
 
-    def on_audit_table_widget_return_home_requested(
-        self, event: AuditTableWidget.ReturnHomeRequested
-    ) -> None:
+    def on_audit_table_widget_return_home_requested(self, event: AuditTableWidget.ReturnHomeRequested) -> None:
         self.action_go_home()
 
     def on_device_sidebar_device_selected(self, event: DeviceSidebar.DeviceSelected) -> None:
@@ -418,6 +405,7 @@ class NetworkingAgentTUIApp(App):
 
     def action_add_device(self) -> None:
         """Display DeviceModal to register a new host."""
+
         def on_device_added(device: Optional[DeviceInventory]) -> None:
             if device:
                 for sidebar in self.query(DeviceSidebar):
@@ -439,6 +427,7 @@ class NetworkingAgentTUIApp(App):
 
     def action_open_settings(self) -> None:
         """Display VaultModal to configure AI models and keys."""
+
         def on_settings_saved(result: Optional[dict]) -> None:
             if result:
                 status_bar = self.query_one(TopStatusBar)
@@ -712,6 +701,7 @@ class NetworkingAgentTUIApp(App):
                 decrypted_key = vault.decrypt(encrypted_key)
                 if decrypted_key:
                     import os
+
                     os.environ["GEMINI_API_KEY"] = decrypted_key
 
             observer = TextualAgentObserver(app=self, workspace=workspace)

@@ -185,9 +185,7 @@ class TroubleshootingWorkspace(Widget):
                 title="Campo Obligatorio",
                 severity="warning",
             )
-            self.append_log(
-                "[bold red][!] Validación rechazada: Debes ingresar el síntoma antes de ejecutar.[/]"
-            )
+            self.append_log("[bold red][!] Validación rechazada: Debes ingresar el síntoma antes de ejecutar.[/]")
             self.query_one("#symptom-input", TextArea).focus()
             return
 

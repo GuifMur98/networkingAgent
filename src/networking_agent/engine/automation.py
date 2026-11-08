@@ -366,7 +366,7 @@ class BatchDeployer:
             dev_pct_base = 25.0 + (idx / total_devices) * 70.0
             self._notify_progress(
                 dev_pct_base,
-                f"[{idx+1}/{total_devices}] Conectando a {device.host} ({device.device_type})...",
+                f"[{idx + 1}/{total_devices}] Conectando a {device.host} ({device.device_type})...",
             )
             self._notify(f"[*] Conectando a {device.host} ({device.device_type})...")
             driver = get_os_driver(device)
@@ -376,7 +376,7 @@ class BatchDeployer:
                 # Pre-change snapshot backup
                 self._notify_progress(
                     dev_pct_base + 5.0,
-                    f"[{idx+1}/{total_devices}] Creando snapshot de seguridad en {device.host}...",
+                    f"[{idx + 1}/{total_devices}] Creando snapshot de seguridad en {device.host}...",
                 )
                 backup_path = driver.backup_running_config()
                 self._notify(f"[green][OK] Snapshot de respaldo guardado en {backup_path.name}[/]")
@@ -384,7 +384,7 @@ class BatchDeployer:
                 # Execute configuration set
                 self._notify_progress(
                     dev_pct_base + 12.0,
-                    f"[{idx+1}/{total_devices}] Aplicando configuración en {device.host}...",
+                    f"[{idx + 1}/{total_devices}] Aplicando configuración en {device.host}...",
                 )
                 output = driver.execute_commands(commands_to_apply)
                 self._notify(f"[green][OK] Comandos inyectados exitosamente en {device.host}[/]")
@@ -412,7 +412,7 @@ class BatchDeployer:
                 self._notify(f"[bold red][!] Error en {device.host}: {e}. Iniciando reversión...[/]")
                 self._notify_progress(
                     dev_pct_base + 12.0,
-                    f"[{idx+1}/{total_devices}] Reversión de emergencia en {device.host}...",
+                    f"[{idx + 1}/{total_devices}] Reversión de emergencia en {device.host}...",
                 )
                 rollback_ok = False
                 if backup_path and backup_path.exists():

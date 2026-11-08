@@ -63,7 +63,8 @@ class HitLModal(ModalScreen[bool]):
             panel = Panel(
                 info_text,
                 title="CONTROL DE SEGURIDAD OPERACIONAL",
-                border_style="#f43f5e", box=box.ROUNDED,
+                border_style="#f43f5e",
+                box=box.ROUNDED,
             )
             yield Static(panel, id="hitl-panel")
 

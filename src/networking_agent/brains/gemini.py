@@ -101,4 +101,3 @@ class GeminiBrain(LLMBrain):
         except Exception as e:
             logger.error(f"[bold red]Gemini Brain configuration synthesis failed:[/bold red] {e}")
             raise AIAnalysisError(f"Gemini configuration synthesis error: {e}") from e
-

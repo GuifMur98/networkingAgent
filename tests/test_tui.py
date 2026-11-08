@@ -240,6 +240,7 @@ async def test_tui_home_dashboard_navigation_and_banner():
 
         # Active tab must now be diagnostic
         from textual.widgets import TabbedContent
+
         tabs = pilot.app.query_one(TabbedContent)
         assert tabs.active in ("pane-troubleshooting", "pane-diagnostic")
 
@@ -260,8 +261,6 @@ async def test_tui_home_dashboard_navigation_and_banner():
         await pilot.press("h")
         await pilot.pause()
         assert tabs.active == "pane-home"
-
-
 
 
 @pytest.mark.anyio
@@ -402,7 +401,6 @@ async def test_tui_configuration_workspace_validation_and_progress():
         await pilot.pause()
         plan_panel = workspace.query_one("#config-plan-result")
         assert plan_panel.styles.display == "block"
-
 
 
 @pytest.mark.anyio

@@ -174,4 +174,3 @@ async def test_audit_table_purge_tests(populated_audit_file):
         detail = app.query_one("#audit-detail-card", Static)
         detail_text = str(getattr(detail.content, "renderable", detail.content))
         assert "192.168.1.40" in detail_text
-

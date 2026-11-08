@@ -134,14 +134,10 @@ class ConfigurationView(Widget):
             )
         elif event.button.id == "chip-proto-ospf":
             self.selected_protocol = ProtocolConfigType.OSPF.value
-            self._fill_example(
-                "Configura OSPF proceso 1 con router-id 1.1.1.1 en el área 0 para la red 10.0.0.0/16."
-            )
+            self._fill_example("Configura OSPF proceso 1 con router-id 1.1.1.1 en el área 0 para la red 10.0.0.0/16.")
         elif event.button.id == "chip-proto-eigrp":
             self.selected_protocol = ProtocolConfigType.EIGRP.value
-            self._fill_example(
-                "Activa EIGRP con AS 100 para la red 172.16.0.0/16 y desactiva auto-summary."
-            )
+            self._fill_example("Activa EIGRP con AS 100 para la red 172.16.0.0/16 y desactiva auto-summary.")
         elif event.button.id == "chip-proto-dynamic":
             self.selected_protocol = "dynamic_routing"
             self._fill_example(
@@ -154,9 +150,7 @@ class ConfigurationView(Widget):
             )
         elif event.button.id == "chip-proto-channel":
             self.selected_protocol = ProtocolConfigType.PORT_CHANNEL.value
-            self._fill_example(
-                "Crea un Port-Channel 5 LACP con Gi0/1 y Gi0/2 en modo trunk permitiendo VLAN 10,20."
-            )
+            self._fill_example("Crea un Port-Channel 5 LACP con Gi0/1 y Gi0/2 en modo trunk permitiendo VLAN 10,20.")
         elif event.button.id == "chip-proto-acl":
             self.selected_protocol = ProtocolConfigType.ACL.value
             self._fill_example(
@@ -164,9 +158,7 @@ class ConfigurationView(Widget):
             )
         elif event.button.id == "chip-proto-services":
             self.selected_protocol = ProtocolConfigType.SERVICES.value
-            self._fill_example(
-                "Configura el servidor NTP en 10.10.10.123 y el servidor Syslog remoto en 10.10.10.514."
-            )
+            self._fill_example("Configura el servidor NTP en 10.10.10.123 y el servidor Syslog remoto en 10.10.10.514.")
         elif event.button.id == "btn-run-config":
             self._trigger_configuration()
 
@@ -205,6 +197,7 @@ class ConfigurationView(Widget):
         log = self.query_one("#config-log-terminal", Log)
         try:
             from rich.text import Text
+
             log.write_line(Text.from_markup(text))
         except Exception:
             log.write_line(text)

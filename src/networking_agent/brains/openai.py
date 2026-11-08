@@ -86,4 +86,3 @@ class OpenAIBrain(LLMBrain):
         except Exception as e:
             logger.error(f"[bold red]OpenAI Brain configuration synthesis failed:[/bold red] {e}")
             raise AIAnalysisError(f"OpenAI configuration synthesis error: {e}") from e
-

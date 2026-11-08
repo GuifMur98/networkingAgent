@@ -57,7 +57,6 @@ class NetworkAgentCommandProvider(Provider):
             "nav_tab_5",
             "auditoria bitacora sha256 forense logs inmutable registros trazabilidad",
         ),
-
         # --- Operaciones de Equipos y Conectividad ---
         PaletteCommand(
             "Equipos: Registrar Nuevo Dispositivo en Catalogo",
@@ -89,7 +88,6 @@ class NetworkAgentCommandProvider(Provider):
             "refresh_all",
             "recargar sincronizar refrescar base de datos equipos f5",
         ),
-
         # --- Automatizacion y Plantillas ---
         PaletteCommand(
             "Automatizacion: Crear Nueva Plantilla de Configuracion",
@@ -115,7 +113,6 @@ class NetworkAgentCommandProvider(Provider):
             "deselect_all_automation_devices",
             "deseleccionar desmarcar limpiar seleccion lista none",
         ),
-
         # --- Seguridad e Inteligencia Artificial ---
         PaletteCommand(
             "Seguridad: Alternar Modo Guardarrailes (HITL / Auto-Aprobacion)",
@@ -129,7 +126,6 @@ class NetworkAgentCommandProvider(Provider):
             "open_settings",
             "ajustes ia boveda vault ollama gemini api key modelo cerebro",
         ),
-
         # --- Auditoria y Exportacion ---
         PaletteCommand(
             "Auditoria: Exportar Bitacora Forense a Archivo JSON",
@@ -143,7 +139,6 @@ class NetworkAgentCommandProvider(Provider):
             "purge_audit_tests",
             "purgar limpiar borrar pruebas test registros auditoria eliminar",
         ),
-
         # --- Diagnostico Rapido y Presets de Sintomas ---
         PaletteCommand(
             "Troubleshooting: Cargar Sintoma de Ejemplo - BGP Flapping",
@@ -175,7 +170,6 @@ class NetworkAgentCommandProvider(Provider):
             "clear_active_console",
             "limpiar consola pantalla log terminal cls clear borrar",
         ),
-
         # --- Sistema y Sesion ---
         PaletteCommand(
             "Sistema: Recargar Toda la Aplicacion (F5 / r)",

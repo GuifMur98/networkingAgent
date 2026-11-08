@@ -30,9 +30,7 @@ class ConfigConflictAnalyzer:
     """
 
     @classmethod
-    def analyze_running_state(
-        cls, running_config: str, vendor_family: str = "cisco_ios"
-    ) -> NetworkStateSummary:
+    def analyze_running_state(cls, running_config: str, vendor_family: str = "cisco_ios") -> NetworkStateSummary:
         """Parses active device running configuration into structured network state."""
         if not running_config or not running_config.strip():
             return NetworkStateSummary(
@@ -107,9 +105,7 @@ class ConfigConflictAnalyzer:
                 protocols["bgp"].append("active")
 
             # Interfaces
-            for m in re.finditer(
-                r"address\s+(\d+\.\d+\.\d+\.\d+/\d+)", running_config, re.IGNORECASE
-            ):
+            for m in re.finditer(r"address\s+(\d+\.\d+\.\d+\.\d+/\d+)", running_config, re.IGNORECASE):
                 try:
                     net = ipaddress.IPv4Network(m.group(1), strict=False)
                     interfaces.append(
@@ -355,16 +351,12 @@ class ConfigConflictAnalyzer:
 
         # If the brain didn't already produce a detailed conflict analysis or produced a generic default,
         # use the deterministic conflict analysis
-        is_default = intent.conflict_analysis.startswith(
-            "[OK] Sin conflictos detectados con la configuración"
-        )
+        is_default = intent.conflict_analysis.startswith("[OK] Sin conflictos detectados con la configuración")
         if not intent.conflict_analysis or is_default:
             intent.conflict_analysis = report["conflict_analysis"]
         else:
             # Append deterministic discoveries if not already in brain's response
-            has_applied = any(
-                r[:20] in intent.conflict_analysis for r in report["resolutions_applied"]
-            )
+            has_applied = any(r[:20] in intent.conflict_analysis for r in report["resolutions_applied"])
             if report.get("resolutions_applied") and not has_applied:
                 intent.conflict_analysis = f"{intent.conflict_analysis} | {report['conflict_analysis']}"
 

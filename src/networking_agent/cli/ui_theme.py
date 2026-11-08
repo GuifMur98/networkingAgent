@@ -72,11 +72,7 @@ def print_execution_summary(
 
     summary_table.add_row("Cerebro de IA", f"{provider.upper()} ({model})")
     summary_table.add_row("Dispositivo Destino", f"{device_host} [{device_type}] (Usuario: {device_user})")
-    summary_table.add_row(
-        "Modo de Operacion", f"[{'bold magenta' if mode == 'PROACTIVE' else 'bold yellow'}]{mode}[/]"
-    )
-    summary_table.add_row(
-        "Telemetria / Sintoma", symptom_summary[:90] + ("..." if len(symptom_summary) > 90 else "")
-    )
+    summary_table.add_row("Modo de Operacion", f"[{'bold magenta' if mode == 'PROACTIVE' else 'bold yellow'}]{mode}[/]")
+    summary_table.add_row("Telemetria / Sintoma", symptom_summary[:90] + ("..." if len(symptom_summary) > 90 else ""))
 
     console.print(summary_table)

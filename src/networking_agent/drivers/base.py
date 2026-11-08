@@ -90,8 +90,8 @@ class NetworkOSDriver(ABC):
                     # Check if line mentions the target IP
                     if host_target in line.lower():
                         # RouterOS: e.g. '0 R name="ether1" ...' or 'address=192.168.99.1/24 interface=ether1'
-                        if 'interface=' in line:
-                            m = re.search(r'interface=([^\s]+)', line)
+                        if "interface=" in line:
+                            m = re.search(r"interface=([^\s]+)", line)
                             if m:
                                 discovered.append(m.group(1).lower())
                         elif 'name="' in line:

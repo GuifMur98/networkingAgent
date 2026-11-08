@@ -14,11 +14,9 @@ FORBIDDEN_COMMAND_PATTERNS = [
     re.compile(r"\b(?:system\s+)?reset-configuration\b", re.IGNORECASE),
     re.compile(r"\b(?:system\s+)?default-configuration\b", re.IGNORECASE),
     re.compile(r"\b(request\s+system\s+(?:zeroize|reboot|halt))\b", re.IGNORECASE),
-
     # Backdoor user creation, credential tampering, and authentication manipulation
     re.compile(r"(?<!service\s)\b(username|password|secret|radius|tacacs)\b", re.IGNORECASE),
     re.compile(r"\b(?:user\s+(?:add|set|remove)|login\s+user)\b", re.IGNORECASE),
-
     # Remote payload download, proxies, network flooding, persistence and underlying shell access
     re.compile(
         r"\b(tool\s+(?:fetch|traffic-generator|romon|bandwidth-test)|tftp-server|guestshell|start\s+shell)\b",
@@ -26,11 +24,9 @@ FORBIDDEN_COMMAND_PATTERNS = [
     ),
     re.compile(r"\b(ip\s+(?:socks|proxy))\b", re.IGNORECASE),
     re.compile(r"\b(system\s+(?:script|scheduler|package))\b", re.IGNORECASE),
-
     # Core routing and crypto destruction
     re.compile(r"\b(no\s+ip\s+routing|no\s+router)\b", re.IGNORECASE),
     re.compile(r"\b(crypto\s+key\s+zeroize)\b", re.IGNORECASE),
-
     # Command chaining, redirection, background execution, and shell escaping
     re.compile(r"[\r\n;`$><&|\\]", re.IGNORECASE),
 ]

@@ -313,7 +313,7 @@ class AuditTableWidget(Widget):
 
         # Format Commands
         if cmds:
-            cmds_formatted = "\n".join(f"    {i+1}. [bold white]{cmd}[/bold white]" for i, cmd in enumerate(cmds))
+            cmds_formatted = "\n".join(f"    {i + 1}. [bold white]{cmd}[/bold white]" for i, cmd in enumerate(cmds))
         else:
             cmds_formatted = "    [dim white]Ninguno (Operación de sólo lectura o diagnóstico informativo)[/dim white]"
 

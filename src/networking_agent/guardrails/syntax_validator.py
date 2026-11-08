@@ -163,9 +163,7 @@ class ConfigSyntaxValidator:
                     if vlan_match:
                         vlan_id = int(vlan_match.group(1))
                         if vlan_id < 1 or vlan_id > 4094:
-                            errors.append(
-                                f"Línea {line_no}: ID de VLAN {vlan_id} inválido (rango permitido: 1-4094)."
-                            )
+                            errors.append(f"Línea {line_no}: ID de VLAN {vlan_id} inválido (rango permitido: 1-4094).")
 
                 elif vendor_family == "cisco_nxos":
                     # Track feature activation
@@ -204,9 +202,7 @@ class ConfigSyntaxValidator:
 
             elif vendor_family == "mikrotik_routeros":
                 if not line.startswith("/") and not line.startswith(":"):
-                    errors.append(
-                        f"Línea {line_no}: El comando RouterOS debe iniciar con '/' o ':' -> '{line}'"
-                    )
+                    errors.append(f"Línea {line_no}: El comando RouterOS debe iniciar con '/' o ':' -> '{line}'")
 
                 # Check spaces around equals in key=value arguments
                 if "=" in line:

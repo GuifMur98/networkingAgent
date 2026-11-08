@@ -94,4 +94,3 @@ class AnthropicBrain(LLMBrain):
         except Exception as e:
             logger.error(f"[bold red]Anthropic Brain configuration synthesis failed:[/bold red] {e}")
             raise AIAnalysisError(f"Anthropic configuration synthesis error: {e}") from e
-

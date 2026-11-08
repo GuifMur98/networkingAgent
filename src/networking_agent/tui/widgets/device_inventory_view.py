@@ -405,8 +405,7 @@ class DeviceInventoryView(Widget):
         else:
             border_col = "#f43f5e"
             overall_msg = (
-                "[bold red]Estado General: Equipo inalcanzable. "
-                "Verifique alimentación y enlace físico.[/bold red]"
+                "[bold red]Estado General: Equipo inalcanzable. Verifique alimentación y enlace físico.[/bold red]"
             )
             table_status = "[bold red]Inalcanzable[/bold red]"
 

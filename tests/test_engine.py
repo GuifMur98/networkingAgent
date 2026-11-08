@@ -268,5 +268,3 @@ def test_agent_execute_configuration_detects_ip_overlap(mocker, tmp_path):
     assert intent is not None
     assert "[!] Conflicto detectado" in intent.conflict_analysis
     assert "GigabitEthernet0/1" in intent.conflict_analysis
-
-

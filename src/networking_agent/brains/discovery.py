@@ -50,10 +50,12 @@ def get_installed_ollama_models(host: Optional[str] = None, force_refresh: bool 
                 continue
             details = getattr(m, "details", None)
             param_size = getattr(details, "parameter_size", None) if details else None
-            results.append({
-                "model": str(m_name),
-                "param_size": str(param_size) if param_size else "",
-            })
+            results.append(
+                {
+                    "model": str(m_name),
+                    "param_size": str(param_size) if param_size else "",
+                }
+            )
 
         _OLLAMA_CACHE[target_host] = (time.time(), results)
         return results

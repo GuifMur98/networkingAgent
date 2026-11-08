@@ -44,9 +44,7 @@ class TemplateModal(ModalScreen[Optional[AutomationTemplate]]):
 
     def compose(self) -> ComposeResult:
         title_text = (
-            "EDITAR PLANTILLA DE AUTOMATIZACION"
-            if self.editing_template
-            else "NUEVA PLANTILLA DE CONFIGURACION"
+            "EDITAR PLANTILLA DE AUTOMATIZACION" if self.editing_template else "NUEVA PLANTILLA DE CONFIGURACION"
         )
         with Vertical(classes="modal-dialog", id="template-modal-dialog"):
             yield Label(title_text, classes="modal-title")
