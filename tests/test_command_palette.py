@@ -4,7 +4,7 @@ import re
 
 import pytest
 from textual.command import CommandPalette, SearchIcon
-from textual.widgets import TabbedContent, TextArea
+from textual.widgets import Footer, TabbedContent, TextArea
 
 from networking_agent.core.db import db
 from networking_agent.tui.app import NetworkingAgentTUIApp
@@ -146,3 +146,43 @@ async def test_palette_action_symptom_preset(tmp_path, monkeypatch):
 
         input_box = app.query_one("#symptom-input", TextArea)
         assert "BGP" in input_box.text
+
+
+@pytest.mark.anyio
+async def test_footer_palette_position_and_module_filtering(tmp_path, monkeypatch):
+    """Verifies that ^p Paleta is docked on the bottom right and modules display ONLY 'h' Inicio."""
+    app = NetworkingAgentTUIApp()
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        footer = app.query_one(Footer)
+        tabs = app.query_one("#main-tabs", TabbedContent)
+
+        # 1. On Home dashboard
+        home_keys = [c.key for c in footer.query("FooterKey") if "-command-palette" not in c.classes]
+        home_palette = [c.key for c in footer.query("FooterKey") if "-command-palette" in c.classes]
+        assert home_keys == ["h", "q", "d", "s", "r"]
+        assert home_palette == ["ctrl+p"]
+
+        # 2. On Modules, ONLY 'h' is displayed in footer
+        for mod in [
+            "pane-troubleshooting",
+            "pane-configuration",
+            "pane-automation",
+            "pane-inventory",
+            "pane-audit",
+        ]:
+            tabs.active = mod
+            await pilot.pause()
+            mod_keys = [c.key for c in footer.query("FooterKey") if "-command-palette" not in c.classes]
+            mod_palette = [c.key for c in footer.query("FooterKey") if "-command-palette" in c.classes]
+            assert mod_keys == ["h"]
+            assert mod_palette == []
+
+        # 3. Pressing 'h' from a module returns to home and restores full footer
+        await pilot.press("h")
+        await pilot.pause()
+        assert tabs.active == "pane-home"
+        restored_keys = [c.key for c in footer.query("FooterKey") if "-command-palette" not in c.classes]
+        restored_palette = [c.key for c in footer.query("FooterKey") if "-command-palette" in c.classes]
+        assert restored_keys == ["h", "q", "d", "s", "r"]
+        assert restored_palette == ["ctrl+p"]

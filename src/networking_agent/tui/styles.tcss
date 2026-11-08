@@ -1515,19 +1515,37 @@ Footer {
     color: #cbd5e1;
 }
 
-Footer > .footer--key {
+FooterKey {
+    background: transparent;
+}
+
+FooterKey > .footer-key--key {
     background: transparent;
     color: #fbbf24;
     text-style: bold;
 }
 
-Footer > .footer--description {
+FooterKey > .footer-key--description {
     background: transparent;
     color: #e2e8f0;
 }
 
-Footer > FooterKey.-command-palette {
-    display: none;
+FooterKey.-command-palette {
+    dock: right;
+    background: transparent;
+    border-left: none;
+    padding-right: 1;
+}
+
+FooterKey.-command-palette > .footer-key--key {
+    background: transparent;
+    color: #fbbf24;
+    text-style: bold;
+}
+
+FooterKey.-command-palette > .footer-key--description {
+    background: transparent;
+    color: #e2e8f0;
 }
 
 

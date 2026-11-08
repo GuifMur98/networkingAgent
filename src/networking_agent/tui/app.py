@@ -132,7 +132,6 @@ class NetworkingAgentTUIApp(App):
     COMMANDS = {NetworkAgentCommandProvider}
 
     BINDINGS = [
-        Binding("ctrl+p", "command_palette", "Paleta", show=True),
         Binding("h", "go_home", "Inicio", show=True),
         Binding("escape", "escape_or_home", "Inicio", show=False),
         Binding("ctrl+h", "go_home", "Inicio", show=False),
@@ -140,6 +139,7 @@ class NetworkingAgentTUIApp(App):
         Binding("d", "add_device", "Nuevo Equipo", show=True),
         Binding("s", "open_settings", "Ajustes IA", show=True),
         Binding("r", "refresh_all", "Recargar", show=True),
+        Binding("ctrl+p", "command_palette", "Paleta", show=False),
         Binding("f5", "refresh_all", "Recargar", show=False),
         Binding("ctrl+r", "refresh_all", "Recargar", show=False),
         Binding("1", "nav_tab_1", "Troubleshooting", show=False),
@@ -189,7 +189,7 @@ class NetworkingAgentTUIApp(App):
             with TabPane("Auditoria", id="pane-audit"):
                 yield AuditTableWidget(id="audit-widget")
 
-        yield Footer(show_command_palette=False)
+        yield Footer(show_command_palette=True)
 
     def on_mount(self) -> None:
         """Trigger initial device sync across sidebars and views."""
