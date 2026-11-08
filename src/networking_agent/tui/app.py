@@ -134,6 +134,8 @@ class NetworkingAgentTUIApp(App):
         Binding("d", "add_device", "Nuevo Equipo", show=True),
         Binding("s", "open_settings", "Ajustes IA", show=True),
         Binding("r", "refresh_all", "Recargar", show=True),
+        Binding("f5", "refresh_all", "Recargar", show=False),
+        Binding("ctrl+r", "refresh_all", "Recargar", show=False),
         Binding("1", "nav_tab_1", "Troubleshooting", show=False),
         Binding("2", "nav_tab_2", "Configuración", show=False),
         Binding("3", "nav_tab_3", "Automatización", show=False),
@@ -397,23 +399,61 @@ class NetworkingAgentTUIApp(App):
         self.push_screen(VaultModal(), callback=on_settings_saved)
 
     def action_refresh_all(self) -> None:
-        """Reload inventory and audit log."""
+        """Reload inventory, devices, and audit log across all active views."""
+        dev_count = 0
+        try:
+            devices = db.list_devices()
+            dev_count = len(devices)
+        except Exception:
+            devices = []
+
+        # 1. Reload all sidebars
         for sidebar in self.query(DeviceSidebar):
             sidebar.reload_devices()
+
+        # 2. Reload Inventory View
         try:
             inv_view = self.query_one(DeviceInventoryView)
             inv_view.reload_devices()
         except Exception:
             pass
+
+        # 3. Reload Automation View
         try:
             auto_view = self.query_one(AutomationView)
             auto_view.reload_devices()
+            auto_view.reload_templates()
         except Exception:
             pass
-        audit_widget = self.query_one(AuditTableWidget)
-        audit_widget.reload_audit_data()
-        status_bar = self.query_one(TopStatusBar)
-        status_bar.update_device_count(len(db.list_devices()))
+
+        # 4. Reload Audit Table
+        try:
+            audit_widget = self.query_one(AuditTableWidget)
+            audit_widget.reload_audit_data()
+        except Exception:
+            pass
+
+        # 5. Reload Home Dashboard
+        try:
+            home_view = self.query_one(HomeDashboard)
+            home_view.reload_dashboard()
+        except Exception:
+            pass
+
+        # 6. Update Top Status Bar
+        try:
+            status_bar = self.query_one(TopStatusBar)
+            status_bar.update_device_count(dev_count)
+        except Exception:
+            pass
+
+        # 7. Surface visual confirmation notification
+        self.notify(
+            f"Sincronización completa: {dev_count} equipos y bitácora actualizados.",
+            title="SISTEMA RECARGADO",
+            severity="information",
+            timeout=2.5,
+        )
 
     # --- Background Workers ---
 

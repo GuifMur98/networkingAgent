@@ -233,6 +233,10 @@ class HomeDashboard(Widget):
     def on_mount(self) -> None:
         self.update_status_card()
 
+    def reload_dashboard(self) -> None:
+        """Refreshes status card and device counts."""
+        self.update_status_card()
+
     def update_status_card(self) -> None:
         """Render the system status summary panel."""
         card = self.query_one("#home-status-card", Static)

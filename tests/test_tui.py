@@ -403,3 +403,24 @@ async def test_tui_configuration_workspace_validation_and_progress():
         plan_panel = workspace.query_one("#config-plan-result")
         assert plan_panel.styles.display == "block"
 
+
+
+@pytest.mark.anyio
+async def test_tui_shortcut_r_and_f5_triggers_system_refresh():
+    """Verify that pressing 'r' and 'f5' triggers action_refresh_all and emits notification."""
+    app = NetworkingAgentTUIApp()
+    async with app.run_test(size=(120, 40)) as pilot:
+        await pilot.pause()
+        assert len(app._notifications) == 0
+
+        # Test shortcut 'r'
+        await pilot.press("r")
+        await pilot.pause()
+        assert len(app._notifications) >= 1
+        notif = list(app._notifications)[-1]
+        assert "RECARGADO" in notif.title
+
+        # Test shortcut 'f5'
+        await pilot.press("f5")
+        await pilot.pause()
+        assert len(app._notifications) >= 2
