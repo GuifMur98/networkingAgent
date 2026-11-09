@@ -201,6 +201,10 @@ class CaptureSession:
                 ),
             ]
 
+            # Immediately emit an initial packet if buffer is empty for instant feedback
+            if len(self.packets) == 0 and not self._stop_event.is_set():
+                self.add_packet(random.choice(sample_templates))
+
             scapy_success = False
             try:
                 import scapy.all as scapy

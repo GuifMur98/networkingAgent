@@ -306,8 +306,11 @@ def test_live_streaming_capture_fallback():
     session.start_local_capture()
     assert session.is_capturing
 
-    # Wait briefly for worker thread to generate at least 1-2 frames
-    time.sleep(1.2)
+    # Wait for worker thread to generate at least 1 packet (polling up to 3.0s)
+    start_t = time.time()
+    while time.time() - start_t < 3.0 and len(session.packets) == 0:
+        time.sleep(0.05)
+
     session.stop_capture()
     assert not session.is_capturing
     assert len(session.packets) >= 1
@@ -480,6 +483,19 @@ def test_native_file_dialog_unit_and_mock(monkeypatch):
         save_native_file_dialog,
     )
 
+    class MockTk:
+        def withdraw(self):
+            pass
+
+        def attributes(self, *args, **kwargs):
+            pass
+
+        def destroy(self):
+            pass
+
+    monkeypatch.setattr("networking_agent.sniffer.native_file_dialog._create_tk_root", lambda: MockTk())
+    monkeypatch.setattr("tkinter.Tk", lambda: MockTk())
+
     # Test when user cancels (returns empty string)
     monkeypatch.setattr("tkinter.filedialog.askopenfilename", lambda **kwargs: "")
     assert open_native_file_dialog() is None
@@ -493,3 +509,11 @@ def test_native_file_dialog_unit_and_mock(monkeypatch):
 
     monkeypatch.setattr("tkinter.filedialog.asksaveasfilename", lambda **kwargs: "C:/test/saved.pcap")
     assert save_native_file_dialog() == Path("C:/test/saved.pcap")
+
+    # Test exception fallback (e.g. headless environment with no DISPLAY)
+    def _raise_display_error():
+        raise RuntimeError("no display name and no $DISPLAY environment variable")
+
+    monkeypatch.setattr("networking_agent.sniffer.native_file_dialog._create_tk_root", _raise_display_error)
+    assert open_native_file_dialog() is None
+    assert save_native_file_dialog() is None
