@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 from textual.app import App, ComposeResult
-from textual.widgets import DataTable
+from textual.widgets import DataTable, Label
 
 from networking_agent.sniffer.analyzer import PacketDoctor
 from networking_agent.sniffer.capture import CaptureSession
@@ -234,9 +234,22 @@ async def test_tui_packet_lab_view_mount_and_interaction():
         lab = app.query_one("#packet-lab-test", PacketLabView)
         assert lab is not None
 
-        # Verify initial demo packets loaded into table
+        # Verify clean startup: 0 packets by default
         table = app.query_one("#packet-table", DataTable)
+        assert table.row_count == 0
+
+        status_lbl = app.query_one("#packet-status-label", Label)
+        assert "0 tramas" in str(status_lbl.render())
+
+        # Populate demo packets explicitly for dissection verification
+        lab._populate_demo_packets()
+        lab._refresh_table()
+        await pilot.pause()
         assert table.row_count >= 5
+
+        # Select first packet to inspect
+        lab._display_packet(lab.session.packets[0])
+        await pilot.pause()
 
         # Verify Hex Dump is populated
         hex_viewer = app.query_one("#hex-dump-viewer", HexDumpWidget)

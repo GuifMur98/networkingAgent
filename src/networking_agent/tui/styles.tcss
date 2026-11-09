@@ -576,7 +576,9 @@ Button.-error:focus,
 
 #inventory-top-bar,
 
-#audit-top-bar {
+#audit-top-bar,
+
+#packet-top-bar {
 
     height: 4;
 
@@ -626,7 +628,9 @@ Button.-error:focus,
 
 #btn-back-from-inventory,
 
-#btn-back-from-audit {
+#btn-back-from-audit,
+
+#btn-back-from-packet-lab {
 
     width: 24;
 
@@ -780,7 +784,9 @@ Button.-error:focus,
 
 #inventory-container,
 
-#audit-container {
+#audit-container,
+
+#packet-lab-container {
 
     height: 100%;
 
@@ -802,7 +808,9 @@ Button.-error:focus,
 
 #config-content-wrapper,
 
-#automation-content-wrapper {
+#automation-content-wrapper,
+
+#packet-lab-content-wrapper {
 
     height: auto;
 
@@ -2324,7 +2332,9 @@ TextArea:focus {
 
 #inventory-widget,
 
-#audit-widget {
+#audit-widget,
+
+#packet-lab-widget {
 
     height: 100%;
 
@@ -3248,22 +3258,7 @@ CommandPalette OptionList > .option-list--option.-highlighted {
 
 
 
-#packet-lab-container {
-    height: 100%;
-    width: 100%;
-    padding: 1 2 1 1;
-    background: $background;
-    overflow-y: auto;
-    overflow-x: hidden;
-}
 
-#packet-top-bar {
-    height: 3;
-    align-vertical: middle;
-    margin-bottom: 1;
-    background: $panel;
-    padding: 0 1;
-}
 
 #packet-lab-title {
     text-style: bold;

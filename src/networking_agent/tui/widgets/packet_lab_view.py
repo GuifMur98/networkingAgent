@@ -13,7 +13,7 @@ from typing import Optional
 from rich.text import Text
 from textual import work
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical, VerticalScroll
+from textual.containers import Horizontal, Vertical
 from textual.message import Message
 from textual.widget import Widget
 from textual.widgets import Button, DataTable, Input, Label, Static, Tree
@@ -121,7 +121,6 @@ class PacketLabView(Widget):
         self.session = CaptureSession(max_packets=5000)
         self.current_packet: Optional[CapturedPacket] = None
         self._last_rendered_index: int = 0
-        self._populate_demo_packets()
 
     def _populate_demo_packets(self):
         """Pre-populate sample protocol frames so the engineer can inspect immediately."""
@@ -162,42 +161,43 @@ class PacketLabView(Widget):
         self.session.add_packet(bgp_raw, timestamp=1700000000.050)
 
     def compose(self) -> ComposeResult:
-        with VerticalScroll(id="packet-lab-container"):
-            # 1. Header Toolbar
-            with Horizontal(id="packet-top-bar"):
-                yield Label("ANALIZADOR DE PAQUETES // CAPTURA Y DISECCIÓN DE PAQUETES", id="packet-lab-title")
-                yield Label("[CAPTURA PAUSADA - 6 tramas]", id="packet-status-label")
-                yield Button("Volver al Inicio (h)", id="btn-back-from-packet-lab", variant="default")
+        with Vertical(id="packet-lab-container"):
+            with Vertical(id="packet-lab-content-wrapper", classes="workspace-content-wrapper"):
+                # 1. Header Toolbar
+                with Horizontal(id="packet-top-bar"):
+                    yield Label("ANALIZADOR DE PAQUETES // CAPTURA Y DISECCIÓN DE PAQUETES", id="packet-lab-title")
+                    yield Label("[CAPTURA DETENIDA - 0 tramas]", id="packet-status-label")
+                    yield Button("Volver al Inicio (h)", id="btn-back-from-packet-lab", variant="default")
 
-            # 2. Control & Filter Toolbar
-            with Horizontal(id="packet-action-toolbar"):
-                yield Button("Capturar [p]", id="btn-toggle-capture", variant="success")
-                yield Button("Limpiar [c]", id="btn-clear-capture")
-                yield Button("Guardar .pcap [s]", id="btn-save-pcap")
-                yield Button("Cargar .pcap [o]", id="btn-load-pcap")
-                yield Button("AI Packet Doctor [a]", id="btn-packet-doctor", variant="warning")
+                # 2. Control & Filter Toolbar
+                with Horizontal(id="packet-action-toolbar"):
+                    yield Button("Capturar [p]", id="btn-toggle-capture", variant="success")
+                    yield Button("Limpiar [c]", id="btn-clear-capture")
+                    yield Button("Guardar .pcap [s]", id="btn-save-pcap")
+                    yield Button("Cargar .pcap [o]", id="btn-load-pcap")
+                    yield Button("AI Packet Doctor [a]", id="btn-packet-doctor", variant="warning")
 
-            with Horizontal(id="packet-filter-bar"):
-                yield Input(
-                    placeholder="Filtrar por protocolo (tcp, udp, dns, icmp, arp), IP o texto...",
-                    id="packet-filter-input",
-                )
-                yield Button("Aplicar", id="btn-apply-filter")
-                yield Button("Quitar Filtro", id="btn-reset-filter")
+                with Horizontal(id="packet-filter-bar"):
+                    yield Input(
+                        placeholder="Filtrar por protocolo (tcp, udp, dns, icmp, arp), IP o texto...",
+                        id="packet-filter-input",
+                    )
+                    yield Button("Aplicar", id="btn-apply-filter")
+                    yield Button("Quitar Filtro", id="btn-reset-filter")
 
-            # 3. Pane 1: Live Packet Table
-            with Vertical(id="packet-table-wrapper"):
-                yield DataTable(id="packet-table", cursor_type="row")
+                # 3. Pane 1: Live Packet Table
+                with Vertical(id="packet-table-wrapper"):
+                    yield DataTable(id="packet-table", cursor_type="row")
 
-            # 4. Panes 2 & 3: Split Dissection Tree + Hex Dump Inspector
-            with Horizontal(id="packet-detail-split"):
-                with Vertical(id="packet-tree-panel"):
-                    yield Label("ARBOL DE DISECCION DE PROTOCOLOS", classes="panel-sub-header")
-                    yield Tree("Detalles del Paquete", id="protocol-tree")
+                # 4. Panes 2 & 3: Split Dissection Tree + Hex Dump Inspector
+                with Horizontal(id="packet-detail-split"):
+                    with Vertical(id="packet-tree-panel"):
+                        yield Label("ARBOL DE DISECCION DE PROTOCOLOS", classes="panel-sub-header")
+                        yield Tree("Detalles del Paquete", id="protocol-tree")
 
-                with Vertical(id="packet-hex-panel"):
-                    yield Label("VOLCADO HEXADECIMAL Y ASCII", classes="panel-sub-header")
-                    yield HexDumpWidget(id="hex-dump-viewer")
+                    with Vertical(id="packet-hex-panel"):
+                        yield Label("VOLCADO HEXADECIMAL Y ASCII", classes="panel-sub-header")
+                        yield HexDumpWidget(id="hex-dump-viewer")
 
     def on_mount(self):
         """Configure table columns, populate initial rows, and set up live polling timer."""
@@ -298,8 +298,12 @@ class PacketLabView(Widget):
 
         self._last_rendered_index = max((p.index for p in self.session.packets), default=0)
         status_lbl = self.query_one("#packet-status-label", Label)
-        state_str = "ACTIVA" if self.session.is_capturing else "PAUSADA"
-        status_lbl.update(f"[CAPTURA {state_str} - {len(packets_to_show)} tramas]")
+        if self.session.is_capturing:
+            status_lbl.update(f"[CAPTURA ACTIVA - {len(packets_to_show)} tramas]")
+        elif len(packets_to_show) == 0:
+            status_lbl.update("[CAPTURA DETENIDA - 0 tramas]")
+        else:
+            status_lbl.update(f"[CAPTURA PAUSADA - {len(packets_to_show)} tramas]")
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected):
         """Update protocol tree and hex dump when a row is selected."""
