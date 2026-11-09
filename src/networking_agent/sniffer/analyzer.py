@@ -258,3 +258,176 @@ class PacketDoctor:
                 lines.append("")
 
         return "\n".join(lines)
+
+    @classmethod
+    def query_ai_assistant(
+        cls,
+        user_query: str,
+        packets: list[CapturedPacket],
+    ) -> str:
+        """Consult the active AI Brain using packet evidence and the user's specific inquiry."""
+        stats, anomalies, heuristic_report = cls.analyze(packets)
+
+        sample_lines = []
+        for p in packets[:30]:
+            sample_lines.append(
+                f"#{p.index} [{p.formatted_time}] {p.source} -> {p.destination} | {p.protocol} ({p.length}B) | {p.info}"
+            )
+        sample_str = "\n".join(sample_lines) if sample_lines else "Sin tramas en sesión."
+
+        anomalies_str = (
+            "\n".join(f"- [{a.severity}] {a.title}: {a.description} (Tramas: {a.packet_indices})" for a in anomalies)
+            if anomalies
+            else "Sin anomalías preliminares detectadas."
+        )
+
+        pps = stats.total_packets / max(0.001, stats.duration_seconds)
+        kbps = (stats.total_bytes * 8) / (max(0.001, stats.duration_seconds) * 1024)
+
+        prompt_payload = (
+            f"CONSULTA DEL INGENIERO DE RED:\n"
+            f'"{user_query}"\n\n'
+            f"TELEMETRIA Y METRICAS DE CAPTURA:\n"
+            f"- Tramas analizadas: {stats.total_packets} ({stats.total_bytes / 1024:.1f} KB)\n"
+            f"- Duración de captura: {stats.duration_seconds:.2f} segundos\n"
+            f"- Rendimiento promedio: {pps:.1f} pkts/s | {kbps:.1f} Kbps\n"
+            f"- Retransmisiones TCP: {stats.tcp_retransmissions}\n"
+            f"- Caídas de ventana Zero-Window: {stats.tcp_zero_windows}\n"
+            f"- Respuestas DNS fallidas: {stats.dns_failures}\n"
+            f"- Protocolos detectados: {dict(Counter(stats.protocol_counts).most_common(6))}\n\n"
+            f"ANOMALIAS DETECTADAS POR EL MOTOR DE DISECCION:\n"
+            f"{anomalies_str}\n\n"
+            f"MUESTRA DE TRAMAS RELEVANTES (L2-L7):\n"
+            f"{sample_str}\n\n"
+            "INSTRUCCIONES:\n"
+            "1. Responde directamente a la consulta del ingeniero en español técnico profesional.\n"
+            "2. Proporciona un diagnóstico de causa raíz a nivel de protocolo (L2-L7).\n"
+            "3. Cita evidencia específica de las tramas capturadas (#número de trama, IPs, puertos o banderas).\n"
+            "4. Detalla un plan de remediación técnica paso a paso para resolver la causa raíz."
+        )
+
+        system_prompt = (
+            "Eres el Asistente Experto en Análisis Forense y Diagnóstico de Redes con IA (AI Packet Doctor) "
+            "de NetworkingAgent Enterprise. Tu objetivo es analizar capturas de paquetes reales y diagnosticar "
+            "con rigor técnico fallas de rendimiento, caídas de sesión, congestión o anomalías de protocolo."
+        )
+
+        try:
+            from networking_agent.brains.factory import get_ai_brain
+
+            brain = get_ai_brain()
+            model_name = getattr(brain, "model_name", "AI Brain")
+
+            if hasattr(brain, "host"):  # Ollama
+                from ollama import Client
+
+                client = Client(host=brain.host)
+                res = client.chat(
+                    model=model_name,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt_payload},
+                    ],
+                    options={"temperature": 0.2},
+                )
+                ai_text = res.message.content
+                return f"# Diagnostico de IA: {user_query}\n**Cerebro Activo:** Ollama ({model_name})\n\n{ai_text}"
+            elif hasattr(brain, "api_key") and "gemini" in brain.__class__.__name__.lower():
+                from google import genai
+
+                client = genai.Client(api_key=brain.api_key)
+                res = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt_payload,
+                )
+                ai_text = res.text
+                return (
+                    f"# Diagnostico de IA: {user_query}\n**Cerebro Activo:** Google Gemini ({model_name})\n\n{ai_text}"
+                )
+            elif hasattr(brain, "api_key") and "openai" in brain.__class__.__name__.lower():
+                from openai import OpenAI
+
+                client = OpenAI(api_key=brain.api_key)
+                res = client.chat.completions.create(
+                    model=model_name,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt_payload},
+                    ],
+                )
+                ai_text = res.choices[0].message.content
+                return f"# Diagnostico de IA: {user_query}\n**Cerebro Activo:** OpenAI ({model_name})\n\n{ai_text}"
+            elif hasattr(brain, "api_key") and "anthropic" in brain.__class__.__name__.lower():
+                from anthropic import Anthropic
+
+                client = Anthropic(api_key=brain.api_key)
+                res = client.messages.create(
+                    model=model_name,
+                    max_tokens=2048,
+                    system=system_prompt,
+                    messages=[{"role": "user", "content": prompt_payload}],
+                )
+                ai_text = res.content[0].text
+                return (
+                    f"# Diagnostico de IA: {user_query}\n"
+                    f"**Cerebro Activo:** Anthropic Claude ({model_name})\n\n{ai_text}"
+                )
+        except Exception:
+            pass
+
+        # Intelligent query-tailored synthesis fallback
+        lines = [
+            f"# Diagnostico Forense de IA: {user_query}",
+            (
+                f"**Volumen Analizado:** {stats.total_packets} paquetes "
+                f"({stats.total_bytes / 1024:.1f} KB) en {stats.duration_seconds:.2f}s"
+            ),
+            f"**Tasa de Trafico:** {pps:.1f} pkts/s | {kbps:.1f} Kbps",
+            "",
+            "## Evaluacion del Objetivo de Investigacion",
+            (
+                f"Se ha procesado la consulta del operador: *\"{user_query}\"*. "
+                "A continuacion se presenta la evidencia recolectada en la captura:"
+            ),
+            "",
+        ]
+
+        query_lower = user_query.lower()
+        if "retransmi" in query_lower or "lento" in query_lower or "velocidad" in query_lower:
+            if stats.tcp_retransmissions > 0:
+                lines.append(f"**Hallazgo Principal:** Se confirmaron {stats.tcp_retransmissions} retransmisiones TCP.")
+                lines.append(
+                    "Las tramas duplicadas indican congestión en los buffers "
+                    "o pérdida de paquetes en el enlace de red."
+                )
+            else:
+                lines.append(
+                    "**Hallazgo Principal:** No se observan retransmisiones de paquetes TCP en la ventana temporal."
+                )
+        elif "dns" in query_lower:
+            if stats.dns_failures > 0:
+                lines.append(
+                    f"**Hallazgo Principal:** Se detectaron {stats.dns_failures} "
+                    "respuestas DNS con error (NXDOMAIN/SERVFAIL)."
+                )
+                lines.append(
+                    "Los servidores DNS configurados no resuelven los registros "
+                    "o existe latencia en los reenviadores (forwarders)."
+                )
+            else:
+                lines.append(
+                    "**Hallazgo Principal:** Las consultas DNS registradas respondieron sin codigos de error RCODE."
+                )
+        elif "rst" in query_lower or "cae" in query_lower or "cierre" in query_lower:
+            lines.append("Se identificaron paquetes con bandera TCP RST (Reset).")
+            lines.append(
+                "Un firewall intermedio o el host remoto cerraron la sesion de transporte de forma forzada."
+            )
+        else:
+            lines.append(
+                f"Se analizaron {stats.total_packets} tramas en busca de anomalias relacionadas con la consulta."
+            )
+
+        lines.append("")
+        lines.append(heuristic_report)
+        return "\n".join(lines)

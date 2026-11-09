@@ -1,18 +1,19 @@
-"""Packet Lab TUI View - 3-Pane Interactive Packet Sniffer and Protocol Dissector.
+"""Analizador de Paquetes TUI View - 3 Paneles Interactivos de Captura y Disección.
 
-Emulates Wireshark / Termshark in a high-performance terminal UI with Textual:
-- Pane 1: Live Packet List (DataTable with color-coded protocol badges)
-- Pane 2: Hierarchical Protocol Tree (Expandable/Collapsible layers and fields)
-- Pane 3: Synchronized Hex Dump & ASCII Inspector with layer highlight
-- AI Packet Doctor: Statistical anomaly detection and automated remediation report
+Disección e inspección profunda de tráfico en terminal de alta fidelidad:
+- Panel 1: Lista de Paquetes en Vivo (DataTable con distintivos de protocolo por color)
+- Panel 2: Árbol Jerárquico de Disección (Capas L2-L7 y campos decodificados)
+- Panel 3: Volcado Hexadecimal y ASCII Sincronizado con resaltado de capa
+- Analizador IA de Tráfico: Diagnóstico contextual con modelos LLM y remediación autónoma
 """
 
 from pathlib import Path
 from typing import Optional
 
 from rich.text import Text
+from textual import work
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical
+from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.message import Message
 from textual.widget import Widget
 from textual.widgets import Button, DataTable, Input, Label, Static, Tree
@@ -20,6 +21,9 @@ from textual.widgets import Button, DataTable, Input, Label, Static, Tree
 from networking_agent.sniffer.analyzer import PacketDoctor
 from networking_agent.sniffer.capture import CaptureSession
 from networking_agent.sniffer.models import CapturedPacket, CaptureFilter, ProtocolLayer
+from networking_agent.tui.modals.packet_doctor_modal import PacketDoctorModal
+from networking_agent.tui.modals.packet_query_modal import PacketAIQueryModal
+from networking_agent.tui.modals.pcap_file_modal import LoadPcapModal, SavePcapModal
 
 
 class HexDumpWidget(Static):
@@ -114,6 +118,7 @@ class PacketLabView(Widget):
         super().__init__(*args, **kwargs)
         self.session = CaptureSession(max_packets=5000)
         self.current_packet: Optional[CapturedPacket] = None
+        self._last_rendered_count: int = 0
         self._populate_demo_packets()
 
     def _populate_demo_packets(self):
@@ -155,12 +160,12 @@ class PacketLabView(Widget):
         self.session.add_packet(bgp_raw, timestamp=1700000000.050)
 
     def compose(self) -> ComposeResult:
-        with Vertical(id="packet-lab-container"):
+        with VerticalScroll(id="packet-lab-container"):
             # 1. Header Toolbar
             with Horizontal(id="packet-top-bar"):
-                yield Label("PACKET LAB // ANALIZADOR Y CAPTURA TIPO WIRESHARK", id="packet-lab-title")
+                yield Label("ANALIZADOR DE PAQUETES // CAPTURA Y DISECCIÓN DE PAQUETES", id="packet-lab-title")
                 yield Label("[CAPTURA PAUSADA - 6 tramas]", id="packet-status-label")
-                yield Button("Volver (h)", id="btn-back-from-packet-lab", variant="default")
+                yield Button("Volver al Inicio (h)", id="btn-back-from-packet-lab", variant="default")
 
             # 2. Control & Filter Toolbar
             with Horizontal(id="packet-action-toolbar"):
@@ -193,13 +198,61 @@ class PacketLabView(Widget):
                     yield HexDumpWidget(id="hex-dump-viewer")
 
     def on_mount(self):
-        """Configure table columns and populate initial rows."""
+        """Configure table columns, populate initial rows, and set up live polling timer."""
         table = self.query_one("#packet-table", DataTable)
         table.add_columns("No.", "Tiempo (UTC)", "Origen", "Destino", "Protocolo", "Longitud", "Información Resumen")
         self._refresh_table()
 
         if self.session.packets:
             self._display_packet(self.session.packets[0])
+
+        # Timer for live capture updates (polling every 350ms)
+        self._live_timer = self.set_interval(0.35, self._on_live_capture_poll, pause=True)
+
+    def _on_live_capture_poll(self) -> None:
+        """Poll capture session and stream incoming frames to DataTable in real time."""
+        if not self.session.is_capturing:
+            return
+
+        total_pkts = len(self.session.packets)
+        if total_pkts > self._last_rendered_count:
+            table = self.query_one("#packet-table", DataTable)
+            new_pkts = self.session.packets[self._last_rendered_count : total_pkts]
+
+            cf = self.session.active_filter
+            has_filter = bool(cf and (cf.protocol or cf.source_ip or cf.dest_ip or cf.port or cf.free_text))
+
+            for p in new_pkts:
+                if has_filter and not cf.matches(p):
+                    continue
+
+                color = self.PROTO_COLORS.get(p.protocol, "#cbd5e1")
+                proto_text = Text(f" {p.protocol} ", style=f"bold #000000 on {color}")
+                info_style = "bold #ef4444" if p.expert_info else "#f8fafc"
+
+                table.add_row(
+                    str(p.index),
+                    p.formatted_time,
+                    p.source,
+                    p.destination,
+                    proto_text,
+                    f"{p.length} B",
+                    Text(p.info, style=info_style),
+                    key=str(p.index),
+                )
+
+            self._last_rendered_count = total_pkts
+
+            try:
+                table.scroll_end(animate=False)
+            except Exception:
+                pass
+
+            status_lbl = self.query_one("#packet-status-label", Label)
+            status_lbl.update(f"[CAPTURA ACTIVA - {total_pkts} tramas]")
+
+            if self.current_packet is None and self.session.packets:
+                self._display_packet(self.session.packets[0])
 
     def _refresh_table(self):
         """Repopulate DataTable with currently filtered packets."""
@@ -223,6 +276,7 @@ class PacketLabView(Widget):
                 key=str(p.index),
             )
 
+        self._last_rendered_count = len(self.session.packets)
         status_lbl = self.query_one("#packet-status-label", Label)
         state_str = "ACTIVA" if self.session.is_capturing else "PAUSADA"
         status_lbl.update(f"[CAPTURA {state_str} - {len(packets_to_show)} tramas]")
@@ -290,14 +344,23 @@ class PacketLabView(Widget):
                 self.session.stop_capture()
                 btn.label = "Capturar [p]"
                 btn.variant = "success"
+                if hasattr(self, "_live_timer"):
+                    self._live_timer.pause()
+                status_lbl = self.query_one("#packet-status-label", Label)
+                status_lbl.update(f"[CAPTURA PAUSADA - {len(self.session.packets)} tramas]")
             else:
                 self.session.start_local_capture()
                 btn.label = "Pausar [p]"
                 btn.variant = "error"
-            self._refresh_table()
+                if hasattr(self, "_live_timer"):
+                    self._live_timer.resume()
+                status_lbl = self.query_one("#packet-status-label", Label)
+                status_lbl.update(f"[CAPTURA ACTIVA - {len(self.session.packets)} tramas]")
 
         elif btn_id == "btn-clear-capture":
             self.session.clear()
+            self._last_rendered_count = 0
+            self.current_packet = None
             self._refresh_table()
             tree = self.query_one("#protocol-tree", Tree)
             tree.clear()
@@ -314,33 +377,93 @@ class PacketLabView(Widget):
             self._refresh_table()
 
         elif btn_id == "btn-save-pcap":
-            pcap_out = Path("packet_capture.pcap")
-            saved = self.session.save_pcap(pcap_out)
-            self.notify(
-                f"Guardadas {saved} tramas en {pcap_out.resolve()}",
-                title="PCAP Exportado",
-                severity="information",
+            self.app.push_screen(
+                SavePcapModal(default_path="captura_red.pcap"),
+                callback=self._on_save_pcap_path,
             )
 
         elif btn_id == "btn-load-pcap":
-            pcap_in = Path("packet_capture.pcap")
-            if pcap_in.exists():
-                loaded = self.session.load_pcap(pcap_in)
-                self._refresh_table()
-                self.notify(
-                    f"Cargadas {loaded} tramas desde {pcap_in.name}",
-                    title="PCAP Cargado",
-                    severity="information",
-                )
-            else:
-                self.notify(
-                    "No se encontró 'packet_capture.pcap' en el directorio actual.",
-                    title="Archivo no encontrado",
-                    severity="warning",
-                )
+            self.app.push_screen(
+                LoadPcapModal(default_path="captura_red.pcap"),
+                callback=self._on_load_pcap_path,
+            )
 
         elif btn_id == "btn-packet-doctor":
-            self._run_packet_doctor()
+            self.app.push_screen(
+                PacketAIQueryModal(packet_count=len(self.session.packets)),
+                callback=self._on_ai_query_submitted,
+            )
+
+    def _on_save_pcap_path(self, target_path: Optional[Path]) -> None:
+        """Handle path selected in SavePcapModal."""
+        if not target_path:
+            return
+        try:
+            saved = self.session.save_pcap(target_path)
+            self.notify(
+                f"Se guardaron exitosamente {saved} tramas en: {target_path}",
+                title="Captura PCAP Exportada",
+                severity="information",
+            )
+        except Exception as e:
+            self.notify(
+                f"Error al guardar archivo PCAP: {e}",
+                title="Error de Exportación",
+                severity="error",
+            )
+
+    def _on_load_pcap_path(self, target_path: Optional[Path]) -> None:
+        """Handle path selected in LoadPcapModal."""
+        if not target_path:
+            return
+        if not target_path.exists():
+            self.notify(
+                f"No se encontró el archivo '{target_path}'. Verifique la ruta especificada.",
+                title="Archivo no encontrado",
+                severity="warning",
+            )
+            return
+
+        try:
+            loaded = self.session.load_pcap(target_path)
+            self._last_rendered_count = len(self.session.packets)
+            self._refresh_table()
+            if self.session.packets:
+                self._display_packet(self.session.packets[0])
+            self.notify(
+                f"Se cargaron exitosamente {loaded} tramas desde {target_path.name}",
+                title="PCAP Importado",
+                severity="information",
+            )
+        except Exception as e:
+            self.notify(
+                f"Error al abrir archivo PCAP: {e}",
+                title="Error de Lectura",
+                severity="error",
+            )
+
+    def _on_ai_query_submitted(self, query: Optional[str]) -> None:
+        """Handle query submitted in PacketAIQueryModal and trigger AI diagnosis."""
+        if not query:
+            return
+
+        self.notify(
+            f"Analizando captura con IA: '{query[:45]}...'...",
+            title="Diagnóstico AI en Proceso",
+            severity="information",
+        )
+        self._analyze_packets_with_ai(query)
+
+    @work(thread=True)
+    def _analyze_packets_with_ai(self, query: str) -> None:
+        """Execute AI analysis in background worker thread and push diagnostic modal."""
+        packets = list(self.session.packets)
+        report = PacketDoctor.query_ai_assistant(user_query=query, packets=packets)
+
+        def _show_modal():
+            self.app.push_screen(PacketDoctorModal(report))
+
+        self.app.call_from_thread(_show_modal)
 
     def on_input_submitted(self, event: Input.Submitted):
         """Filter when Enter is pressed in input field."""
@@ -360,16 +483,3 @@ class PacketLabView(Widget):
 
         self.session.apply_filter(cf)
         self._refresh_table()
-
-    def _run_packet_doctor(self):
-        """Invoke AI Packet Doctor and display anomaly diagnosis."""
-        packets = self.session.packets
-        stats, anomalies, report = PacketDoctor.analyze(packets)
-
-        # Post message so parent app can route to AI assistant or show modal
-        self.post_message(self.RequestAIDoctorDiagnosis(report))
-        self.notify(
-            f"Analizadas {stats.total_packets} tramas. Se detectaron {len(anomalies)} anomalías de tráfico.",
-            title="Diagnóstico AI Packet Doctor",
-            severity="warning" if anomalies else "information",
-        )

@@ -347,33 +347,34 @@ Cada operación ejecutada por el agente genera una entrada inmutable con:
 
 ---
 
-## 12. Pilar 6: Packet Lab (Sniffer, Disección Estilo Wireshark y AI Packet Doctor)
+## 12. Pilar 6: Analizador de Paquetes (Captura y disección de paquetes)
 
-El **Módulo 6: Packet Lab** dota a NetworkingAgent de un laboratorio forense y analizador de tráfico a nivel de cable integrado directamente en la terminal:
+El **Módulo 6: Analizador de Paquetes** dota a NetworkingAgent de un laboratorio forense y analizador de tráfico a nivel de cable integrado directamente en la terminal:
 
 ### 12.1. Interfaz de Tres Paneles Sincronizados
-Inspirada en Wireshark / TShark, la pantalla de Packet Lab presenta tres paneles interactivos:
+La pantalla del Analizador de Paquetes presenta tres paneles interactivos organizados en un contenedor con desplazamiento vertical:
 1. **Panel Superior (Lista de Paquetes):** DataTable en tiempo real que lista cada trama con índice secuencial, marca de tiempo, dirección IP o MAC de origen y destino, protocolo con distintivo cromático (TCP, UDP, DNS, ICMP, ARP, BGP, OSPF, DHCP, HTTP), longitud en bytes e información contextual de diagnóstico.
 2. **Panel Central (Árbol de Disección de Protocolos):** Widget Tree que representa la jerarquía completa de capas (Capa 2 Enlace, Capa 3 Red, Capa 4 Transporte y Capa 7 Aplicación). Permite expandir o contraer cabeceras y campos específicos (banderas TCP, secuencia, acuse, identificadores de transacción DNS, opciones DHCP, etc.).
 3. **Panel Inferior (Hex Dump Dual Hex/ASCII):** Volcado de 16 columnas que resalta automáticamente en color cian brillante la región exacta de bytes seleccionada en el árbol de disección superior.
 
-### 12.2. AI Packet Doctor (Diagnóstico Forense Automatizado)
-Al presionar el botón **AI Packet Doctor** (o la tecla ), el motor de análisis estadístico evalúa la sesión de captura completa y detecta:
+### 12.2. AI Packet Doctor (Diagnóstico Forense con IA)
+Al presionar el botón **AI Packet Doctor** (o la tecla `a`), se despliega una ventana modal interactiva donde el operador puede ingresar su consulta o elegir una de las consultas rápidas recomendadas (Lentitud y Retransmisiones, Fallos DNS, Reseteos RST, Auditoría Integral).
+El motor consulta el cerebro de IA configurado (Ollama, Gemini, OpenAI, Claude) o evalúa la sesión estadísticamente para detectar:
 - **Retransmisiones TCP:** Tráfico duplicado por pérdida de paquetes o congestión intermedia.
 - **Caída de Ventana a Cero (Zero-Window):** Saturación de buffer en el receptor que congela la transferencia.
 - **Reseteos Anómalos (RST Spikes):** Cierres abruptos de conexión por firewall o descarte de puertos.
 - **Agujeros Negros de Path MTU:** Notificaciones ICMP de fragmentación requerida que bloquean paquetes grandes.
 - **Fallos de Resolución DNS:** Errores NXDOMAIN o SERVFAIL generados por registros erróneos o fallos de upstream.
 
-El diagnóstico se presenta en un visor Markdown interactivo que detalla la tasa de paquetes por segundo (pps), rendimiento en ancho de banda (Kbps), desglose porcentual de protocolos y sugerencias de remediación inmediata.
+El diagnóstico se presenta en un visor Markdown interactivo que detalla la tasa de paquetes por segundo (pps), rendimiento en ancho de banda (Kbps), desglose porcentual de protocolos y un plan de remediación técnica paso a paso.
 
 ### 12.3. Exportación e Importación Libpcap (.pcap)
-- **Guardar Captura (s):** Exporta los paquetes capturados a un archivo .pcap binario estándar compatible con Wireshark y tcpdump.
-- **Cargar Captura (o):** Ingiere trazas .pcap existentes para su análisis forense fuera de línea en la consola de terminal.
+- **Guardar Captura (s):** Solicita la ruta de destino mediante modal y exporta los paquetes capturados a un archivo .pcap estándar compatible con tcpdump y Zeek.
+- **Cargar Captura (o):** Solicita la ruta de origen mediante modal e ingiere trazas .pcap existentes para su análisis forense fuera de línea en la consola de terminal.
 - **Filtro Dinámico:** Campo de búsqueda por texto o protocolo para aislar rápidamente flujos de interés.
 
 ### 12.4. Generación de Captura Remota para Routers
-Packet Lab incluye generadores de secuencias de captura de tráfico en routers remotos:
+El Analizador de Paquetes incluye generadores de secuencias de captura de tráfico en routers remotos:
 - **Cisco IOS/IOS-XE:** Embedded Packet Capture (EPC) con monitor capture buffer y monitor capture point.
 - **Juniper Junos:** monitor traffic interface <interfaz> matching <filtro> write-file <archivo>.
 - **MikroTik RouterOS:** /tool sniffer set file-name=capture.pcap; /tool sniffer start.

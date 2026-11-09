@@ -253,3 +253,52 @@ async def test_tui_packet_lab_view_mount_and_interaction():
         await inp.action_submit()
         await pilot.pause()
         assert table.row_count >= 1
+
+        # Verify Back Button text
+        btn_back = app.query_one("#btn-back-from-packet-lab")
+        assert "Volver al Inicio (h)" in str(btn_back.label)
+
+        # Verify Title Label
+        title_lbl = app.query_one("#packet-lab-title")
+        assert "ANALIZADOR DE PAQUETES" in str(title_lbl.render())
+        assert "CAPTURA Y DISECCIÓN DE PAQUETES" in str(title_lbl.render())
+        assert "wireshark" not in str(title_lbl.render()).lower()
+
+
+def test_packet_doctor_query_ai_assistant():
+    """Verify that query_ai_assistant synthesizes user inquiry and packet data."""
+    raw_tcp = (
+        bytes.fromhex(
+            "005056123456000c29abcdef080045000030123540004006b2a4c0a801640a000001"
+            "d4320050000003e8000000005018fa4000000000"
+        )
+        + b"PAYLOAD_DATA"
+    )
+    p1 = PacketParser.parse(raw_tcp, index=1, timestamp=100.0)
+    p2 = PacketParser.parse(raw_tcp, index=2, timestamp=100.2)
+
+    user_query = "Investigar causas de retransmisiones TCP y lentitud de flujo"
+    report = PacketDoctor.query_ai_assistant(user_query=user_query, packets=[p1, p2])
+
+    assert user_query in report
+    assert "Diagnostico" in report or "Diagnóstico" in report
+    assert "retransmisiones tcp" in report.lower()
+
+
+def test_live_streaming_capture_fallback():
+    """Verify CaptureSession live capture streaming adds packets in background."""
+    session = CaptureSession()
+    assert not session.is_capturing
+
+    session.start_local_capture()
+    assert session.is_capturing
+
+    # Wait briefly for worker thread to generate at least 1-2 frames
+    time.sleep(1.2)
+    session.stop_capture()
+    assert not session.is_capturing
+    assert len(session.packets) >= 1
+
+    protocols = {p.protocol for p in session.packets}
+    assert len(protocols) >= 1
+

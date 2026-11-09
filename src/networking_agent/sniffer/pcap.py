@@ -1,7 +1,7 @@
 """Native PCAP (Libpcap) binary file reader and writer for Packet Lab.
 
 Provides zero-dependency binary serialization and deserialization compatible with
-Wireshark, tcpdump, and network operating system capture tools.
+tcpdump, Zeek, and network operating system capture tools.
 """
 
 import struct

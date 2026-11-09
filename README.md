@@ -49,16 +49,17 @@ NetworkingAgent Enterprise estructura las operaciones de ingeniería de redes en
 - **Prueba de Servicio SSH (TCP 22):** Comprobación no invasiva de socket de red para verificar la disponibilidad del demonio SSH antes de intentar operaciones de configuración.
 - **Diagnóstico Integral:** Ejecución combinada de Ping y SSH con retroalimentación inmediata sobre la tabla de inventario.
 
-### 6. 🔬 Modo Packet Lab (Sniffer, Disección Estilo Wireshark y AI Packet Doctor)
+### 6. Analizador de Paquetes (Captura y disección de paquetes)
 - **Visor de 3 Paneles Sincronizado en Terminal:**
   - *Panel 1 (Lista de Paquetes):* Tabla reactiva con índice, timestamp, IP origen/destino, protocolo coloreado (TCP, UDP, DNS, ICMP, ARP, BGP, OSPF, DHCP, HTTP), tamaño y resumen analítico.
   - *Panel 2 (Árbol de Protocolos):* Desglose jerárquico expandible con decodificación campo a campo de cada cabecera.
   - *Panel 3 (Hex Dump Sincronizado):* Volcado dual hexadecimal y ASCII de 16 bytes que resalta en cian brillante exactamente los bytes de la capa o campo seleccionado en el árbol.
 - **AI Packet Doctor (Diagnóstico de Anomalías y Causa Raíz):**
-  - Motor de detección estadística de retransmisiones TCP, caídas de ventana Zero-Window, picos de RST, caídas de MTU (ICMP Fragmentation Needed) y errores DNS (NXDOMAIN/SERVFAIL).
+  - Motor interactivo de diagnóstico con entrada de consulta personalizada del operador y consulta directa a modelos LLM locales o en la nube (Ollama, Gemini, OpenAI, Claude).
+  - Detección estadística de retransmisiones TCP, caídas de ventana Zero-Window, picos de RST, caídas de MTU (ICMP Fragmentation Needed) y errores DNS (NXDOMAIN/SERVFAIL).
   - Emisión de informe forense estructurado en Markdown con evidencia y remediaciones sugeridas para el operador o el bucle cerrado.
-- **Lector y Escritor Nativo Libpcap (.pcap):** Exportación e importación directa sin dependencias nativas complejas, 100% compatible con Wireshark, tcpdump y Zeek.
-- **Captura Local y Generador Remoto para Routers:** Soporte de sniffing local asíncrono y generador de comandos de captura para Cisco EPC, Juniper monitor traffic y MikroTik /tool sniffer.
+- **Lector y Escritor Nativo Libpcap (.pcap):** Exportación e importación directa con selección de ruta en modal, 100% compatible con analizadores estándar, tcpdump y Zeek.
+- **Captura Local en Vivo y Generador Remoto para Routers:** Captura en tiempo real con actualización dinámica de tabla y generador de comandos de captura para Cisco EPC, Juniper monitor traffic y MikroTik /tool sniffer.
 
 ### 5. 🛡️ Modo Auditoría y Trazabilidad Forense
 - **Bitácora Inmutable SHA-256:** Registro forense criptográfico de cada acción, síntesis CLI, comandos inyectados, respuesta del router y snapshots de reversión.
