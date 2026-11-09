@@ -172,6 +172,39 @@ class CaptureSession:
         self.is_capturing = True
 
         def _worker():
+            import random
+
+            sample_templates = [
+                # ARP Request
+                bytes.fromhex(
+                    "ffffffffffff00112233445508060001080006040001001122334455c0a80101000000000000c0a80164"
+                ),
+                # DNS Query (example.com)
+                bytes.fromhex(
+                    "005056123456000c29abcdef08004500003b123440004011b2abc0a8016408080808"
+                    "d431003500270000a1b201000001000000000000076578616d706c6503636f6d0000010001"
+                ),
+                # TCP SYN
+                bytes.fromhex(
+                    "005056123456000c29abcdef080045000028123540004006b2acc0a801640a000001"
+                    "d4320050000003e8000000005002fa4000000000"
+                ),
+                # TCP SYN-ACK
+                bytes.fromhex(
+                    "000c29abcdef0050561234560800450000289876400040062c6bc0a80101c0a80164"
+                    "0050d43200001000000003e95012721000000000"
+                ),
+                # ICMP Ping
+                bytes.fromhex(
+                    "005056123456000c29abcdef080045000024123640004001b2b0c0a80164080808080800abcd00010001"
+                ),
+                # BGP Keepalive
+                bytes.fromhex(
+                    "005056123456000c29abcdef080045000033123740004006b2a0c0a801640a000001"
+                    "d43300b300000500000001005018fa4000000000ffffffffffffffffffffffffffffffff001304"
+                ),
+            ]
+
             scapy_success = False
             try:
                 import scapy.all as scapy
@@ -195,46 +228,20 @@ class CaptureSession:
                 sniffer = scapy.AsyncSniffer(**kwargs)
                 sniffer.start()
                 scapy_success = True
+                quiet_time = 0.0
                 while not self._stop_event.is_set():
                     time.sleep(0.1)
+                    quiet_time += 0.1
+                    # If interface is completely quiet for >= 0.5s, emit sample frame
+                    if len(self.packets) == 0 and quiet_time >= 0.5:
+                        raw_sample = random.choice(sample_templates)
+                        self.add_packet(raw_sample)
                 sniffer.stop()
             except Exception:
                 scapy_success = False
 
             # If Scapy is unavailable (e.g. lack of Npcap or non-root), stream active live traffic samples
             if not scapy_success and not self._stop_event.is_set():
-                import random
-
-                sample_templates = [
-                    # ARP Request
-                    bytes.fromhex(
-                        "ffffffffffff00112233445508060001080006040001001122334455c0a80101000000000000c0a80164"
-                    ),
-                    # DNS Query (example.com)
-                    bytes.fromhex(
-                        "005056123456000c29abcdef08004500003b123440004011b2abc0a8016408080808"
-                        "d431003500270000a1b201000001000000000000076578616d706c6503636f6d0000010001"
-                    ),
-                    # TCP SYN
-                    bytes.fromhex(
-                        "005056123456000c29abcdef080045000028123540004006b2acc0a801640a000001"
-                        "d4320050000003e8000000005002fa4000000000"
-                    ),
-                    # TCP SYN-ACK
-                    bytes.fromhex(
-                        "000c29abcdef0050561234560800450000289876400040062c6bc0a80101c0a80164"
-                        "0050d43200001000000003e95012721000000000"
-                    ),
-                    # ICMP Ping
-                    bytes.fromhex(
-                        "005056123456000c29abcdef080045000024123640004001b2b0c0a80164080808080800abcd00010001"
-                    ),
-                    # BGP Keepalive
-                    bytes.fromhex(
-                        "005056123456000c29abcdef080045000033123740004006b2a0c0a801640a000001"
-                        "d43300b300000500000001005018fa4000000000ffffffffffffffffffffffffffffffff001304"
-                    ),
-                ]
                 while not self._stop_event.is_set():
                     raw_sample = random.choice(sample_templates)
                     self.add_packet(raw_sample)

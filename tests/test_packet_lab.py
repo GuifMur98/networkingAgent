@@ -399,3 +399,53 @@ async def test_live_poll_duplicate_key_prevention():
             view.session.add_packet(raw_frame)
         view._on_live_capture_poll()
         await pilot.pause()
+
+
+@pytest.mark.anyio
+async def test_packet_ai_query_modal_workflow():
+    """Verify PacketAIQueryModal mounts without BadIdentifier and handles quick chips."""
+    from textual.widgets import Button
+
+    from networking_agent.tui.modals.packet_query_modal import PacketAIQueryModal
+
+    class ModalApp(App):
+        def on_mount(self):
+            self.push_screen(PacketAIQueryModal(packet_count=42))
+
+    app = ModalApp()
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        modal = app.screen
+        assert isinstance(modal, PacketAIQueryModal)
+
+        for slug in ("retransmissions", "dns", "resets", "audit"):
+            btn = modal.query_one(f"#chip-{slug}", Button)
+            assert btn is not None
+
+        audit_btn = modal.query_one("#chip-audit", Button)
+        await pilot.click(audit_btn)
+        await pilot.pause()
+
+
+@pytest.mark.anyio
+async def test_pcap_modals_mount_and_cancel():
+    """Verify SavePcapModal and LoadPcapModal mount without errors."""
+    from networking_agent.tui.modals.pcap_file_modal import LoadPcapModal, SavePcapModal
+
+    class ModalApp(App):
+        def on_mount(self):
+            self.push_screen(SavePcapModal())
+
+    app = ModalApp()
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        assert isinstance(app.screen, SavePcapModal)
+
+    class LoadModalApp(App):
+        def on_mount(self):
+            self.push_screen(LoadPcapModal())
+
+    load_app = LoadModalApp()
+    async with load_app.run_test() as pilot:
+        await pilot.pause()
+        assert isinstance(load_app.screen, LoadPcapModal)

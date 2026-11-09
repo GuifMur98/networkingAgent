@@ -17,10 +17,14 @@ class PacketAIQueryModal(ModalScreen[Optional[str]]):
     ]
 
     QUICK_PROMPTS = [
-        ("Lentitud y Retransmisiones", "Investigar causas de retransmisiones TCP y lentitud de flujo"),
-        ("Fallos DNS", "Detectar errores de resolución DNS NXDOMAIN o respuestas lentas"),
-        ("Reseteos RST", "Identificar causas de desconexiones abruptas y banderas RST"),
-        ("Auditoría Integral", "Auditoría forense completa de anomalías y estado de protocolos"),
+        (
+            "retransmissions",
+            "Lentitud y Retransmisiones",
+            "Investigar causas de retransmisiones TCP y lentitud de flujo",
+        ),
+        ("dns", "Fallos DNS", "Detectar errores de resolución DNS NXDOMAIN o respuestas lentas"),
+        ("resets", "Reseteos RST", "Identificar causas de desconexiones abruptas y banderas RST"),
+        ("audit", "Auditoría Integral", "Auditoría forense completa de anomalías y estado de protocolos"),
     ]
 
     def __init__(self, packet_count: int, *args, **kwargs):
@@ -44,8 +48,8 @@ class PacketAIQueryModal(ModalScreen[Optional[str]]):
 
             yield Label("Consultas rápidas recomendadas:", classes="input-sub-label")
             with Horizontal(id="quick-chips-row"):
-                for label, _ in self.QUICK_PROMPTS:
-                    yield Button(label, id=f"chip-{label.lower().replace(' ', '-')}", classes="quick-chip-btn")
+                for slug, label, _ in self.QUICK_PROMPTS:
+                    yield Button(label, id=f"chip-{slug}", classes="quick-chip-btn")
 
             with Horizontal(classes="modal-btn-row"):
                 yield Button("Analizar con IA [Enter]", id="btn-submit-ai-query", variant="primary")
@@ -61,9 +65,9 @@ class PacketAIQueryModal(ModalScreen[Optional[str]]):
         elif btn_id == "btn-cancel-ai-query":
             self.dismiss(None)
         elif btn_id and btn_id.startswith("chip-"):
-            # Find matching prompt
-            for label, prompt in self.QUICK_PROMPTS:
-                if btn_id == f"chip-{label.lower().replace(' ', '-')}":
+            chip_key = btn_id.removeprefix("chip-")
+            for slug, _label, prompt in self.QUICK_PROMPTS:
+                if slug == chip_key:
                     inp = self.query_one("#input-ai-query", Input)
                     inp.value = prompt
                     self._submit()
