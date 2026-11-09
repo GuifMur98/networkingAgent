@@ -3361,6 +3361,8 @@ CommandPalette OptionList > .option-list--option.-highlighted {
 .modal-desc {
     color: $foreground;
     margin-bottom: 1;
+    height: auto;
+    width: 100%;
 }
 
 /* PCAP Save/Load Modals */
@@ -3384,7 +3386,8 @@ CommandPalette OptionList > .option-list--option.-highlighted {
 
 /* AI Packet Query Modal */
 #packet-ai-dialog {
-    width: 82;
+    width: 88;
+    max-width: 95%;
     height: auto;
     background: $surface;
     border: double $accent;
@@ -3406,24 +3409,45 @@ CommandPalette OptionList > .option-list--option.-highlighted {
 .input-sub-label {
     color: $secondary;
     margin-top: 1;
-    margin-bottom: 0;
+    margin-bottom: 1;
 }
 
-#quick-chips-row {
+#quick-chips-container {
+    height: auto;
+    width: 100%;
+    margin-bottom: 1;
+}
+
+.quick-chips-row {
     height: 3;
+    width: 100%;
     margin-bottom: 1;
 }
 
 .quick-chip-btn {
+    width: 1fr;
+    height: 3;
     margin-right: 1;
     background: $panel;
     color: $foreground;
     border: solid $secondary;
 }
 
+.quick-chips-row .quick-chip-btn:last-child {
+    margin-right: 0;
+}
+
 .quick-chip-btn:hover {
     background: $secondary;
     color: #ffffff;
+    text-style: bold;
+    border: round $accent;
+}
+
+.quick-chip-btn:focus {
+    background: $panel;
+    color: $accent;
+    border: round $accent;
 }
 
 /* AI Packet Doctor Modal */

@@ -47,9 +47,11 @@ class PacketAIQueryModal(ModalScreen[Optional[str]]):
             )
 
             yield Label("Consultas rápidas recomendadas:", classes="input-sub-label")
-            with Horizontal(id="quick-chips-row"):
-                for slug, label, _ in self.QUICK_PROMPTS:
-                    yield Button(label, id=f"chip-{slug}", classes="quick-chip-btn")
+            with Vertical(id="quick-chips-container"):
+                for i in range(0, len(self.QUICK_PROMPTS), 2):
+                    with Horizontal(classes="quick-chips-row"):
+                        for slug, label, _ in self.QUICK_PROMPTS[i : i + 2]:
+                            yield Button(label, id=f"chip-{slug}", classes="quick-chip-btn")
 
             with Horizontal(classes="modal-btn-row"):
                 yield Button("Analizar con IA [Enter]", id="btn-submit-ai-query", variant="primary")
