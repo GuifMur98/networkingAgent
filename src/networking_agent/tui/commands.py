@@ -64,7 +64,6 @@ class NetworkAgentCommandProvider(Provider):
             "quit",
             "sistema salir cerrar quit exit cerrar sesion terminate",
         ),
-
         # =========================================================================
         # 2. NAVEGAR: Desplazamiento a Modulos y Espacios de Trabajo
         # =========================================================================
@@ -110,7 +109,6 @@ class NetworkAgentCommandProvider(Provider):
             "nav_tab_6",
             "navegar analizador paquetes sniffer pcap diseccion tramas capturar doctor modulo 6",
         ),
-
         # =========================================================================
         # 3. CONSOLA: Telemetria, Pantalla y Registros de Ejecucion
         # =========================================================================
@@ -132,7 +130,6 @@ class NetworkAgentCommandProvider(Provider):
             "purge_audit_tests",
             "consola purgar limpiar borrar pruebas test registros auditoria eliminar",
         ),
-
         # =========================================================================
         # 4. TERMINAL: Capturas de Pantalla, Sincronizacion y Atajos de Teclado
         # =========================================================================

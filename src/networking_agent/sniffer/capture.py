@@ -176,9 +176,7 @@ class CaptureSession:
 
             sample_templates = [
                 # ARP Request
-                bytes.fromhex(
-                    "ffffffffffff00112233445508060001080006040001001122334455c0a80101000000000000c0a80164"
-                ),
+                bytes.fromhex("ffffffffffff00112233445508060001080006040001001122334455c0a80101000000000000c0a80164"),
                 # DNS Query (example.com)
                 bytes.fromhex(
                     "005056123456000c29abcdef08004500003b123440004011b2abc0a8016408080808"
@@ -195,9 +193,7 @@ class CaptureSession:
                     "0050d43200001000000003e95012721000000000"
                 ),
                 # ICMP Ping
-                bytes.fromhex(
-                    "005056123456000c29abcdef080045000024123640004001b2b0c0a80164080808080800abcd00010001"
-                ),
+                bytes.fromhex("005056123456000c29abcdef080045000024123640004001b2b0c0a80164080808080800abcd00010001"),
                 # BGP Keepalive
                 bytes.fromhex(
                     "005056123456000c29abcdef080045000033123740004006b2a0c0a801640a000001"

@@ -316,7 +316,6 @@ def test_live_streaming_capture_fallback():
     assert len(protocols) >= 1
 
 
-
 @pytest.mark.anyio
 async def test_live_capture_poll_with_filters():
     """Verify _on_live_capture_poll processes incoming packets without AttributeError."""
@@ -385,6 +384,7 @@ def test_monotonic_packet_indices_and_buffer_overflow():
 @pytest.mark.anyio
 async def test_live_poll_duplicate_key_prevention():
     """Ensure streaming past buffer limits never raises DuplicateKey in DataTable."""
+
     class AppTest(App):
         def compose(self) -> ComposeResult:
             yield PacketLabView(id="lab-view")

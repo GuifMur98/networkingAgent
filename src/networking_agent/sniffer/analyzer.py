@@ -386,7 +386,7 @@ class PacketDoctor:
             "",
             "## Evaluacion del Objetivo de Investigacion",
             (
-                f"Se ha procesado la consulta del operador: *\"{user_query}\"*. "
+                f'Se ha procesado la consulta del operador: *"{user_query}"*. '
                 "A continuacion se presenta la evidencia recolectada en la captura:"
             ),
             "",
@@ -397,8 +397,7 @@ class PacketDoctor:
             if stats.tcp_retransmissions > 0:
                 lines.append(f"**Hallazgo Principal:** Se confirmaron {stats.tcp_retransmissions} retransmisiones TCP.")
                 lines.append(
-                    "Las tramas duplicadas indican congestión en los buffers "
-                    "o pérdida de paquetes en el enlace de red."
+                    "Las tramas duplicadas indican congestión en los buffers o pérdida de paquetes en el enlace de red."
                 )
             else:
                 lines.append(
@@ -420,9 +419,7 @@ class PacketDoctor:
                 )
         elif "rst" in query_lower or "cae" in query_lower or "cierre" in query_lower:
             lines.append("Se identificaron paquetes con bandera TCP RST (Reset).")
-            lines.append(
-                "Un firewall intermedio o el host remoto cerraron la sesion de transporte de forma forzada."
-            )
+            lines.append("Un firewall intermedio o el host remoto cerraron la sesion de transporte de forma forzada.")
         else:
             lines.append(
                 f"Se analizaron {stats.total_packets} tramas en busca de anomalias relacionadas con la consulta."
