@@ -40,10 +40,28 @@ jobs:
       - name: Install Dependencies & PyInstaller
         run: |
           uv sync --extra dev
-          uv pip install "pyinstaller>=6.11.0" "pillow>=10.0.0"
+          uv pip install "pyinstaller>=6.11.0" "pillow>=10.0.0" "pefile>=2023.2.7"
+
+      - name: Install Windows Native Build Dependencies
+        if: runner.os == 'Windows'
+        run: |
+          uv pip install "pywin32>=306"
 
       - name: Compile Standalone Release Package
         run: uv run python scripts/build_standalone.py
+
+      - name: Verify Generated Release Artifacts
+        shell: bash
+        run: |
+          echo "Listing release-artifacts:"
+          ls -la release-artifacts/
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            if [ ! -f release-artifacts/NetworkingAgent-v2.1.1-Setup.exe ]; then
+              echo "Error: NetworkingAgent-v2.1.1-Setup.exe was not created in release-artifacts!"
+              exit 1
+            fi
+            echo "[SUCCESS] NetworkingAgent-v2.1.1-Setup.exe is present and verified."
+          fi
 
       - name: Upload Build Artifacts to GitHub Actions
         uses: actions/upload-artifact@v4

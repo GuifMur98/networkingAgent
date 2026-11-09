@@ -30,6 +30,7 @@ dev = [
     "mypy>=1.14.0",
     "pillow>=10.0.0",
     "pyinstaller>=6.11.0",
+    "pefile>=2023.2.7",
 ]
 
 [project.scripts]

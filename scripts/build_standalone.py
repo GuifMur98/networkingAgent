@@ -8,7 +8,6 @@ import subprocess
 import sys
 import tarfile
 import tempfile
-import zipfile
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -19,7 +18,7 @@ VERSION = "2.1.1"
 
 
 def check_prerequisites():
-    """Ensure PyInstaller and Pillow are installed."""
+    """Ensure PyInstaller, Pillow, and pefile are installed."""
     try:
         import PyInstaller
 
@@ -27,6 +26,23 @@ def check_prerequisites():
     except ImportError:
         print("[!] PyInstaller is not installed. Installing via uv / pip...")
         subprocess.check_call([sys.executable, "-m", "pip", "install", "pyinstaller>=6.11.0"])
+
+    try:
+        import PIL
+
+        print(f"[*] Found Pillow version: {PIL.__version__}")
+    except ImportError:
+        print("[!] Pillow is not installed. Installing via uv / pip...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "pillow>=10.0.0"])
+
+    if platform.system().lower() == "windows":
+        try:
+            import pefile
+
+            print(f"[*] Found pefile version: {pefile.__version__}")
+        except ImportError:
+            print("[*] Installing pefile for Windows PE resource verification...")
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "pefile>=2023.2.7"])
 
 
 def clean_previous_builds():
@@ -38,10 +54,40 @@ def clean_previous_builds():
     RELEASE_DIR.mkdir(parents=True, exist_ok=True)
 
 
+def verify_exe_icon(exe_path: Path, label: str = "Executable") -> bool:
+    """Verify that the compiled Windows PE executable contains RT_ICON and RT_GROUP_ICON."""
+    try:
+        import pefile
+
+        pe = pefile.PE(str(exe_path))
+        has_icon = False
+        has_group = False
+        if hasattr(pe, "DIRECTORY_ENTRY_RESOURCE"):
+            for entry in pe.DIRECTORY_ENTRY_RESOURCE.entries:
+                if entry.id == pefile.RESOURCE_TYPE["RT_ICON"]:
+                    has_icon = True
+                if entry.id == pefile.RESOURCE_TYPE["RT_GROUP_ICON"]:
+                    has_group = True
+        pe.close()
+
+        if has_icon and has_group:
+            print(f"[+] Verified PE icon resources in {label} ({exe_path.name}): RT_ICON=OK, RT_GROUP_ICON=OK")
+            return True
+        else:
+            print(f"[!] Warning: {label} ({exe_path.name}) icon verification: RT_ICON={has_icon}, RT_GROUP={has_group}")
+            return False
+    except Exception as e:
+        print(f"[!] Note: Could not verify PE icon with pefile: {e}")
+        return True
+
+
 def build_binary():
     """Invoke PyInstaller using the project spec files."""
     system = platform.system().lower()
     spec_path = PROJECT_ROOT / "networking_agent.spec"
+    app_icon = PROJECT_ROOT / "assets" / "app_icon.ico"
+    if system == "windows":
+        assert app_icon.exists(), f"Missing required application icon at {app_icon}"
 
     print(f"[*] Compiling standalone application executable ({system})...")
     app_workpath = Path(tempfile.gettempdir()) / "pyi_work_app"
@@ -58,11 +104,21 @@ def build_binary():
         str(app_workpath),
         str(spec_path),
     ]
+
     subprocess.check_call(cmd_app, cwd=str(PROJECT_ROOT))
+
+    # Verify app binary icon on Windows
+    if system == "windows":
+        app_exe = DIST_DIR / "networking-agent.exe"
+        if app_exe.exists():
+            verify_exe_icon(app_exe, label="Application Binary")
 
     # On Windows, compile the single-file GUI Setup Wizard installer
     if system == "windows":
         installer_spec = PROJECT_ROOT / "installer.spec"
+        installer_icon = PROJECT_ROOT / "assets" / "installer_icon.ico"
+        assert installer_icon.exists(), f"Missing required installer icon at {installer_icon}"
+
         print("[*] Compiling native Windows Setup Wizard (NetworkingAgent-Setup.exe)...")
         installer_workpath = Path(tempfile.gettempdir()) / "pyi_work_installer"
         if installer_workpath.exists():
@@ -78,11 +134,21 @@ def build_binary():
             str(installer_workpath),
             str(installer_spec),
         ]
+
         subprocess.check_call(cmd_installer, cwd=str(PROJECT_ROOT))
+
+        setup_exe = DIST_DIR / f"NetworkingAgent-v{VERSION}-Setup.exe"
+        if setup_exe.exists():
+            verify_exe_icon(setup_exe, label="Setup Wizard Installer")
 
 
 def package_artifacts():
-    """Package the compiled executable and installer into distributable release artifacts."""
+    """Package the release artifacts.
+
+    On Windows: Generates ONLY the single-file Setup Wizard (NetworkingAgent-vX.Y.Z-Setup.exe).
+    No loose batch scripts, no extra zip files.
+    On Posix (Linux/macOS): Generates the standalone tar.gz bundle.
+    """
     system = platform.system().lower()
     machine = platform.machine().lower()
     if machine in ["amd64", "x86_64"]:
@@ -92,89 +158,52 @@ def package_artifacts():
     else:
         arch = machine
 
-    base_name = f"networking-agent-v{VERSION}-{system}-{arch}"
-    bundle_dir = RELEASE_DIR / base_name
-    bundle_dir.mkdir(parents=True, exist_ok=True)
-
-    # 1. Windows: Copy standalone Setup Wizard as top-level release asset
+    # 1. Windows: Copy ONLY the standalone Setup Wizard into release-artifacts
     if system == "windows":
         setup_exe_src = DIST_DIR / f"NetworkingAgent-v{VERSION}-Setup.exe"
         if not setup_exe_src.exists():
-            # Fallback check
             candidates = list(DIST_DIR.glob("*Setup*.exe"))
             if candidates:
                 setup_exe_src = candidates[0]
 
-        if setup_exe_src.exists():
-            setup_exe_dst = RELEASE_DIR / setup_exe_src.name
-            shutil.copy2(setup_exe_src, setup_exe_dst)
-            print(f"[+] Windows standalone Setup Wizard ready: {setup_exe_dst}")
+        if not setup_exe_src.exists():
+            raise FileNotFoundError(f"Setup Wizard executable not found in {DIST_DIR}")
 
-    # 2. Copy binary into portable bundle directory
-    if system == "windows":
-        binary_src = DIST_DIR / "networking-agent.exe"
-        binary_dst = bundle_dir / "networking-agent.exe"
-    else:
-        binary_src = DIST_DIR / "networking-agent"
-        binary_dst = bundle_dir / "networking-agent"
+        verify_exe_icon(setup_exe_src, label="Final Setup Wizard Artifact")
 
+        setup_exe_dst = RELEASE_DIR / setup_exe_src.name
+        shutil.copy2(setup_exe_src, setup_exe_dst)
+        size_mb = setup_exe_dst.stat().st_size / (1024 * 1024)
+        print(f"[+] Windows enterprise Setup Wizard ready: {setup_exe_dst} ({size_mb:.1f} MB)")
+        return setup_exe_dst
+
+    # 2. Posix (Linux / macOS): Create portable tar.gz
+    base_name = f"networking-agent-v{VERSION}-{system}-{arch}"
+    bundle_dir = RELEASE_DIR / base_name
+    bundle_dir.mkdir(parents=True, exist_ok=True)
+
+    binary_src = DIST_DIR / "networking-agent"
+    binary_dst = bundle_dir / "networking-agent"
     if not binary_src.exists():
         raise FileNotFoundError(f"Compiled binary not found at: {binary_src}")
 
     shutil.copy2(binary_src, binary_dst)
-    if system != "windows":
-        os.chmod(binary_dst, 0o755)
+    os.chmod(binary_dst, 0o755)
 
-    # Copy documentation and licenses
     for doc in ["README.md", "LICENSE"]:
         src = PROJECT_ROOT / doc
         if src.exists():
             shutil.copy2(src, bundle_dir / doc)
 
-    # Copy assets (icons and logos)
-    assets_src = PROJECT_ROOT / "assets"
-    if assets_src.exists():
-        shutil.copytree(assets_src, bundle_dir / "assets", dirs_exist_ok=True)
+    if (PROJECT_ROOT / "install.sh").exists():
+        shutil.copy2(PROJECT_ROOT / "install.sh", bundle_dir / "install.sh")
 
-    # Copy scripts and launchers
-    if system == "windows":
-        iniciar_bat = (
-            "@echo off\r\n"
-            f"title NetworkingAgent Enterprise v{VERSION}\r\n"
-            '"%~dp0networking-agent.exe" %*\r\n'
-            "if %ERRORLEVEL% NEQ 0 (\r\n"
-            "    echo.\r\n"
-            "    echo [ERROR] NetworkingAgent se cerro con codigo de salida %ERRORLEVEL%.\r\n"
-            "    pause\r\n"
-            ")\r\n"
-        )
-        (bundle_dir / "iniciar.bat").write_text(iniciar_bat, encoding="ascii")
-
-        if (PROJECT_ROOT / "install.ps1").exists():
-            shutil.copy2(PROJECT_ROOT / "install.ps1", bundle_dir / "install.ps1")
-    else:
-        if (PROJECT_ROOT / "install.sh").exists():
-            shutil.copy2(PROJECT_ROOT / "install.sh", bundle_dir / "install.sh")
-
-    # Create portable archive
     print(f"[*] Creating portable release archive for {system}-{arch}...")
-    if system == "windows":
-        archive_path = RELEASE_DIR / f"{base_name}.zip"
-        with zipfile.ZipFile(archive_path, "w", zipfile.ZIP_DEFLATED) as zf:
-            for root, _, files in os.walk(bundle_dir):
-                for f in files:
-                    file_path = Path(root) / f
-                    arcname = file_path.relative_to(RELEASE_DIR)
-                    zf.write(file_path, arcname)
-        print(f"[+] Windows portable zip package ready: {archive_path}")
-    else:
-        archive_path = RELEASE_DIR / f"{base_name}.tar.gz"
-        with tarfile.open(archive_path, "w:gz") as tf:
-            tf.add(bundle_dir, arcname=base_name)
-        print(f"[+] Posix portable tar.gz package ready: {archive_path}")
-
-    # Remove temporary uncompressed bundle dir
+    archive_path = RELEASE_DIR / f"{base_name}.tar.gz"
+    with tarfile.open(archive_path, "w:gz") as tf:
+        tf.add(bundle_dir, arcname=base_name)
     shutil.rmtree(bundle_dir, ignore_errors=True)
+    print(f"[+] Posix portable tar.gz package ready: {archive_path}")
     return archive_path
 
 
