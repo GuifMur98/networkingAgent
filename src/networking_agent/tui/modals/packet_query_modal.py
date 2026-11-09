@@ -2,11 +2,49 @@
 
 from typing import Optional
 
+from textual import events
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
+from textual.message import Message
 from textual.screen import ModalScreen
-from textual.widgets import Button, Input, Label
+from textual.widgets import Button, Label, TextArea
+
+
+class QueryTextArea(TextArea):
+    """Multi-line query text area with enter-to-submit and value compatibility."""
+
+    DEFAULT_CSS = """
+    QueryTextArea {
+        height: 5;
+        width: 100%;
+        margin-top: 1;
+        margin-bottom: 1;
+    }
+    """
+
+    class Submitted(Message):
+        """Emitted when user submits the query via Enter key."""
+
+        def __init__(self, value: str):
+            super().__init__()
+            self.value = value
+
+    @property
+    def value(self) -> str:
+        return self.text
+
+    @value.setter
+    def value(self, val: str) -> None:
+        self.text = val
+
+    def _on_key(self, event: events.Key) -> None:
+        if event.key == "enter":
+            event.prevent_default()
+            event.stop()
+            self.post_message(self.Submitted(self.text))
+            return
+        super()._on_key(event)
 
 
 class PacketAIQueryModal(ModalScreen[Optional[str]]):
@@ -41,7 +79,7 @@ class PacketAIQueryModal(ModalScreen[Optional[str]]):
             )
 
             yield Label("Consulta u objetivo de investigación:", classes="input-header-label")
-            yield Input(
+            yield QueryTextArea(
                 placeholder="Ej. ¿Por qué caen las conexiones hacia 10.0.0.1? o Analizar retrasos en DNS...",
                 id="input-ai-query",
             )
@@ -58,7 +96,7 @@ class PacketAIQueryModal(ModalScreen[Optional[str]]):
                 yield Button("Cancelar [Esc]", id="btn-cancel-ai-query", variant="default")
 
     def on_mount(self):
-        self.query_one("#input-ai-query", Input).focus()
+        self.query_one("#input-ai-query", QueryTextArea).focus()
 
     def on_button_pressed(self, event: Button.Pressed):
         btn_id = event.button.id
@@ -70,16 +108,16 @@ class PacketAIQueryModal(ModalScreen[Optional[str]]):
             chip_key = btn_id.removeprefix("chip-")
             for slug, _label, prompt in self.QUICK_PROMPTS:
                 if slug == chip_key:
-                    inp = self.query_one("#input-ai-query", Input)
+                    inp = self.query_one("#input-ai-query", QueryTextArea)
                     inp.value = prompt
                     self._submit()
                     break
 
-    def on_input_submitted(self, event: Input.Submitted):
+    def on_query_text_area_submitted(self, event: QueryTextArea.Submitted):
         self._submit()
 
     def _submit(self):
-        val = self.query_one("#input-ai-query", Input).value.strip()
+        val = self.query_one("#input-ai-query", QueryTextArea).value.strip()
         if not val:
             val = "Auditoría forense completa de anomalías de red, retransmisiones y desempeño de protocolos"
         self.dismiss(val)

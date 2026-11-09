@@ -416,20 +416,27 @@ async def test_live_poll_duplicate_key_prevention():
 
 @pytest.mark.anyio
 async def test_packet_ai_query_modal_workflow():
-    """Verify PacketAIQueryModal mounts without BadIdentifier and handles quick chips."""
+    """Verify PacketAIQueryModal mounts without BadIdentifier, handles quick chips, and QueryTextArea height."""
     from textual.widgets import Button
 
-    from networking_agent.tui.modals.packet_query_modal import PacketAIQueryModal
+    from networking_agent.tui.modals.packet_query_modal import PacketAIQueryModal, QueryTextArea
+
+    submitted_queries = []
 
     class ModalApp(App):
         def on_mount(self):
-            self.push_screen(PacketAIQueryModal(packet_count=42))
+            self.push_screen(PacketAIQueryModal(packet_count=42), callback=submitted_queries.append)
 
     app = ModalApp()
     async with app.run_test() as pilot:
         await pilot.pause()
         modal = app.screen
         assert isinstance(modal, PacketAIQueryModal)
+
+        # Verify QueryTextArea is mounted with comfortable height of 5 lines
+        ta = modal.query_one("#input-ai-query", QueryTextArea)
+        assert ta is not None
+        assert ta.styles.height.value == 5
 
         for slug in ("retransmissions", "dns", "resets", "audit"):
             btn = modal.query_one(f"#chip-{slug}", Button)
@@ -438,6 +445,8 @@ async def test_packet_ai_query_modal_workflow():
         audit_btn = modal.query_one("#chip-audit", Button)
         await pilot.click(audit_btn)
         await pilot.pause()
+        assert len(submitted_queries) == 1
+        assert "Auditoría forense completa" in submitted_queries[0]
 
 
 @pytest.mark.anyio

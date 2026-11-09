@@ -3406,6 +3406,19 @@ CommandPalette OptionList > .option-list--option.-highlighted {
     margin-top: 1;
 }
 
+#input-ai-query {
+    height: 5;
+    margin-top: 1;
+    margin-bottom: 1;
+    background: $background;
+    border: round $secondary;
+}
+
+#input-ai-query:focus {
+    background: $panel;
+    border: round $accent;
+}
+
 .input-sub-label {
     color: $secondary;
     margin-top: 1;
