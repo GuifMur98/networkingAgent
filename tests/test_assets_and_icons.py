@@ -104,3 +104,19 @@ def test_build_standalone_orchestrates_both_specs():
     assert "networking_agent.spec" in content
     assert "installer.spec" in content
     assert "Setup.exe" in content
+
+
+def test_installer_wizard_argparse_handles_slash_s_without_value_error():
+    """Verify that scripts/installer_wizard.py CLI handles /S and --silent without argparse ValueError."""
+    import subprocess
+    import sys
+
+    wizard_path = PROJECT_ROOT / "scripts" / "installer_wizard.py"
+    res = subprocess.run(
+        [sys.executable, str(wizard_path), "--help"],
+        capture_output=True,
+        text=True,
+    )
+    assert res.returncode == 0
+    assert "ValueError" not in res.stderr
+    assert "--silent" in res.stdout

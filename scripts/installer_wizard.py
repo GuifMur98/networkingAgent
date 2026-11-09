@@ -654,11 +654,20 @@ def run_gui_wizard():
 
 
 def main():
+    raw_args = sys.argv[1:]
+    clean_args = []
+    for a in raw_args:
+        if a.upper() in ["/S", "/SILENT"]:
+            clean_args.append("--silent")
+        elif a.upper() in ["/D", "/DIR"]:
+            clean_args.append("--dir")
+        else:
+            clean_args.append(a)
+
     parser = argparse.ArgumentParser(description=f"{APP_NAME} v{VERSION} Setup")
     parser.add_argument(
         "-s",
         "--silent",
-        "/S",
         dest="silent",
         action="store_true",
         help="Ejecución desatendida silenciosa",
@@ -679,7 +688,7 @@ def main():
     )
     parser.add_argument("--no-path", dest="no_path", action="store_true", help="No agregar a variable PATH")
 
-    args, _ = parser.parse_known_args()
+    args, _ = parser.parse_known_args(clean_args)
 
     if args.silent:
         target = Path(os.path.expandvars(args.install_dir))
