@@ -397,22 +397,73 @@ class PacketLabView(Widget):
             self._refresh_table()
 
         elif btn_id == "btn-save-pcap":
-            self.app.push_screen(
-                SavePcapModal(default_path="captura_red.pcap"),
-                callback=self._on_save_pcap_path,
-            )
+            self._prompt_save_pcap()
 
         elif btn_id == "btn-load-pcap":
-            self.app.push_screen(
-                LoadPcapModal(default_path="captura_red.pcap"),
-                callback=self._on_load_pcap_path,
-            )
+            self._prompt_load_pcap()
 
         elif btn_id == "btn-packet-doctor":
             self.app.push_screen(
                 PacketAIQueryModal(packet_count=len(self.session.packets)),
                 callback=self._on_ai_query_submitted,
             )
+
+    @work(thread=True)
+    def _prompt_save_pcap(self) -> None:
+        """Open native Windows Save File Dialog to export captured packets."""
+        target_path = None
+        native_attempted = False
+        try:
+            from networking_agent.sniffer.native_file_dialog import save_native_file_dialog
+
+            target_path = save_native_file_dialog(
+                title="Guardar captura en archivo PCAP",
+                default_filename="captura_red.pcap",
+            )
+            native_attempted = True
+        except Exception:
+            native_attempted = False
+
+        if native_attempted:
+            if target_path:
+                self.app.call_from_thread(self._on_save_pcap_path, target_path)
+            return
+
+        def _show_modal():
+            self.app.push_screen(
+                SavePcapModal(default_path="captura_red.pcap"),
+                callback=self._on_save_pcap_path,
+            )
+
+        self.app.call_from_thread(_show_modal)
+
+    @work(thread=True)
+    def _prompt_load_pcap(self) -> None:
+        """Open native Windows Open File Dialog to import PCAP packets."""
+        target_path = None
+        native_attempted = False
+        try:
+            from networking_agent.sniffer.native_file_dialog import open_native_file_dialog
+
+            target_path = open_native_file_dialog(
+                title="Cargar archivo de captura PCAP",
+            )
+            native_attempted = True
+        except Exception:
+            native_attempted = False
+
+        if native_attempted:
+            if target_path:
+                self.app.call_from_thread(self._on_load_pcap_path, target_path)
+            return
+
+        def _show_modal():
+            self.app.push_screen(
+                LoadPcapModal(default_path="captura_red.pcap"),
+                callback=self._on_load_pcap_path,
+            )
+
+        self.app.call_from_thread(_show_modal)
 
     def _on_save_pcap_path(self, target_path: Optional[Path]) -> None:
         """Handle path selected in SavePcapModal."""

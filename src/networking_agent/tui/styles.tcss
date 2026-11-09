@@ -3353,6 +3353,21 @@ CommandPalette OptionList > .option-list--option.-highlighted {
     color: $foreground;
 }
 
+.modal-btn-row {
+    height: auto;
+    margin-top: 1;
+    align-horizontal: right;
+}
+
+.modal-btn-row Button {
+    margin-left: 1;
+}
+
+.modal-desc {
+    color: $foreground;
+    margin-bottom: 1;
+}
+
 /* PCAP Save/Load Modals */
 #pcap-save-dialog, #pcap-load-dialog {
     width: 72;

@@ -449,3 +449,25 @@ async def test_pcap_modals_mount_and_cancel():
     async with load_app.run_test() as pilot:
         await pilot.pause()
         assert isinstance(load_app.screen, LoadPcapModal)
+
+
+def test_native_file_dialog_unit_and_mock(monkeypatch):
+    """Verify native file dialog helper calls tkinter safely and returns Path."""
+    from networking_agent.sniffer.native_file_dialog import (
+        open_native_file_dialog,
+        save_native_file_dialog,
+    )
+
+    # Test when user cancels (returns empty string)
+    monkeypatch.setattr("tkinter.filedialog.askopenfilename", lambda **kwargs: "")
+    assert open_native_file_dialog() is None
+
+    monkeypatch.setattr("tkinter.filedialog.asksaveasfilename", lambda **kwargs: "")
+    assert save_native_file_dialog() is None
+
+    # Test when user selects a file
+    monkeypatch.setattr("tkinter.filedialog.askopenfilename", lambda **kwargs: "C:/test/file.pcap")
+    assert open_native_file_dialog() == Path("C:/test/file.pcap")
+
+    monkeypatch.setattr("tkinter.filedialog.asksaveasfilename", lambda **kwargs: "C:/test/saved.pcap")
+    assert save_native_file_dialog() == Path("C:/test/saved.pcap")
