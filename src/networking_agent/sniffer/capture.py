@@ -4,6 +4,7 @@ Orchestrates local network interface sniffing (Scapy/socket) and remote router
 packet capture (Cisco Embedded Packet Capture, Juniper monitor traffic, MikroTik sniffer).
 """
 
+import bisect
 import threading
 import time
 from pathlib import Path
@@ -24,9 +25,16 @@ class CaptureSession:
         self.active_filter = CaptureFilter()
         self.is_capturing: bool = False
         self._lock = threading.Lock()
+        self._packet_counter: int = 0
         self._on_packet_callback: Callable[[CapturedPacket], None] | None = None
         self._sniffer_thread: threading.Thread | None = None
         self._stop_event = threading.Event()
+
+    @property
+    def total_captured(self) -> int:
+        """Total number of packets captured across the session lifetime."""
+        with self._lock:
+            return self._packet_counter
 
     def set_callback(self, callback: Callable[[CapturedPacket], None]):
         """Set real-time listener for incoming packets."""
@@ -38,7 +46,8 @@ class CaptureSession:
             timestamp = time.time()
 
         with self._lock:
-            index = len(self.packets) + 1
+            self._packet_counter += 1
+            index = self._packet_counter
             packet = PacketParser.parse(raw_bytes, index=index, timestamp=timestamp, orig_len=orig_len)
 
             if len(self.packets) >= self.max_packets:
@@ -47,6 +56,8 @@ class CaptureSession:
             self.packets.append(packet)
 
             if self.active_filter.matches(packet):
+                if len(self.filtered_packets) >= self.max_packets:
+                    self.filtered_packets.pop(0)
                 self.filtered_packets.append(packet)
 
         if self._on_packet_callback:
@@ -62,6 +73,7 @@ class CaptureSession:
         with self._lock:
             self.packets.clear()
             self.filtered_packets.clear()
+            self._packet_counter = 0
 
     def apply_filter(self, capture_filter: CaptureFilter) -> list[CapturedPacket]:
         """Filter packet list and return matched subset."""
@@ -70,17 +82,41 @@ class CaptureSession:
             self.filtered_packets = [p for p in self.packets if capture_filter.matches(p)]
             return list(self.filtered_packets)
 
+    def get_packets_since(self, last_index: int) -> list[CapturedPacket]:
+        """Return packets captured with index strictly greater than last_index."""
+        with self._lock:
+            if not self.packets:
+                return []
+            if self.packets[-1].index <= last_index:
+                return []
+            if self.packets[0].index > last_index:
+                return list(self.packets)
+            pos = bisect.bisect_right(self.packets, last_index, key=lambda p: p.index)
+            return list(self.packets[pos:])
+
+    def get_packet_by_index(self, index: int) -> CapturedPacket | None:
+        """Retrieve packet by its 1-based sequential index in O(log N)."""
+        with self._lock:
+            if not self.packets:
+                return None
+            pos = bisect.bisect_left(self.packets, index, key=lambda p: p.index)
+            if pos < len(self.packets) and self.packets[pos].index == index:
+                return self.packets[pos]
+            return None
+
     def load_pcap(self, pcap_path: str | Path) -> int:
         """Load and parse packets from a .pcap file."""
         self.clear()
         reader = PcapReader(pcap_path)
         records = reader.read_packets()
 
-        for idx, (ts, raw_data, orig_len) in enumerate(records, 1):
-            pkt = PacketParser.parse(raw_data, index=idx, timestamp=ts, orig_len=orig_len)
-            self.packets.append(pkt)
-            if self.active_filter.matches(pkt):
-                self.filtered_packets.append(pkt)
+        with self._lock:
+            for idx, (ts, raw_data, orig_len) in enumerate(records, 1):
+                pkt = PacketParser.parse(raw_data, index=idx, timestamp=ts, orig_len=orig_len)
+                self.packets.append(pkt)
+                if self.active_filter.matches(pkt):
+                    self.filtered_packets.append(pkt)
+            self._packet_counter = len(self.packets)
 
         return len(self.packets)
 

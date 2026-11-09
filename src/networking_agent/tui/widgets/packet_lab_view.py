@@ -17,6 +17,8 @@ from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.message import Message
 from textual.widget import Widget
 from textual.widgets import Button, DataTable, Input, Label, Static, Tree
+from textual.widgets._data_table import DuplicateKey
+from textual.widgets.data_table import RowKey
 
 from networking_agent.sniffer.analyzer import PacketDoctor
 from networking_agent.sniffer.capture import CaptureSession
@@ -118,7 +120,7 @@ class PacketLabView(Widget):
         super().__init__(*args, **kwargs)
         self.session = CaptureSession(max_packets=5000)
         self.current_packet: Optional[CapturedPacket] = None
-        self._last_rendered_count: int = 0
+        self._last_rendered_index: int = 0
         self._populate_demo_packets()
 
     def _populate_demo_packets(self):
@@ -214,22 +216,30 @@ class PacketLabView(Widget):
         if not self.session.is_capturing:
             return
 
-        total_pkts = len(self.session.packets)
-        if total_pkts > self._last_rendered_count:
-            table = self.query_one("#packet-table", DataTable)
-            new_pkts = self.session.packets[self._last_rendered_count : total_pkts]
+        new_pkts = self.session.get_packets_since(self._last_rendered_index)
+        if not new_pkts:
+            return
 
-            cf = self.session.active_filter
-            has_filter = bool(cf and (cf.protocol or cf.ip or cf.port or cf.free_text))
+        table = self.query_one("#packet-table", DataTable)
+        cf = self.session.active_filter
+        has_filter = bool(cf and (cf.protocol or cf.ip or cf.port or cf.free_text))
 
-            for p in new_pkts:
-                if has_filter and not cf.matches(p):
-                    continue
+        added_any = False
+        for p in new_pkts:
+            self._last_rendered_index = max(self._last_rendered_index, p.index)
 
-                color = self.PROTO_COLORS.get(p.protocol, "#cbd5e1")
-                proto_text = Text(f" {p.protocol} ", style=f"bold #000000 on {color}")
-                info_style = "bold #ef4444" if p.expert_info else "#f8fafc"
+            if has_filter and not cf.matches(p):
+                continue
 
+            color = self.PROTO_COLORS.get(p.protocol, "#cbd5e1")
+            proto_text = Text(f" {p.protocol} ", style=f"bold #000000 on {color}")
+            info_style = "bold #ef4444" if p.expert_info else "#f8fafc"
+
+            row_key = str(p.index)
+            if RowKey(row_key) in table._row_locations:
+                continue
+
+            try:
                 table.add_row(
                     str(p.index),
                     p.formatted_time,
@@ -238,21 +248,24 @@ class PacketLabView(Widget):
                     proto_text,
                     f"{p.length} B",
                     Text(p.info, style=info_style),
-                    key=str(p.index),
+                    key=row_key,
                 )
+                added_any = True
+            except DuplicateKey:
+                continue
 
-            self._last_rendered_count = total_pkts
-
+        if added_any:
             try:
                 table.scroll_end(animate=False)
             except Exception:
                 pass
 
-            status_lbl = self.query_one("#packet-status-label", Label)
-            status_lbl.update(f"[CAPTURA ACTIVA - {total_pkts} tramas]")
+        total_pkts = len(self.session.packets)
+        status_lbl = self.query_one("#packet-status-label", Label)
+        status_lbl.update(f"[CAPTURA ACTIVA - {total_pkts} tramas]")
 
-            if self.current_packet is None and self.session.packets:
-                self._display_packet(self.session.packets[0])
+        if self.current_packet is None and self.session.packets:
+            self._display_packet(self.session.packets[0])
 
     def _refresh_table(self):
         """Repopulate DataTable with currently filtered packets."""
@@ -265,18 +278,25 @@ class PacketLabView(Widget):
             proto_text = Text(f" {p.protocol} ", style=f"bold #000000 on {color}")
             info_style = "bold #ef4444" if p.expert_info else "#f8fafc"
 
-            table.add_row(
-                str(p.index),
-                p.formatted_time,
-                p.source,
-                p.destination,
-                proto_text,
-                f"{p.length} B",
-                Text(p.info, style=info_style),
-                key=str(p.index),
-            )
+            row_key = str(p.index)
+            if RowKey(row_key) in table._row_locations:
+                continue
 
-        self._last_rendered_count = len(self.session.packets)
+            try:
+                table.add_row(
+                    str(p.index),
+                    p.formatted_time,
+                    p.source,
+                    p.destination,
+                    proto_text,
+                    f"{p.length} B",
+                    Text(p.info, style=info_style),
+                    key=row_key,
+                )
+            except DuplicateKey:
+                continue
+
+        self._last_rendered_index = max((p.index for p in self.session.packets), default=0)
         status_lbl = self.query_one("#packet-status-label", Label)
         state_str = "ACTIVA" if self.session.is_capturing else "PAUSADA"
         status_lbl.update(f"[CAPTURA {state_str} - {len(packets_to_show)} tramas]")
@@ -286,7 +306,7 @@ class PacketLabView(Widget):
         row_key = event.row_key.value
         try:
             pkt_index = int(row_key)
-            pkt = next((p for p in self.session.packets if p.index == pkt_index), None)
+            pkt = self.session.get_packet_by_index(pkt_index)
             if pkt:
                 self._display_packet(pkt)
         except Exception:
@@ -298,7 +318,7 @@ class PacketLabView(Widget):
             row_key = event.row_key.value
             try:
                 pkt_index = int(row_key)
-                pkt = next((p for p in self.session.packets if p.index == pkt_index), None)
+                pkt = self.session.get_packet_by_index(pkt_index)
                 if pkt:
                     self._display_packet(pkt)
             except Exception:
@@ -359,7 +379,7 @@ class PacketLabView(Widget):
 
         elif btn_id == "btn-clear-capture":
             self.session.clear()
-            self._last_rendered_count = 0
+            self._last_rendered_index = 0
             self.current_packet = None
             self._refresh_table()
             tree = self.query_one("#protocol-tree", Tree)
@@ -426,7 +446,7 @@ class PacketLabView(Widget):
 
         try:
             loaded = self.session.load_pcap(target_path)
-            self._last_rendered_count = len(self.session.packets)
+            self._last_rendered_index = max((p.index for p in self.session.packets), default=0)
             self._refresh_table()
             if self.session.packets:
                 self._display_packet(self.session.packets[0])

@@ -337,3 +337,65 @@ async def test_live_capture_poll_with_filters():
         assert view.session.active_filter.source_ip == view.session.active_filter.ip
         assert view.session.active_filter.dest_ip == view.session.active_filter.ip
         assert view.session.active_filter.is_active is True
+
+
+def test_monotonic_packet_indices_and_buffer_overflow():
+    """Verify packet indices monotonically increase past max_packets without duplicates."""
+    session = CaptureSession(max_packets=5)
+    raw_frame = bytes.fromhex("ffffffffffff00112233445508060001080006040001001122334455c0a80101000000000000c0a80164")
+
+    for i in range(12):
+        pkt = session.add_packet(raw_frame)
+        assert pkt.index == i + 1
+
+    assert len(session.packets) == 5
+    assert [p.index for p in session.packets] == [8, 9, 10, 11, 12]
+    assert session.total_captured == 12
+
+    # Binary search slice verification
+    since_8 = session.get_packets_since(8)
+    assert [p.index for p in since_8] == [9, 10, 11, 12]
+
+    since_11 = session.get_packets_since(11)
+    assert [p.index for p in since_11] == [12]
+
+    since_12 = session.get_packets_since(12)
+    assert since_12 == []
+
+    # Get packet by index
+    pkt10 = session.get_packet_by_index(10)
+    assert pkt10 is not None
+    assert pkt10.index == 10
+    assert session.get_packet_by_index(2) is None  # Already popped
+
+
+@pytest.mark.anyio
+async def test_live_poll_duplicate_key_prevention():
+    """Ensure streaming past buffer limits never raises DuplicateKey in DataTable."""
+    class AppTest(App):
+        def compose(self) -> ComposeResult:
+            yield PacketLabView(id="lab-view")
+
+    app = AppTest()
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        view = app.query_one("#lab-view", PacketLabView)
+        view.session.is_capturing = True
+        # Set max_packets small to trigger ring buffer turnover rapidly
+        view.session.max_packets = 5
+
+        raw_frame = bytes.fromhex(
+            "ffffffffffff00112233445508060001080006040001001122334455c0a80101000000000000c0a80164"
+        )
+        for _ in range(20):
+            view.session.add_packet(raw_frame)
+
+        # Polling must not raise DuplicateKey exception
+        view._on_live_capture_poll()
+        await pilot.pause()
+
+        # Add more and poll again
+        for _ in range(10):
+            view.session.add_packet(raw_frame)
+        view._on_live_capture_poll()
+        await pilot.pause()
