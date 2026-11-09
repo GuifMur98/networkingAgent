@@ -59,6 +59,21 @@ class CaptureFilter:
     port: int | None = None
     free_text: str | None = None
 
+    @property
+    def is_active(self) -> bool:
+        """Evaluate whether any filter rule is active."""
+        return bool(self.protocol or self.ip or self.port or self.free_text)
+
+    @property
+    def source_ip(self) -> str | None:
+        """Backward-compatibility alias for ip."""
+        return self.ip
+
+    @property
+    def dest_ip(self) -> str | None:
+        """Backward-compatibility alias for ip."""
+        return self.ip
+
     def matches(self, packet: CapturedPacket) -> bool:
         """Evaluate whether packet satisfies filter condition."""
         if self.protocol:

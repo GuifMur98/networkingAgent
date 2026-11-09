@@ -302,3 +302,38 @@ def test_live_streaming_capture_fallback():
     protocols = {p.protocol for p in session.packets}
     assert len(protocols) >= 1
 
+
+
+@pytest.mark.anyio
+async def test_live_capture_poll_with_filters():
+    """Verify _on_live_capture_poll processes incoming packets without AttributeError."""
+
+    class AppTest(App):
+        def compose(self) -> ComposeResult:
+            yield PacketLabView(id="lab-view")
+
+    app = AppTest()
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        view = app.query_one("#lab-view", PacketLabView)
+        view.session.is_capturing = True
+
+        raw_tcp = bytes.fromhex(
+            "005056123456000c29abcdef080045000028123540004006b2acc0a801640a000001"
+            "d4320050000003e8000000005002fa4000000000"
+        )
+        view.session.add_packet(raw_tcp)
+
+        # Poll with default empty filter
+        view._on_live_capture_poll()
+        await pilot.pause()
+
+        # Poll with active filter
+        view.session.apply_filter(CaptureFilter(protocol="TCP"))
+        view.session.add_packet(raw_tcp)
+        view._on_live_capture_poll()
+        await pilot.pause()
+
+        assert view.session.active_filter.source_ip == view.session.active_filter.ip
+        assert view.session.active_filter.dest_ip == view.session.active_filter.ip
+        assert view.session.active_filter.is_active is True

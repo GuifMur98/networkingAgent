@@ -220,7 +220,7 @@ class PacketLabView(Widget):
             new_pkts = self.session.packets[self._last_rendered_count : total_pkts]
 
             cf = self.session.active_filter
-            has_filter = bool(cf and (cf.protocol or cf.source_ip or cf.dest_ip or cf.port or cf.free_text))
+            has_filter = bool(cf and (cf.protocol or cf.ip or cf.port or cf.free_text))
 
             for p in new_pkts:
                 if has_filter and not cf.matches(p):
