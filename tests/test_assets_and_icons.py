@@ -4,6 +4,8 @@ from pathlib import Path
 
 from PIL import Image
 
+from networking_agent import __version__
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 ASSETS_DIR = PROJECT_ROOT / "assets"
 
@@ -79,7 +81,7 @@ def test_installer_spec_embeds_installer_icon_and_payload():
     assert installer_spec.exists(), "installer.spec must exist"
     spec_content = installer_spec.read_text(encoding="utf-8")
     assert "installer_icon.ico" in spec_content
-    assert "NetworkingAgent-v2.1.1-Setup" in spec_content
+    assert f"NetworkingAgent-v{__version__}-Setup" in spec_content
     assert "networking-agent.exe" in spec_content
     assert "console=False" in spec_content
 

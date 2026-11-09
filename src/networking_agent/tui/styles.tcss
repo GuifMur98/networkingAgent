@@ -1,1620 +1,1745 @@
-/* NetworkingAgent Cyberpunk Mission Control Enterprise Theme */
-
-Screen {
-    background: $background;
-    color: $foreground;
-}
-
-/* Tabbed Navigation Layout */
-#main-tabs {
-    height: 1fr;
-    width: 100%;
-}
-
-#main-tabs > Tabs {
-    display: none;
-}
-
-TabbedContent {
-    height: 1fr;
-    width: 100%;
-}
-
-ContentSwitcher {
-    height: 1fr;
-    width: 100%;
-}
-
-TabPane {
-    height: 1fr;
-    width: 100%;
-    padding: 0;
-}
-
-/* Header & Status Bar */
-#top-bar {
-    dock: top;
-    height: 1;
-    background: $surface;
-    color: $foreground;
-    border: none;
-    padding: 0 1;
-}
-
-#top-bar-inner {
-    width: 100%;
-    height: 1;
-    align: center middle;
-    content-align: center middle;
-}
-
-#top-badges {
-    width: 100%;
-    height: 1;
-    align: center middle;
-    content-align: center middle;
-}
-
-.status-badge {
-    padding: 0 1;
-    margin: 0;
-    background: transparent;
-    border: none;
-    text-style: bold;
-}
-
-.status-divider {
-    color: $secondary;
-    background: transparent;
-    text-style: dim;
-    padding: 0;
-}
-
-.badge-brain {
-    color: $accent;
-}
-
-.badge-device {
-    color: $secondary;
-}
-
-.badge-hitl {
-    color: $success;
-}
-
-/* Home / Welcome Dashboard */
-#home-widget {
-    height: 1fr;
-    width: 100%;
-}
-
-#home-container {
-    height: 100%;
-    width: 100%;
-    padding: 0 1;
-    overflow-y: auto;
-    background: $background;
-}
-
-#home-banner {
-    height: auto;
-    width: 100%;
-    margin-bottom: 1;
-}
-
-#home-status-card {
-    height: auto;
-    width: 100%;
-    margin-bottom: 1;
-}
-
-#home-cards-container {
-    height: auto;
-    width: 100%;
-}
-
-#home-cards-row-top {
-    height: 7;
-    min-height: 7;
-    width: 100%;
-    margin-bottom: 1;
-}
-
-#home-cards-row-bottom {
-    height: 7;
-    min-height: 7;
-    width: 100%;
-    margin-bottom: 0;
-}
-
-.home-nav-card {
-    width: 1fr;
-    height: 100%;
-    min-height: 7;
-    background: $surface;
-    color: $foreground;
-    border: none;
-    padding: 0;
-    margin: 0 1;
-}
-
-.home-nav-card:hover {
-    background: $panel;
-    border: none;
-}
-
-.home-nav-card:focus {
-    background: $panel;
-    border: none;
-}
-
-/* Global Interactive Button Styles with Cyberpunk Hover & Focus */
-Button {
-    background: $surface;
-    color: $foreground;
-    border: round $primary;
-    height: 3;
-    text-style: bold;
-}
-
-Button:hover {
-    background: $panel;
-    color: $foreground;
-    border: round $accent;
-    text-style: bold;
-}
-
-Button:focus {
-    background: $surface-lighten-1;
-    color: $primary;
-    border: round $accent;
-    text-style: bold;
-}
-
-/* Primary Action Buttons */
-Button.-primary,
-#btn-run-remediation,
-#btn-run-config,
-#btn-deploy-batch,
-#btn-save-vault,
-#btn-hitl-approve,
-#btn-inv-add,
-#btn-refresh-audit,
-#btn-add-device {
-    background: $primary;
-    color: $background;
-    border: round $accent;
-    text-style: bold;
-}
-
-Button.-primary:hover,
-#btn-run-remediation:hover,
-#btn-run-config:hover,
-#btn-deploy-batch:hover,
-#btn-save-vault:hover,
-#btn-hitl-approve:hover,
-#btn-inv-add:hover,
-#btn-refresh-audit:hover,
-#btn-add-device:hover {
-    background: $primary-lighten-1;
-    color: $background;
-    border: round $primary-lighten-1;
-    text-style: bold;
-}
-
-Button.-primary:focus,
-#btn-run-remediation:focus,
-#btn-run-config:focus,
-#btn-deploy-batch:focus,
-#btn-save-vault:focus,
-#btn-hitl-approve:focus,
-#btn-inv-add:focus,
-#btn-refresh-audit:focus,
-#btn-add-device:focus {
-    background: $accent;
-    border: round $accent;
-}
-
-/* Error / Destructive Action Buttons */
-Button.-error,
-#btn-hitl-reject,
-#btn-inv-delete {
-    background: $error;
-    color: $foreground;
-    border: round $error;
-    text-style: bold;
-}
-
-Button.-error:hover,
-#btn-hitl-reject:hover,
-#btn-inv-delete:hover {
-    background: $error-lighten-1;
-    color: $foreground;
-    border: round $error-lighten-1;
-    text-style: bold;
-}
-
-Button.-error:focus,
-#btn-hitl-reject:focus,
-#btn-inv-delete:focus {
-    background: $error-lighten-2;
-    border: round $error-lighten-2;
-}
-
-/* Secondary & Back Navigation Buttons */
-#btn-back-to-home,
-#btn-back-from-config,
-#btn-back-from-automation,
-#btn-back-from-inventory,
-#btn-back-from-audit,
-#btn-validate-script,
-#btn-inv-refresh,
-#btn-cancel {
-    background: $background;
-    color: $secondary;
-    border: round $primary;
-    text-style: bold;
-}
-
-#btn-back-to-home:hover,
-#btn-back-from-config:hover,
-#btn-back-from-automation:hover,
-#btn-back-from-inventory:hover,
-#btn-back-from-audit:hover,
-#btn-validate-script:hover,
-#btn-inv-refresh:hover,
-#btn-cancel:hover {
-    background: $surface-lighten-1;
-    color: $primary;
-    border: round $accent;
-    text-style: bold;
-}
-
-#btn-back-to-home:focus,
-#btn-back-from-config:focus,
-#btn-back-from-automation:focus,
-#btn-back-from-inventory:focus,
-#btn-back-from-audit:focus,
-#btn-validate-script:focus,
-#btn-inv-refresh:focus,
-#btn-cancel:focus {
-    background: $panel;
-    border: round $primary-lighten-1;
-}
-
-/* View Header Navigation Bars */
-#diagnostic-nav-bar,
-#config-nav-bar,
-#automation-top-bar,
-#inventory-top-bar,
-#audit-top-bar {
-    height: 4;
-    min-height: 4;
-    background: $background;
-    border-bottom: solid $primary;
-    padding: 0 1;
-    margin-bottom: 1;
-    align-vertical: middle;
-}
-
-#diagnostic-title,
-#config-title,
-#automation-title,
-#inventory-title,
-#lbl-audit-header {
-    width: 1fr;
-    text-style: bold;
-    color: $primary;
-    content-align: left middle;
-}
-
-#btn-back-to-home,
-#btn-back-from-config,
-#btn-back-from-automation,
-#btn-back-from-inventory,
-#btn-back-from-audit {
-    width: 24;
-    height: 3;
-    text-align: center;
-    content-align: center middle;
-}
-
-/* Sidebar Styling */
-#device-sidebar,
-#device-sidebar-config,
-.device-sidebar {
-    width: 32;
-    height: 100%;
-    background: $background;
-    border-right: solid $primary;
-    padding: 1;
-}
-
-#sidebar-title {
-    text-style: bold;
-    color: $primary;
-    margin-bottom: 1;
-    text-align: center;
-}
-
-#device-list {
-    height: 1fr;
-    background: transparent;
-    border: none;
-}
-
-.device-item {
-    height: 3;
-    padding: 0 1;
-    margin-bottom: 1;
-    background: $surface;
-    border-left: wide $secondary;
-}
-
-.device-item:hover {
-    background: $surface-lighten-1;
-    border-left: wide $primary;
-    color: $foreground;
-}
-
-.device-item.-selected {
-    background: $panel;
-    border-left: wide $primary;
-    color: $secondary;
-    text-style: bold;
-}
-
-#btn-add-device {
-    width: 100%;
-    margin-top: 1;
-}
-
-/* Workspaces Layout */
-#main-split,
-#config-split {
-    height: 100%;
-    width: 100%;
-}
-
-#diagnostic-workspace,
-#troubleshooting-workspace,
-#configuration-workspace {
-    height: 100%;
-    width: 1fr;
-    padding: 1 2 1 1;
-    background: $background;
-}
-
-#diagnostic-container,
-#configuration-container,
-#automation-container,
-#inventory-container,
-#audit-container {
-    height: 100%;
-    width: 100%;
-    overflow-y: auto;
-    background: $background;
-    padding: 1;
-}
-
-.workspace-content-wrapper,
-#diagnostic-content-wrapper,
-#config-content-wrapper,
-#automation-content-wrapper {
-    height: auto;
-    width: 100%;
-    padding: 0 2;
-}
-
-/* Section Panels & Target Cards */
-.section-panel {
-    background: $surface;
-    border: round $primary;
-    padding: 0 1;
-    margin-bottom: 1;
-    align-vertical: middle;
-}
-
-#target-device-card,
-#config-target-card {
-    height: 3;
-    background: $surface;
-    border-left: heavy $primary;
-    border: round $secondary;
-    padding: 0 1;
-    margin-bottom: 1;
-}
-
-#config-target-card {
-    border-left: heavy $success;
-}
-
-#mode-selector-container {
-    height: auto;
-    background: $surface;
-    border: round $primary;
-    padding: 1;
-    margin-bottom: 1;
-}
-
-#mode-selector-header {
-    height: auto;
-    align-vertical: middle;
-    margin-bottom: 1;
-}
-
-#mode-selector-bar {
-    height: auto;
-    min-height: 3;
-    padding: 0 1;
-}
-
-#mode-description-banner {
-    height: auto;
-    background: $background;
-    border-left: thick $primary;
-    padding: 1;
-    color: $foreground-muted;
-}
-
-#lbl-mode,
-#lbl-config-proto,
-#lbl-quick-symptoms,
-#lbl-symptom,
-#lbl-config-prompt,
-#lbl-console,
-#lbl-config-console,
-#lbl-editor {
-    color: $secondary;
-    text-style: bold;
-    margin-bottom: 1;
-}
-
-/* Radio Sets & Radio Buttons */
-#radio-mode {
-    layout: horizontal;
-    background: transparent;
-    border: none;
-}
-
-#radio-mode RadioButton {
-    margin-right: 2;
-    color: $foreground-muted;
-}
-
-#radio-mode RadioButton:hover {
-    color: $primary;
-}
-
-#radio-mode RadioButton.-selected {
-    color: $secondary;
-    text-style: bold;
-}
-
-/* Symptom & Protocol Quick Chips */
-#symptom-chips-container,
-#proto-chips-container {
-    height: auto;
-    width: 100%;
-    margin-bottom: 1;
-}
-
-.symptom-chips-row,
-.proto-chips-row {
-    height: 3;
-    width: 100%;
-    margin-bottom: 1;
-}
-
-.symptom-chips-row .chip-btn,
-.proto-chips-row .chip-btn {
-    width: 1fr;
-    height: 3;
-    margin-right: 1;
-    background: $background;
-    color: $foreground-muted;
-    border: round $secondary;
-    text-align: center;
-    content-align: center middle;
-}
-
-.symptom-chips-row .chip-btn:last-child,
-.proto-chips-row .chip-btn:last-child {
-    margin-right: 0;
-}
-
-.symptom-chips-row .chip-btn:hover,
-.proto-chips-row .chip-btn:hover {
-    background: $surface-lighten-1;
-    color: $primary;
-    border: round $accent;
-    text-style: bold;
-}
-
-.symptom-chips-row .chip-btn:focus,
-.proto-chips-row .chip-btn:focus {
-    background: $panel;
-    color: $primary;
-    border: round $accent;
-}
-
-.symptom-chips {
-    layout: horizontal;
-    height: 3;
-    margin-bottom: 1;
-}
-
-.chip-btn {
-    margin-right: 1;
-    background: $background;
-    color: $foreground-muted;
-    border: round $secondary;
-    height: 3;
-}
-
-.chip-btn:hover {
-    background: $surface-lighten-1;
-    color: $secondary;
-    border: round $accent;
-    text-style: bold;
-}
-
-.chip-btn:focus {
-    background: $panel;
-    color: $primary;
-    border: round $accent;
-}
-
-/* Text Inputs and TextAreas */
-Input,
-TextArea {
-    background: $background;
-    border: round $secondary;
-    color: $foreground;
-}
-
-Input:hover,
-TextArea:hover {
-    background: $panel;
-    border: round $primary;
-}
-
-Input:focus,
-TextArea:focus {
-    background: $surface-lighten-1;
-    border: round $accent;
-    color: $foreground;
-}
-
-#symptom-input,
-#config-request-input {
-    height: 6;
-    margin-bottom: 1;
-}
-
-#btn-run-remediation,
-#btn-run-config {
-    width: 100%;
-    margin-bottom: 1;
-}
-
-/* Diagnosis & Plan Results */
-#diagnosis-result,
-#config-plan-result {
-    display: none;
-    height: auto;
-    max-height: 24;
-    border: none;
-    padding: 0;
-    margin-bottom: 1;
-}
-
-/* Terminals and Execution Logs */
-#telemetry-progress-container,
-#config-progress-container {
-    height: auto;
-    width: 100%;
-    margin-bottom: 1;
-}
-
-#telemetry-progress-header,
-#config-progress-header {
-    height: auto;
-    width: 100%;
-    align-vertical: middle;
-}
-
-#lbl-telemetry-step,
-#lbl-config-step {
-    width: 1fr;
-    text-align: right;
-    margin-right: 2;
-    color: $foreground-muted;
-}
-
-#lbl-telemetry-pct,
-#lbl-config-pct {
-    width: 8;
-    text-align: right;
-    color: $primary;
-    text-style: bold;
-}
-
-#telemetry-progress-bar,
-#config-progress-bar {
-    width: 100%;
-    height: 1;
-    margin-top: 0;
-    margin-bottom: 0;
-    background: $background;
-}
-
-#telemetry-progress-bar Bar,
-#config-progress-bar Bar {
-    width: 1fr;
-}
-
-#telemetry-progress-bar Bar > .bar--bar,
-#config-progress-bar Bar > .bar--bar {
-    color: $primary;
-    background: $surface-lighten-1;
-}
-
-#telemetry-progress-bar Bar > .bar--complete,
-#config-progress-bar Bar > .bar--complete {
-    color: $success;
-    background: $background;
-}
-
-#log-terminal,
-#config-log-terminal,
-#automation-log-terminal {
-    height: 15;
-    min-height: 12;
-    background: $panel;
-    border: round $primary;
-    color: $foreground;
-    padding: 1;
-    margin-bottom: 1;
-}
-
-/* Automation Suite */
-#automation-toolbar {
-    height: 5;
-    min-height: 5;
-    background: $surface;
-    border: round $primary;
-    padding: 0 1;
-    align-vertical: middle;
-    margin-bottom: 1;
-}
-
-#automation-selectors-row {
-    width: 1fr;
-    height: 3;
-    align-vertical: middle;
-}
-
-.auto-field-pair {
-    width: auto;
-    height: 3;
-    align-vertical: middle;
-    margin-right: 2;
-}
-
-.auto-field-label {
-    width: auto;
-    height: 3;
-    content-align: left middle;
-    text-style: bold;
-    color: $primary;
-    margin-right: 1;
-}
-
-#select-template {
-    width: 36;
-    height: 3;
-}
-
-#select-vendor-auto {
-    width: 24;
-    height: 3;
-}
-
-#tpl-crud-buttons {
-    width: auto;
-    height: 3;
-    align-vertical: middle;
-    align-horizontal: right;
-}
-
-#tpl-crud-buttons .chip-btn {
-    height: 3;
-    min-width: 9;
-    margin-left: 1;
-    background: $background;
-    border: round $primary;
-    color: $secondary;
-    text-style: bold;
-}
-
-#tpl-crud-buttons .chip-btn:hover {
-    border: round $accent;
-    color: $foreground;
-    background: $surface-lighten-1;
-}
-
-#tpl-variables-card {
-    height: auto;
-    background: $background;
-    border: round $primary;
-    padding: 1;
-    margin-bottom: 1;
-}
-
-#tpl-vars-header {
-    height: 3;
-    align-vertical: middle;
-    margin-bottom: 1;
-}
-
-#lbl-tpl-vars {
-    width: 1fr;
-    color: $secondary;
-    text-style: bold;
-    content-align: left middle;
-}
-
-#btn-render-variables {
-    width: 26;
-    height: 3;
-    text-align: center;
-    content-align: center middle;
-}
-
-#tpl-vars-form {
-    height: auto;
-    width: 100%;
-}
-
-.tpl-vars-form-row {
-    height: 3;
-    width: 100%;
-    margin-bottom: 1;
-    align-vertical: middle;
-}
-
-.tpl-var-field-group {
-    width: 1fr;
-    height: 3;
-    align-vertical: middle;
-    margin-right: 2;
-}
-
-.tpl-var-field-group-spacer {
-    width: 1fr;
-    height: 3;
-    border: none;
-    background: transparent;
-}
-
-.tpl-var-label {
-    width: 18;
-    color: $primary;
-    text-style: bold;
-    content-align: left middle;
-}
-
-.tpl-var-field-group Input {
-    width: 1fr;
-    height: 3;
-    border: round $primary;
-    background: $panel;
-    color: $foreground;
-}
-
-.tpl-var-field-group Input:focus {
-    border: round $accent;
-}
-
-#automation-split {
-    height: auto;
-    width: 100%;
-    margin-bottom: 1;
-}
-
-#editor-col {
-    width: 11fr;
-    height: auto;
-    margin-right: 2;
-}
-
-#devices-and-status-col {
-    width: 9fr;
-    height: auto;
-}
-
-#lbl-editor {
-    height: 3;
-    content-align: left middle;
-    text-style: bold;
-    color: $primary;
-}
-
-#automation-editor {
-    height: 20;
-    border: round $primary;
-    background: $background;
-    color: $foreground;
-}
-
-#automation-editor:focus {
-    border: round $accent;
-}
-
-#devices-header-row {
-    height: 3;
-    align-vertical: middle;
-}
-
-#lbl-target-devices {
-    width: 1fr;
-    color: $primary;
-    text-style: bold;
-    content-align: left middle;
-}
-
-#btn-select-all-devices,
-#btn-deselect-all-devices {
-    width: 12;
-    height: 3;
-    min-height: 3;
-    margin-left: 1;
-    background: $background;
-    border: round $primary;
-    color: $secondary;
-    text-style: bold;
-    text-align: center;
-    content-align: center middle;
-}
-
-#btn-select-all-devices:hover,
-#btn-deselect-all-devices:hover {
-    border: round $accent;
-    color: $foreground;
-    background: $surface-lighten-1;
-}
-
-#device-selection-list {
-    height: 8;
-    border: round $primary;
-    background: $background;
-    margin-bottom: 1;
-}
-
-#device-selection-list:hover {
-    border: round $accent;
-}
-
-#lbl-syntax-header {
-    height: 2;
-    content-align: left middle;
-    text-style: bold;
-    color: $primary;
-}
-
-#syntax-status-card {
-    height: 9;
-    min-height: 9;
-    max-height: 9;
-    margin-bottom: 0;
-}
-
-#automation-actions {
-    height: 3;
-    margin-top: 1;
-    margin-bottom: 1;
-    align-vertical: middle;
-    align-horizontal: center;
-}
-
-#btn-validate-script {
-    width: 28;
-    height: 3;
-    margin-right: 2;
-    text-align: center;
-    content-align: center middle;
-}
-
-#btn-deploy-batch {
-    width: 36;
-    height: 3;
-    text-align: center;
-    content-align: center middle;
-}
-
-#auto-progress-container {
-    height: auto;
-    margin-top: 1;
-    margin-bottom: 0;
-}
-
-#auto-progress-header {
-    height: 2;
-    align-vertical: middle;
-}
-
-#lbl-auto-console {
-    width: 1fr;
-    color: $primary;
-    text-style: bold;
-}
-
-#lbl-auto-step {
-    width: auto;
-    color: $primary-lighten-1;
-    margin-right: 2;
-}
-
-#lbl-auto-pct {
-    width: auto;
-    color: $primary;
-    text-style: bold;
-}
-
-#auto-progress-bar {
-    height: 1;
-    margin-bottom: 1;
-}
-
-/* Template Modal Dialog */
-#template-modal-dialog {
-    width: 96;
-    height: auto;
-    max-height: 90%;
-    background: $surface;
-    border: round $accent;
-    padding: 1 3 1 2;
-    overflow-y: auto;
-    overflow-x: hidden;
-}
-
-.tpl-modal-row-split {
-    layout: horizontal;
-    height: auto;
-    width: 100%;
-    margin-bottom: 1;
-    margin-right: 1;
-}
-
-.tpl-modal-col-name {
-    width: 3fr;
-    height: auto;
-    margin-right: 2;
-}
-
-.tpl-modal-col-vendor {
-    width: 2fr;
-    height: auto;
-}
-
-#select-tpl-vendor {
-    width: 100%;
-    height: 3;
-}
-
-.modal-row-full {
-    height: auto;
-    width: 100%;
-    margin-bottom: 1;
-    margin-right: 1;
-}
-
-#input-tpl-desc {
-    height: 3;
-    width: 100%;
-}
-
-/* Template Variable Guide Card */
-.tpl-guide-card {
-    height: auto;
-    width: 100%;
-    background: $background;
-    border-left: thick $primary;
-    border: round $secondary;
-    padding: 1 2;
-    margin-bottom: 1;
-    margin-right: 1;
-}
-
-#tpl-guide-header {
-    height: 2;
-    width: 100%;
-    align-vertical: middle;
-    margin-bottom: 0;
-}
-
-#lbl-guide-title {
-    width: 1fr;
-    color: $primary;
-    text-style: bold;
-}
-
-#lbl-guide-syntax {
-    width: auto;
-    color: $secondary;
-    text-style: bold;
-}
-
-#lbl-guide-desc {
-    width: 100%;
-    height: auto;
-    color: $foreground-muted;
-    margin-top: 0;
-    margin-bottom: 1;
-}
-
-#lbl-chips-tag {
-    width: 100%;
-    height: 1;
-    color: $foreground;
-    text-style: bold;
-    margin-bottom: 1;
-}
-
-.tpl-chips-row {
-    height: 3;
-    width: 100%;
-    align-vertical: middle;
-    margin-bottom: 1;
-}
-
-.tpl-chips-row:last-child {
-    margin-bottom: 0;
-}
-
-.tpl-var-chip {
-    width: 1fr;
-    height: 3;
-    margin-right: 1;
-    background: $surface;
-    border: round $primary;
-    color: $secondary;
-    text-style: bold;
-    text-align: center;
-    content-align: center middle;
-}
-
-.tpl-var-chip:last-child {
-    margin-right: 0;
-}
-
-.tpl-var-chip:hover {
-    background: $surface-lighten-1;
-    border: round $accent;
-    color: $foreground;
-}
-
-#modal-editor-row {
-    height: auto;
-    width: 100%;
-    margin-bottom: 1;
-    margin-right: 1;
-}
-
-#modal-editor-header {
-    height: 3;
-    width: 100%;
-    align-vertical: middle;
-}
-
-#lbl-modal-editor {
-    width: 1fr;
-    color: $primary;
-    text-style: bold;
-    content-align: left middle;
-}
-
-#btn-detect-vars {
-    width: 22;
-    height: 3;
-    margin-left: 1;
-    text-align: center;
-    content-align: center middle;
-}
-
-#input-tpl-content {
-    height: 11;
-    width: 100%;
-    border: round $primary;
-    background: $panel;
-    color: $foreground;
-}
-
-#input-tpl-content:focus {
-    border: round $accent;
-}
-
-#lbl-tpl-feedback {
-    height: auto;
-    min-height: 2;
-    width: 100%;
-    padding: 0 1;
-    margin-top: 0;
-    margin-bottom: 1;
-    content-align: left middle;
-}
-
-.modal-actions {
-    margin-right: 1;
-}
-
-#btn-save-tpl {
-    width: 22;
-    height: 3;
-}
-
-#btn-cancel-tpl {
-    width: 14;
-    height: 3;
-}
-
-/* DataTables for Inventory and Audit */
-#inventory-widget,
-#audit-widget {
-    height: 100%;
-    width: 100%;
-}
-
-#inventory-content-wrapper {
-    height: auto;
-    width: 100%;
-    padding: 0 2;
-}
-
-#inventory-toolbar {
-    height: auto;
-    min-height: 5;
-    background: $surface;
-    border: round $primary;
-    padding: 0 1;
-    margin-bottom: 1;
-    align-vertical: middle;
-}
-
-#inventory-crud-actions {
-    width: auto;
-    height: 3;
-    align-vertical: middle;
-    margin-right: 2;
-}
-
-#inventory-crud-actions Button {
-    margin-right: 1;
-    height: 3;
-}
-
-#inventory-diagnostic-actions {
-    width: 1fr;
-    height: 3;
-    align-vertical: middle;
-    align-horizontal: right;
-}
-
-#inventory-diagnostic-actions Button {
-    margin-left: 1;
-    height: 3;
-    background: $background;
-    border: round $primary;
-    color: $secondary;
-    text-style: bold;
-}
-
-#inventory-diagnostic-actions Button:hover {
-    background: $surface-lighten-1;
-    border: round $accent;
-    color: $foreground;
-}
-
-#inventory-data-table {
-    height: 13;
-    min-height: 8;
-    max-height: 16;
-    border: round $primary;
-    background: $background;
-    margin-bottom: 1;
-}
-
-#audit-toolbar {
-    height: auto;
-    min-height: 5;
-    background: $surface;
-    border: round $primary;
-    padding: 0 1;
-    margin-bottom: 1;
-    align-vertical: middle;
-}
-
-#audit-filter-controls {
-    width: 1fr;
-    height: 3;
-    align-vertical: middle;
-}
-
-.audit-filter-label {
-    width: auto;
-    color: $primary;
-    text-style: bold;
-    margin-right: 1;
-    margin-left: 1;
-    height: 3;
-    content-align: center middle;
-}
-
-#audit-device-select {
-    width: 24;
-    height: 3;
-    margin-right: 1;
-}
-
-#audit-status-select {
-    width: 25;
-    height: 3;
-    margin-right: 1;
-}
-
-#audit-search-input {
-    width: 1fr;
-    height: 3;
-    background: $background;
-    border: round $primary;
-    color: $foreground;
-}
-
-#audit-action-buttons {
-    width: auto;
-    height: 3;
-    align-vertical: middle;
-    margin-left: 1;
-}
-
-#audit-action-buttons Button {
-    margin-left: 1;
-    height: 3;
-}
-
-#audit-data-table {
-    height: 13;
-    min-height: 8;
-    max-height: 16;
-    border: round $primary;
-    background: $background;
-    margin-bottom: 1;
-}
-
-#audit-detail-card {
-    height: auto;
-    min-height: 8;
-    margin-bottom: 1;
-}
-
-#inventory-data-table:focus,
-#audit-data-table:focus {
-    border: round $accent;
-}
-
-#inventory-diagnostic-card {
-    height: auto;
-    min-height: 8;
-    margin-bottom: 1;
-}
-
-DataTable {
-    background: $background;
-}
-
-DataTable > .datatable--header {
-    background: $surface;
-    color: $primary;
-    text-style: bold;
-    padding: 0 1;
-}
-
-DataTable > .datatable--cursor {
-    background: $primary;
-    color: $background;
-    text-style: bold;
-}
-
-DataTable > .datatable--hover {
-    background: $surface-lighten-1;
-}
-
-DataTable > .datatable--even {
-    background: $background;
-}
-
-DataTable > .datatable--odd {
-    background: $surface;
-}
-
-.audit-actions {
-    layout: horizontal;
-    height: 3;
-    margin-top: 1;
-}
-
-.audit-actions Button {
-    margin-right: 1;
-}
-
-/* Select Dropdown & Overlays */
-Select {
-    height: 3;
-    border: none;
-    background: transparent;
-    padding: 0;
-    margin: 0;
-}
-
-Select:hover,
-Select:focus {
-    border: none;
-}
-
-SelectCurrent {
-    border: round $primary;
-    background: $background;
-    color: $foreground;
-    height: 3;
-    padding: 0 1;
-}
-
-SelectCurrent:hover {
-    border: round $accent;
-    color: $primary;
-}
-
-SelectCurrent:focus {
-    border: round $accent;
-}
-
-SelectOverlay {
-    background: $background;
-    border: round $accent;
-}
-
-OptionList {
-    background: $background;
-}
-
-OptionList > .option-list--option:hover {
-    background: $surface-lighten-1;
-    color: $primary;
-    text-style: bold;
-}
-
-OptionList > .option-list--option.-selected {
-    background: $panel;
-    color: $secondary;
-    text-style: bold;
-}
-
-/* Modals */
-ModalScreen {
-    background: $background 80%;
-    align: center middle;
-}
-
-.modal-dialog {
-    width: 84;
-    height: auto;
-    max-height: 90%;
-    background: $surface;
-    border: round $accent;
-    padding: 1 2;
-    overflow-y: auto;
-}
-
-.modal-title {
-    text-style: bold;
-    text-align: center;
-    color: $primary;
-    margin-bottom: 1;
-}
-
-.modal-row {
-    layout: horizontal;
-    height: auto;
-    margin-bottom: 1;
-}
-
-.modal-col {
-    width: 1fr;
-    height: auto;
-    margin-right: 1;
-}
-
-.modal-col-large {
-    width: 72%;
-    height: auto;
-    margin-right: 1;
-}
-
-.modal-col-small {
-    width: 28%;
-    height: auto;
-}
-
-.modal-hitl-dialog {
-    width: 82;
-    height: auto;
-    max-height: 90%;
-    background: $surface;
-    border: round $error;
-    padding: 1 2;
-    overflow-y: auto;
-}
-
-.modal-actions {
-    layout: horizontal;
-    height: 3;
-    margin-top: 1;
-    align-horizontal: right;
-}
-
-.modal-actions Button {
-    margin-left: 1;
-}
-
-.provider-help-text {
-    color: $secondary;
-    text-style: italic;
-    margin-top: 1;
-    margin-bottom: 1;
-}
-
-#btn-scan-models {
-    width: 100%;
-    height: 3;
-    background: $background;
-    border: round $primary;
-    color: $secondary;
-    content-align: center middle;
-}
-
-#btn-scan-models:hover {
-    background: $surface-lighten-1;
-    border: round $accent;
-    color: $foreground;
-    text-style: bold;
-}
-
-.model-status-text {
-    margin-top: 0;
-    margin-bottom: 1;
-    height: auto;
-}
-
-Checkbox:hover {
-    color: $primary;
-}
-
-Checkbox.-on {
-    color: $success;
-}
-
-.error-label {
-    color: $error;
-    text-style: bold;
-    margin-top: 1;
-}
-
-/* Sleek Cyberpunk Footer */
-Footer {
-    background: $surface;
-    color: $foreground;
-}
-
-FooterKey {
-    background: transparent;
-}
-
-FooterKey > .footer-key--key {
-    background: transparent;
-    color: $accent;
-    text-style: bold;
-}
-
-FooterKey > .footer-key--description {
-    background: transparent;
-    color: $foreground;
-}
-
-FooterKey.-command-palette {
-    dock: right;
-    background: transparent;
-    border-left: none;
-    padding-right: 1;
-}
-
-FooterKey.-command-palette > .footer-key--key {
-    background: transparent;
-    color: $accent;
-    text-style: bold;
-}
-
-FooterKey.-command-palette > .footer-key--description {
-    background: transparent;
-    color: $foreground;
-}
-
-
-/* ==========================================================================
-   COMMAND PALETTE STYLING (Mission Control Enterprise - No Icons / No Emojis)
-   ========================================================================== */
-
-CommandPalette {
-    background: $background 85%;
-    align-horizontal: center;
-}
-
-/* Strictly hide search icon / emoji */
-CommandPalette SearchIcon {
-    display: none;
-    width: 0;
-    height: 0;
-}
-
-CommandPalette > Vertical {
-    background: $surface;
-    border: tall $primary;
-    width: 80%;
-    max-width: 110;
-    height: auto;
-    max-height: 26;
-    margin-top: 2;
-    padding: 0;
-}
-
-CommandPalette #--input {
-    background: $panel;
-    border-bottom: heavy $secondary;
-    height: 3;
-    padding: 0 1;
-}
-
-CommandPalette CommandInput {
-    background: transparent;
-    border: none;
-    color: $foreground;
-}
-
-CommandPalette CommandInput:focus {
-    border: none;
-}
-
-CommandPalette CommandList {
-    background: $surface;
-    scrollbar-gutter: stable;
-    color: $foreground;
-}
-
-CommandPalette CommandList:focus {
-    border: none;
-}
-
-CommandPalette .command-palette--highlight {
-    color: $primary;
-    text-style: bold;
-}
-
-CommandPalette .command-palette--help-text {
-    color: $foreground-muted;
-}
-
-CommandPalette OptionList > .option-list--option.-highlighted {
-    background: $surface-lighten-2;
-    color: $primary;
-    text-style: bold;
-}
+/* NetworkingAgent Cyberpunk Mission Control Enterprise Theme */
+
+Screen {
+    background: $background;
+    color: $foreground;
+}
+
+/* Tabbed Navigation Layout */
+#main-tabs {
+    height: 1fr;
+    width: 100%;
+}
+
+#main-tabs > Tabs {
+    display: none;
+}
+
+TabbedContent {
+    height: 1fr;
+    width: 100%;
+}
+
+ContentSwitcher {
+    height: 1fr;
+    width: 100%;
+}
+
+TabPane {
+    height: 1fr;
+    width: 100%;
+    padding: 0;
+}
+
+/* Header & Status Bar */
+#top-bar {
+    dock: top;
+    height: 1;
+    background: $surface;
+    color: $foreground;
+    border: none;
+    padding: 0 1;
+}
+
+#top-bar-inner {
+    width: 100%;
+    height: 1;
+    align: center middle;
+    content-align: center middle;
+}
+
+#top-badges {
+    width: 100%;
+    height: 1;
+    align: center middle;
+    content-align: center middle;
+}
+
+.status-badge {
+    padding: 0 1;
+    margin: 0;
+    background: transparent;
+    border: none;
+    text-style: bold;
+}
+
+.status-divider {
+    color: $secondary;
+    background: transparent;
+    text-style: dim;
+    padding: 0;
+}
+
+.badge-brain {
+    color: $accent;
+}
+
+.badge-device {
+    color: $secondary;
+}
+
+.badge-hitl {
+    color: $success;
+}
+
+/* Home / Welcome Dashboard */
+#home-widget {
+    height: 1fr;
+    width: 100%;
+}
+
+#home-container {
+    height: 100%;
+    width: 100%;
+    padding: 0 1;
+    overflow-y: auto;
+    background: $background;
+}
+
+#home-banner {
+    height: auto;
+    width: 100%;
+    margin-bottom: 1;
+}
+
+#home-status-card {
+    height: auto;
+    width: 100%;
+    margin-bottom: 1;
+}
+
+#home-cards-container {
+    height: auto;
+    width: 100%;
+}
+
+#home-cards-row-top {
+    height: 7;
+    min-height: 7;
+    width: 100%;
+    margin-bottom: 1;
+}
+
+#home-cards-row-bottom {
+    height: 7;
+    min-height: 7;
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.home-nav-card {
+    width: 1fr;
+    height: 100%;
+    min-height: 7;
+    background: $surface;
+    color: $foreground;
+    border: none;
+    padding: 0;
+    margin: 0 1;
+}
+
+.home-nav-card:hover {
+    background: $panel;
+    border: none;
+}
+
+.home-nav-card:focus {
+    background: $panel;
+    border: none;
+}
+
+/* Global Interactive Button Styles with Cyberpunk Hover & Focus */
+Button {
+    background: $surface;
+    color: $foreground;
+    border: round $primary;
+    height: 3;
+    text-style: bold;
+}
+
+Button:hover {
+    background: $panel;
+    color: $foreground;
+    border: round $accent;
+    text-style: bold;
+}
+
+Button:focus {
+    background: $surface-lighten-1;
+    color: $primary;
+    border: round $accent;
+    text-style: bold;
+}
+
+/* Primary Action Buttons */
+Button.-primary,
+#btn-run-remediation,
+#btn-run-config,
+#btn-deploy-batch,
+#btn-save-vault,
+#btn-hitl-approve,
+#btn-inv-add,
+#btn-refresh-audit,
+#btn-add-device {
+    background: $primary;
+    color: $background;
+    border: round $accent;
+    text-style: bold;
+}
+
+Button.-primary:hover,
+#btn-run-remediation:hover,
+#btn-run-config:hover,
+#btn-deploy-batch:hover,
+#btn-save-vault:hover,
+#btn-hitl-approve:hover,
+#btn-inv-add:hover,
+#btn-refresh-audit:hover,
+#btn-add-device:hover {
+    background: $primary-lighten-1;
+    color: $background;
+    border: round $primary-lighten-1;
+    text-style: bold;
+}
+
+Button.-primary:focus,
+#btn-run-remediation:focus,
+#btn-run-config:focus,
+#btn-deploy-batch:focus,
+#btn-save-vault:focus,
+#btn-hitl-approve:focus,
+#btn-inv-add:focus,
+#btn-refresh-audit:focus,
+#btn-add-device:focus {
+    background: $accent;
+    border: round $accent;
+}
+
+/* Error / Destructive Action Buttons */
+Button.-error,
+#btn-hitl-reject,
+#btn-inv-delete {
+    background: $error;
+    color: $foreground;
+    border: round $error;
+    text-style: bold;
+}
+
+Button.-error:hover,
+#btn-hitl-reject:hover,
+#btn-inv-delete:hover {
+    background: $error-lighten-1;
+    color: $foreground;
+    border: round $error-lighten-1;
+    text-style: bold;
+}
+
+Button.-error:focus,
+#btn-hitl-reject:focus,
+#btn-inv-delete:focus {
+    background: $error-lighten-2;
+    border: round $error-lighten-2;
+}
+
+/* Secondary & Back Navigation Buttons */
+#btn-back-to-home,
+#btn-back-from-config,
+#btn-back-from-automation,
+#btn-back-from-inventory,
+#btn-back-from-audit,
+#btn-validate-script,
+#btn-inv-refresh,
+#btn-cancel {
+    background: $background;
+    color: $secondary;
+    border: round $primary;
+    text-style: bold;
+}
+
+#btn-back-to-home:hover,
+#btn-back-from-config:hover,
+#btn-back-from-automation:hover,
+#btn-back-from-inventory:hover,
+#btn-back-from-audit:hover,
+#btn-validate-script:hover,
+#btn-inv-refresh:hover,
+#btn-cancel:hover {
+    background: $surface-lighten-1;
+    color: $primary;
+    border: round $accent;
+    text-style: bold;
+}
+
+#btn-back-to-home:focus,
+#btn-back-from-config:focus,
+#btn-back-from-automation:focus,
+#btn-back-from-inventory:focus,
+#btn-back-from-audit:focus,
+#btn-validate-script:focus,
+#btn-inv-refresh:focus,
+#btn-cancel:focus {
+    background: $panel;
+    border: round $primary-lighten-1;
+}
+
+/* View Header Navigation Bars */
+#diagnostic-nav-bar,
+#config-nav-bar,
+#automation-top-bar,
+#inventory-top-bar,
+#audit-top-bar {
+    height: 4;
+    min-height: 4;
+    background: $background;
+    border-bottom: solid $primary;
+    padding: 0 1;
+    margin-bottom: 1;
+    align-vertical: middle;
+}
+
+#diagnostic-title,
+#config-title,
+#automation-title,
+#inventory-title,
+#lbl-audit-header {
+    width: 1fr;
+    text-style: bold;
+    color: $primary;
+    content-align: left middle;
+}
+
+#btn-back-to-home,
+#btn-back-from-config,
+#btn-back-from-automation,
+#btn-back-from-inventory,
+#btn-back-from-audit {
+    width: 24;
+    height: 3;
+    text-align: center;
+    content-align: center middle;
+}
+
+/* Sidebar Styling */
+#device-sidebar,
+#device-sidebar-config,
+.device-sidebar {
+    width: 32;
+    height: 100%;
+    background: $background;
+    border-right: solid $primary;
+    padding: 1;
+}
+
+#sidebar-title {
+    text-style: bold;
+    color: $primary;
+    margin-bottom: 1;
+    text-align: center;
+}
+
+#device-list {
+    height: 1fr;
+    background: transparent;
+    border: none;
+}
+
+.device-item {
+    height: 3;
+    padding: 0 1;
+    margin-bottom: 1;
+    background: $surface;
+    border-left: wide $secondary;
+}
+
+.device-item:hover {
+    background: $surface-lighten-1;
+    border-left: wide $primary;
+    color: $foreground;
+}
+
+.device-item.-selected {
+    background: $panel;
+    border-left: wide $primary;
+    color: $secondary;
+    text-style: bold;
+}
+
+#btn-add-device {
+    width: 100%;
+    margin-top: 1;
+}
+
+/* Workspaces Layout */
+#main-split,
+#config-split {
+    height: 100%;
+    width: 100%;
+}
+
+#diagnostic-workspace,
+#troubleshooting-workspace,
+#configuration-workspace {
+    height: 100%;
+    width: 1fr;
+    padding: 1 2 1 1;
+    background: $background;
+}
+
+#diagnostic-container,
+#configuration-container,
+#automation-container,
+#inventory-container,
+#audit-container {
+    height: 100%;
+    width: 100%;
+    overflow-y: auto;
+    background: $background;
+    padding: 1;
+}
+
+.workspace-content-wrapper,
+#diagnostic-content-wrapper,
+#config-content-wrapper,
+#automation-content-wrapper {
+    height: auto;
+    width: 100%;
+    padding: 0 2;
+}
+
+/* Section Panels & Target Cards */
+.section-panel {
+    background: $surface;
+    border: round $primary;
+    padding: 0 1;
+    margin-bottom: 1;
+    align-vertical: middle;
+}
+
+#target-device-card,
+#config-target-card {
+    height: 3;
+    background: $surface;
+    border-left: heavy $primary;
+    border: round $secondary;
+    padding: 0 1;
+    margin-bottom: 1;
+}
+
+#config-target-card {
+    border-left: heavy $success;
+}
+
+#mode-selector-container {
+    height: auto;
+    background: $surface;
+    border: round $primary;
+    padding: 1;
+    margin-bottom: 1;
+}
+
+#mode-selector-header {
+    height: auto;
+    align-vertical: middle;
+    margin-bottom: 1;
+}
+
+#mode-selector-bar {
+    height: auto;
+    min-height: 3;
+    padding: 0 1;
+}
+
+#mode-description-banner {
+    height: auto;
+    background: $background;
+    border-left: thick $primary;
+    padding: 1;
+    color: $foreground-muted;
+}
+
+#lbl-mode,
+#lbl-config-proto,
+#lbl-quick-symptoms,
+#lbl-symptom,
+#lbl-config-prompt,
+#lbl-console,
+#lbl-config-console,
+#lbl-editor {
+    color: $secondary;
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+/* Radio Sets & Radio Buttons */
+#radio-mode {
+    layout: horizontal;
+    background: transparent;
+    border: none;
+}
+
+#radio-mode RadioButton {
+    margin-right: 2;
+    color: $foreground-muted;
+}
+
+#radio-mode RadioButton:hover {
+    color: $primary;
+}
+
+#radio-mode RadioButton.-selected {
+    color: $secondary;
+    text-style: bold;
+}
+
+/* Symptom & Protocol Quick Chips */
+#symptom-chips-container,
+#proto-chips-container {
+    height: auto;
+    width: 100%;
+    margin-bottom: 1;
+}
+
+.symptom-chips-row,
+.proto-chips-row {
+    height: 3;
+    width: 100%;
+    margin-bottom: 1;
+}
+
+.symptom-chips-row .chip-btn,
+.proto-chips-row .chip-btn {
+    width: 1fr;
+    height: 3;
+    margin-right: 1;
+    background: $background;
+    color: $foreground-muted;
+    border: round $secondary;
+    text-align: center;
+    content-align: center middle;
+}
+
+.symptom-chips-row .chip-btn:last-child,
+.proto-chips-row .chip-btn:last-child {
+    margin-right: 0;
+}
+
+.symptom-chips-row .chip-btn:hover,
+.proto-chips-row .chip-btn:hover {
+    background: $surface-lighten-1;
+    color: $primary;
+    border: round $accent;
+    text-style: bold;
+}
+
+.symptom-chips-row .chip-btn:focus,
+.proto-chips-row .chip-btn:focus {
+    background: $panel;
+    color: $primary;
+    border: round $accent;
+}
+
+.symptom-chips {
+    layout: horizontal;
+    height: 3;
+    margin-bottom: 1;
+}
+
+.chip-btn {
+    margin-right: 1;
+    background: $background;
+    color: $foreground-muted;
+    border: round $secondary;
+    height: 3;
+}
+
+.chip-btn:hover {
+    background: $surface-lighten-1;
+    color: $secondary;
+    border: round $accent;
+    text-style: bold;
+}
+
+.chip-btn:focus {
+    background: $panel;
+    color: $primary;
+    border: round $accent;
+}
+
+/* Text Inputs and TextAreas */
+Input,
+TextArea {
+    background: $background;
+    border: round $secondary;
+    color: $foreground;
+}
+
+Input:hover,
+TextArea:hover {
+    background: $panel;
+    border: round $primary;
+}
+
+Input:focus,
+TextArea:focus {
+    background: $surface-lighten-1;
+    border: round $accent;
+    color: $foreground;
+}
+
+#symptom-input,
+#config-request-input {
+    height: 6;
+    margin-bottom: 1;
+}
+
+#btn-run-remediation,
+#btn-run-config {
+    width: 100%;
+    margin-bottom: 1;
+}
+
+/* Diagnosis & Plan Results */
+#diagnosis-result,
+#config-plan-result {
+    display: none;
+    height: auto;
+    max-height: 24;
+    border: none;
+    padding: 0;
+    margin-bottom: 1;
+}
+
+/* Terminals and Execution Logs */
+#telemetry-progress-container,
+#config-progress-container {
+    height: auto;
+    width: 100%;
+    margin-bottom: 1;
+}
+
+#telemetry-progress-header,
+#config-progress-header {
+    height: auto;
+    width: 100%;
+    align-vertical: middle;
+}
+
+#lbl-telemetry-step,
+#lbl-config-step {
+    width: 1fr;
+    text-align: right;
+    margin-right: 2;
+    color: $foreground-muted;
+}
+
+#lbl-telemetry-pct,
+#lbl-config-pct {
+    width: 8;
+    text-align: right;
+    color: $primary;
+    text-style: bold;
+}
+
+#telemetry-progress-bar,
+#config-progress-bar {
+    width: 100%;
+    height: 1;
+    margin-top: 0;
+    margin-bottom: 0;
+    background: $background;
+}
+
+#telemetry-progress-bar Bar,
+#config-progress-bar Bar {
+    width: 1fr;
+}
+
+#telemetry-progress-bar Bar > .bar--bar,
+#config-progress-bar Bar > .bar--bar {
+    color: $primary;
+    background: $surface-lighten-1;
+}
+
+#telemetry-progress-bar Bar > .bar--complete,
+#config-progress-bar Bar > .bar--complete {
+    color: $success;
+    background: $background;
+}
+
+#log-terminal,
+#config-log-terminal,
+#automation-log-terminal {
+    height: 15;
+    min-height: 12;
+    background: $panel;
+    border: round $primary;
+    color: $foreground;
+    padding: 1;
+    margin-bottom: 1;
+}
+
+/* Automation Suite */
+#automation-toolbar {
+    height: 5;
+    min-height: 5;
+    background: $surface;
+    border: round $primary;
+    padding: 0 1;
+    align-vertical: middle;
+    margin-bottom: 1;
+}
+
+#automation-selectors-row {
+    width: 1fr;
+    height: 3;
+    align-vertical: middle;
+}
+
+.auto-field-pair {
+    width: auto;
+    height: 3;
+    align-vertical: middle;
+    margin-right: 2;
+}
+
+.auto-field-label {
+    width: auto;
+    height: 3;
+    content-align: left middle;
+    text-style: bold;
+    color: $primary;
+    margin-right: 1;
+}
+
+#select-template {
+    width: 36;
+    height: 3;
+}
+
+#select-vendor-auto {
+    width: 24;
+    height: 3;
+}
+
+#tpl-crud-buttons {
+    width: auto;
+    height: 3;
+    align-vertical: middle;
+    align-horizontal: right;
+}
+
+#tpl-crud-buttons .chip-btn {
+    height: 3;
+    min-width: 9;
+    margin-left: 1;
+    background: $background;
+    border: round $primary;
+    color: $secondary;
+    text-style: bold;
+}
+
+#tpl-crud-buttons .chip-btn:hover {
+    border: round $accent;
+    color: $foreground;
+    background: $surface-lighten-1;
+}
+
+#tpl-variables-card {
+    height: auto;
+    background: $background;
+    border: round $primary;
+    padding: 1;
+    margin-bottom: 1;
+}
+
+#tpl-vars-header {
+    height: 3;
+    align-vertical: middle;
+    margin-bottom: 1;
+}
+
+#lbl-tpl-vars {
+    width: 1fr;
+    color: $secondary;
+    text-style: bold;
+    content-align: left middle;
+}
+
+#btn-render-variables {
+    width: 26;
+    height: 3;
+    text-align: center;
+    content-align: center middle;
+}
+
+#tpl-vars-form {
+    height: auto;
+    width: 100%;
+}
+
+.tpl-vars-form-row {
+    height: 3;
+    width: 100%;
+    margin-bottom: 1;
+    align-vertical: middle;
+}
+
+.tpl-var-field-group {
+    width: 1fr;
+    height: 3;
+    align-vertical: middle;
+    margin-right: 2;
+}
+
+.tpl-var-field-group-spacer {
+    width: 1fr;
+    height: 3;
+    border: none;
+    background: transparent;
+}
+
+.tpl-var-label {
+    width: 18;
+    color: $primary;
+    text-style: bold;
+    content-align: left middle;
+}
+
+.tpl-var-field-group Input {
+    width: 1fr;
+    height: 3;
+    border: round $primary;
+    background: $panel;
+    color: $foreground;
+}
+
+.tpl-var-field-group Input:focus {
+    border: round $accent;
+}
+
+#automation-split {
+    height: auto;
+    width: 100%;
+    margin-bottom: 1;
+}
+
+#editor-col {
+    width: 11fr;
+    height: auto;
+    margin-right: 2;
+}
+
+#devices-and-status-col {
+    width: 9fr;
+    height: auto;
+}
+
+#lbl-editor {
+    height: 3;
+    content-align: left middle;
+    text-style: bold;
+    color: $primary;
+}
+
+#automation-editor {
+    height: 20;
+    border: round $primary;
+    background: $background;
+    color: $foreground;
+}
+
+#automation-editor:focus {
+    border: round $accent;
+}
+
+#devices-header-row {
+    height: 3;
+    align-vertical: middle;
+}
+
+#lbl-target-devices {
+    width: 1fr;
+    color: $primary;
+    text-style: bold;
+    content-align: left middle;
+}
+
+#btn-select-all-devices,
+#btn-deselect-all-devices {
+    width: 12;
+    height: 3;
+    min-height: 3;
+    margin-left: 1;
+    background: $background;
+    border: round $primary;
+    color: $secondary;
+    text-style: bold;
+    text-align: center;
+    content-align: center middle;
+}
+
+#btn-select-all-devices:hover,
+#btn-deselect-all-devices:hover {
+    border: round $accent;
+    color: $foreground;
+    background: $surface-lighten-1;
+}
+
+#device-selection-list {
+    height: 8;
+    border: round $primary;
+    background: $background;
+    margin-bottom: 1;
+}
+
+#device-selection-list:hover {
+    border: round $accent;
+}
+
+#lbl-syntax-header {
+    height: 2;
+    content-align: left middle;
+    text-style: bold;
+    color: $primary;
+}
+
+#syntax-status-card {
+    height: 9;
+    min-height: 9;
+    max-height: 9;
+    margin-bottom: 0;
+}
+
+#automation-actions {
+    height: 3;
+    margin-top: 1;
+    margin-bottom: 1;
+    align-vertical: middle;
+    align-horizontal: center;
+}
+
+#btn-validate-script {
+    width: 28;
+    height: 3;
+    margin-right: 2;
+    text-align: center;
+    content-align: center middle;
+}
+
+#btn-deploy-batch {
+    width: 36;
+    height: 3;
+    text-align: center;
+    content-align: center middle;
+}
+
+#auto-progress-container {
+    height: auto;
+    margin-top: 1;
+    margin-bottom: 0;
+}
+
+#auto-progress-header {
+    height: 2;
+    align-vertical: middle;
+}
+
+#lbl-auto-console {
+    width: 1fr;
+    color: $primary;
+    text-style: bold;
+}
+
+#lbl-auto-step {
+    width: auto;
+    color: $primary-lighten-1;
+    margin-right: 2;
+}
+
+#lbl-auto-pct {
+    width: auto;
+    color: $primary;
+    text-style: bold;
+}
+
+#auto-progress-bar {
+    height: 1;
+    margin-bottom: 1;
+}
+
+/* Template Modal Dialog */
+#template-modal-dialog {
+    width: 96;
+    height: auto;
+    max-height: 90%;
+    background: $surface;
+    border: round $accent;
+    padding: 1 3 1 2;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.tpl-modal-row-split {
+    layout: horizontal;
+    height: auto;
+    width: 100%;
+    margin-bottom: 1;
+    margin-right: 1;
+}
+
+.tpl-modal-col-name {
+    width: 3fr;
+    height: auto;
+    margin-right: 2;
+}
+
+.tpl-modal-col-vendor {
+    width: 2fr;
+    height: auto;
+}
+
+#select-tpl-vendor {
+    width: 100%;
+    height: 3;
+}
+
+.modal-row-full {
+    height: auto;
+    width: 100%;
+    margin-bottom: 1;
+    margin-right: 1;
+}
+
+#input-tpl-desc {
+    height: 3;
+    width: 100%;
+}
+
+/* Template Variable Guide Card */
+.tpl-guide-card {
+    height: auto;
+    width: 100%;
+    background: $background;
+    border-left: thick $primary;
+    border: round $secondary;
+    padding: 1 2;
+    margin-bottom: 1;
+    margin-right: 1;
+}
+
+#tpl-guide-header {
+    height: 2;
+    width: 100%;
+    align-vertical: middle;
+    margin-bottom: 0;
+}
+
+#lbl-guide-title {
+    width: 1fr;
+    color: $primary;
+    text-style: bold;
+}
+
+#lbl-guide-syntax {
+    width: auto;
+    color: $secondary;
+    text-style: bold;
+}
+
+#lbl-guide-desc {
+    width: 100%;
+    height: auto;
+    color: $foreground-muted;
+    margin-top: 0;
+    margin-bottom: 1;
+}
+
+#lbl-chips-tag {
+    width: 100%;
+    height: 1;
+    color: $foreground;
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+.tpl-chips-row {
+    height: 3;
+    width: 100%;
+    align-vertical: middle;
+    margin-bottom: 1;
+}
+
+.tpl-chips-row:last-child {
+    margin-bottom: 0;
+}
+
+.tpl-var-chip {
+    width: 1fr;
+    height: 3;
+    margin-right: 1;
+    background: $surface;
+    border: round $primary;
+    color: $secondary;
+    text-style: bold;
+    text-align: center;
+    content-align: center middle;
+}
+
+.tpl-var-chip:last-child {
+    margin-right: 0;
+}
+
+.tpl-var-chip:hover {
+    background: $surface-lighten-1;
+    border: round $accent;
+    color: $foreground;
+}
+
+#modal-editor-row {
+    height: auto;
+    width: 100%;
+    margin-bottom: 1;
+    margin-right: 1;
+}
+
+#modal-editor-header {
+    height: 3;
+    width: 100%;
+    align-vertical: middle;
+}
+
+#lbl-modal-editor {
+    width: 1fr;
+    color: $primary;
+    text-style: bold;
+    content-align: left middle;
+}
+
+#btn-detect-vars {
+    width: 22;
+    height: 3;
+    margin-left: 1;
+    text-align: center;
+    content-align: center middle;
+}
+
+#input-tpl-content {
+    height: 11;
+    width: 100%;
+    border: round $primary;
+    background: $panel;
+    color: $foreground;
+}
+
+#input-tpl-content:focus {
+    border: round $accent;
+}
+
+#lbl-tpl-feedback {
+    height: auto;
+    min-height: 2;
+    width: 100%;
+    padding: 0 1;
+    margin-top: 0;
+    margin-bottom: 1;
+    content-align: left middle;
+}
+
+.modal-actions {
+    margin-right: 1;
+}
+
+#btn-save-tpl {
+    width: 22;
+    height: 3;
+}
+
+#btn-cancel-tpl {
+    width: 14;
+    height: 3;
+}
+
+/* DataTables for Inventory and Audit */
+#inventory-widget,
+#audit-widget {
+    height: 100%;
+    width: 100%;
+}
+
+#inventory-content-wrapper {
+    height: auto;
+    width: 100%;
+    padding: 0 2;
+}
+
+#inventory-toolbar {
+    height: auto;
+    min-height: 5;
+    background: $surface;
+    border: round $primary;
+    padding: 0 1;
+    margin-bottom: 1;
+    align-vertical: middle;
+}
+
+#inventory-crud-actions {
+    width: auto;
+    height: 3;
+    align-vertical: middle;
+    margin-right: 2;
+}
+
+#inventory-crud-actions Button {
+    margin-right: 1;
+    height: 3;
+}
+
+#inventory-diagnostic-actions {
+    width: 1fr;
+    height: 3;
+    align-vertical: middle;
+    align-horizontal: right;
+}
+
+#inventory-diagnostic-actions Button {
+    margin-left: 1;
+    height: 3;
+    background: $background;
+    border: round $primary;
+    color: $secondary;
+    text-style: bold;
+}
+
+#inventory-diagnostic-actions Button:hover {
+    background: $surface-lighten-1;
+    border: round $accent;
+    color: $foreground;
+}
+
+#inventory-data-table {
+    height: 13;
+    min-height: 8;
+    max-height: 16;
+    border: round $primary;
+    background: $background;
+    margin-bottom: 1;
+}
+
+#audit-toolbar {
+    height: auto;
+    min-height: 5;
+    background: $surface;
+    border: round $primary;
+    padding: 0 1;
+    margin-bottom: 1;
+    align-vertical: middle;
+}
+
+#audit-filter-controls {
+    width: 1fr;
+    height: 3;
+    align-vertical: middle;
+}
+
+.audit-filter-label {
+    width: auto;
+    color: $primary;
+    text-style: bold;
+    margin-right: 1;
+    margin-left: 1;
+    height: 3;
+    content-align: center middle;
+}
+
+#audit-device-select {
+    width: 24;
+    height: 3;
+    margin-right: 1;
+}
+
+#audit-status-select {
+    width: 25;
+    height: 3;
+    margin-right: 1;
+}
+
+#audit-search-input {
+    width: 1fr;
+    height: 3;
+    background: $background;
+    border: round $primary;
+    color: $foreground;
+}
+
+#audit-action-buttons {
+    width: auto;
+    height: 3;
+    align-vertical: middle;
+    margin-left: 1;
+}
+
+#audit-action-buttons Button {
+    margin-left: 1;
+    height: 3;
+}
+
+#audit-data-table {
+    height: 13;
+    min-height: 8;
+    max-height: 16;
+    border: round $primary;
+    background: $background;
+    margin-bottom: 1;
+}
+
+#audit-detail-card {
+    height: auto;
+    min-height: 8;
+    margin-bottom: 1;
+}
+
+#inventory-data-table:focus,
+#audit-data-table:focus {
+    border: round $accent;
+}
+
+#inventory-diagnostic-card {
+    height: auto;
+    min-height: 8;
+    margin-bottom: 1;
+}
+
+DataTable {
+    background: $background;
+}
+
+DataTable > .datatable--header {
+    background: $surface;
+    color: $primary;
+    text-style: bold;
+    padding: 0 1;
+}
+
+DataTable > .datatable--cursor {
+    background: $primary;
+    color: $background;
+    text-style: bold;
+}
+
+DataTable > .datatable--hover {
+    background: $surface-lighten-1;
+}
+
+DataTable > .datatable--even {
+    background: $background;
+}
+
+DataTable > .datatable--odd {
+    background: $surface;
+}
+
+.audit-actions {
+    layout: horizontal;
+    height: 3;
+    margin-top: 1;
+}
+
+.audit-actions Button {
+    margin-right: 1;
+}
+
+/* Select Dropdown & Overlays */
+Select {
+    height: 3;
+    border: none;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+}
+
+Select:hover,
+Select:focus {
+    border: none;
+}
+
+SelectCurrent {
+    border: round $primary;
+    background: $background;
+    color: $foreground;
+    height: 3;
+    padding: 0 1;
+}
+
+SelectCurrent:hover {
+    border: round $accent;
+    color: $primary;
+}
+
+SelectCurrent:focus {
+    border: round $accent;
+}
+
+SelectOverlay {
+    background: $background;
+    border: round $accent;
+}
+
+OptionList {
+    background: $background;
+}
+
+OptionList > .option-list--option:hover {
+    background: $surface-lighten-1;
+    color: $primary;
+    text-style: bold;
+}
+
+OptionList > .option-list--option.-selected {
+    background: $panel;
+    color: $secondary;
+    text-style: bold;
+}
+
+/* Modals */
+ModalScreen {
+    background: $background 80%;
+    align: center middle;
+}
+
+.modal-dialog {
+    width: 84;
+    height: auto;
+    max-height: 90%;
+    background: $surface;
+    border: round $accent;
+    padding: 1 2;
+    overflow-y: auto;
+}
+
+.modal-title {
+    text-style: bold;
+    text-align: center;
+    color: $primary;
+    margin-bottom: 1;
+}
+
+.modal-row {
+    layout: horizontal;
+    height: auto;
+    margin-bottom: 1;
+}
+
+.modal-col {
+    width: 1fr;
+    height: auto;
+    margin-right: 1;
+}
+
+.modal-col-large {
+    width: 72%;
+    height: auto;
+    margin-right: 1;
+}
+
+.modal-col-small {
+    width: 28%;
+    height: auto;
+}
+
+.modal-hitl-dialog {
+    width: 82;
+    height: auto;
+    max-height: 90%;
+    background: $surface;
+    border: round $error;
+    padding: 1 2;
+    overflow-y: auto;
+}
+
+.modal-actions {
+    layout: horizontal;
+    height: 3;
+    margin-top: 1;
+    align-horizontal: right;
+}
+
+.modal-actions Button {
+    margin-left: 1;
+}
+
+.provider-help-text {
+    color: $secondary;
+    text-style: italic;
+    margin-top: 1;
+    margin-bottom: 1;
+}
+
+#btn-scan-models {
+    width: 100%;
+    height: 3;
+    background: $background;
+    border: round $primary;
+    color: $secondary;
+    content-align: center middle;
+}
+
+#btn-scan-models:hover {
+    background: $surface-lighten-1;
+    border: round $accent;
+    color: $foreground;
+    text-style: bold;
+}
+
+.model-status-text {
+    margin-top: 0;
+    margin-bottom: 1;
+    height: auto;
+}
+
+Checkbox:hover {
+    color: $primary;
+}
+
+Checkbox.-on {
+    color: $success;
+}
+
+.error-label {
+    color: $error;
+    text-style: bold;
+    margin-top: 1;
+}
+
+/* Sleek Cyberpunk Footer */
+Footer {
+    background: $surface;
+    color: $foreground;
+}
+
+FooterKey {
+    background: transparent;
+}
+
+FooterKey > .footer-key--key {
+    background: transparent;
+    color: $accent;
+    text-style: bold;
+}
+
+FooterKey > .footer-key--description {
+    background: transparent;
+    color: $foreground;
+}
+
+FooterKey.-command-palette {
+    dock: right;
+    background: transparent;
+    border-left: none;
+    padding-right: 1;
+}
+
+FooterKey.-command-palette > .footer-key--key {
+    background: transparent;
+    color: $accent;
+    text-style: bold;
+}
+
+FooterKey.-command-palette > .footer-key--description {
+    background: transparent;
+    color: $foreground;
+}
+
+
+/* ==========================================================================
+   COMMAND PALETTE STYLING (Mission Control Enterprise - No Icons / No Emojis)
+   ========================================================================== */
+
+CommandPalette {
+    background: $background 85%;
+    align-horizontal: center;
+}
+
+/* Strictly hide search icon / emoji */
+CommandPalette SearchIcon {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+CommandPalette > Vertical {
+    background: $surface;
+    border: tall $primary;
+    width: 80%;
+    max-width: 110;
+    height: auto;
+    max-height: 26;
+    margin-top: 2;
+    padding: 0;
+}
+
+CommandPalette #--input {
+    background: $panel;
+    border-bottom: heavy $secondary;
+    height: 3;
+    padding: 0 1;
+}
+
+CommandPalette CommandInput {
+    background: transparent;
+    border: none;
+    color: $foreground;
+}
+
+CommandPalette CommandInput:focus {
+    border: none;
+}
+
+CommandPalette CommandList {
+    background: $surface;
+    scrollbar-gutter: stable;
+    color: $foreground;
+}
+
+CommandPalette CommandList:focus {
+    border: none;
+}
+
+CommandPalette .command-palette--highlight {
+    color: $primary;
+    text-style: bold;
+}
+
+CommandPalette .command-palette--help-text {
+    color: $foreground-muted;
+}
+
+CommandPalette OptionList > .option-list--option.-highlighted {
+    background: $surface-lighten-2;
+    color: $primary;
+    text-style: bold;
+}
+
+/* ========================================================================= */
+/* PACKET LAB - WIRESHARK-STYLE 3-PANE DISSECTOR & SNIFFER                   */
+/* ========================================================================= */
+
+#packet-lab-container {
+    height: 100%;
+    width: 100%;
+    padding: 0 1;
+    background: $background;
+}
+
+#packet-top-bar {
+    height: 3;
+    align-vertical: middle;
+    margin-bottom: 1;
+    background: $panel;
+    padding: 0 1;
+}
+
+#packet-lab-title {
+    text-style: bold;
+    color: $primary;
+    width: auto;
+}
+
+#packet-status-label {
+    color: $accent;
+    text-style: bold;
+    margin-left: 2;
+    width: 1fr;
+}
+
+#packet-action-toolbar {
+    height: 3;
+    margin-bottom: 1;
+}
+
+#packet-action-toolbar Button {
+    margin-right: 1;
+}
+
+#packet-filter-bar {
+    height: 3;
+    margin-bottom: 1;
+}
+
+#packet-filter-input {
+    width: 1fr;
+    margin-right: 1;
+    background: $panel;
+    color: $foreground;
+    border: tall $secondary;
+}
+
+#packet-table-wrapper {
+    height: 42%;
+    border: solid $primary;
+    margin-bottom: 1;
+}
+
+#packet-table {
+    height: 100%;
+    background: $surface;
+}
+
+#packet-detail-split {
+    height: 45%;
+}
+
+#packet-tree-panel {
+    width: 50%;
+    border: solid $secondary;
+    margin-right: 1;
+    padding: 0 1;
+    background: $surface;
+}
+
+#packet-hex-panel {
+    width: 50%;
+    border: solid $secondary;
+    padding: 0 1;
+    background: $surface;
+}
+
+.panel-sub-header {
+    text-style: bold;
+    color: $secondary;
+    margin-bottom: 1;
+}
+
+#protocol-tree {
+    height: 100%;
+    background: transparent;
+    color: $foreground;
+}
+
+#hex-dump-viewer {
+    height: 100%;
+    overflow-y: scroll;
+    background: transparent;
+    color: $foreground;
+}
+
+/* AI Packet Doctor Modal */
+#packet-doctor-dialog {
+    width: 82;
+    height: 32;
+    background: $surface;
+    border: double $accent;
+    padding: 1 2;
+}
+
+#packet-doctor-scroll {
+    height: 24;
+    margin-bottom: 1;
+}
+
+#packet-doctor-content {
+    color: $foreground;
+}
+
+#btn-close-doctor {
+    width: 100%;
+}

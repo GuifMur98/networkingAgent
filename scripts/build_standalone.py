@@ -14,7 +14,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DIST_DIR = PROJECT_ROOT / "dist"
 BUILD_DIR = PROJECT_ROOT / "build"
 RELEASE_DIR = PROJECT_ROOT / "release-artifacts"
-VERSION = "2.1.1"
+VERSION = "2.2.0"
 
 
 def check_prerequisites():

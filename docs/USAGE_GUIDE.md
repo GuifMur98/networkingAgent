@@ -1,6 +1,6 @@
-# 📖 Guía Completa de Uso y Operación: NetworkingAgent Enterprise v2.1.1
+# 📖 Guía Completa de Uso y Operación: NetworkingAgent Enterprise v2.2.0
 
-Bienvenido a la guía oficial de usuario y operaciones para **NetworkingAgent Enterprise v2.1**, la plataforma autónoma de ingeniería de redes con automatización en bucle cerrado (*Closed-Loop Automation*), inferencia de inteligencia artificial multi-cerebro y terminal reactiva de alto rendimiento.
+Bienvenido a la guía oficial de usuario y operaciones para **NetworkingAgent Enterprise v2.2**, la plataforma autónoma de ingeniería de redes con automatización en bucle cerrado (*Closed-Loop Automation*), inferencia de inteligencia artificial multi-cerebro y terminal reactiva de alto rendimiento.
 
 ---
 
@@ -24,7 +24,7 @@ Bienvenido a la guía oficial de usuario y operaciones para **NetworkingAgent En
 
 ## 1. Visión General de la Versión 2.1
 
-**NetworkingAgent Enterprise v2.1** estructura las operaciones de ingeniería de redes en **cinco módulos especializados**, coordinados desde una consola de terminal reactiva (`Textual TUI`) con estética *Cyberpunk NOC Mission Control*:
+**NetworkingAgent Enterprise v2.2** estructura las operaciones de ingeniería de redes en **seis módulos especializados**, coordinados desde una consola de terminal reactiva (`Textual TUI`) con estética *Cyberpunk NOC Mission Control*:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
@@ -345,7 +345,40 @@ Cada operación ejecutada por el agente genera una entrada inmutable con:
 
 ---
 
-## 12. Guardarraíles de Seguridad y Blast Radius
+---
+
+## 12. Pilar 6: Packet Lab (Sniffer, Disección Estilo Wireshark y AI Packet Doctor)
+
+El **Módulo 6: Packet Lab** dota a NetworkingAgent de un laboratorio forense y analizador de tráfico a nivel de cable integrado directamente en la terminal:
+
+### 12.1. Interfaz de Tres Paneles Sincronizados
+Inspirada en Wireshark / TShark, la pantalla de Packet Lab presenta tres paneles interactivos:
+1. **Panel Superior (Lista de Paquetes):** DataTable en tiempo real que lista cada trama con índice secuencial, marca de tiempo, dirección IP o MAC de origen y destino, protocolo con distintivo cromático (TCP, UDP, DNS, ICMP, ARP, BGP, OSPF, DHCP, HTTP), longitud en bytes e información contextual de diagnóstico.
+2. **Panel Central (Árbol de Disección de Protocolos):** Widget Tree que representa la jerarquía completa de capas (Capa 2 Enlace, Capa 3 Red, Capa 4 Transporte y Capa 7 Aplicación). Permite expandir o contraer cabeceras y campos específicos (banderas TCP, secuencia, acuse, identificadores de transacción DNS, opciones DHCP, etc.).
+3. **Panel Inferior (Hex Dump Dual Hex/ASCII):** Volcado de 16 columnas que resalta automáticamente en color cian brillante la región exacta de bytes seleccionada en el árbol de disección superior.
+
+### 12.2. AI Packet Doctor (Diagnóstico Forense Automatizado)
+Al presionar el botón **AI Packet Doctor** (o la tecla ), el motor de análisis estadístico evalúa la sesión de captura completa y detecta:
+- **Retransmisiones TCP:** Tráfico duplicado por pérdida de paquetes o congestión intermedia.
+- **Caída de Ventana a Cero (Zero-Window):** Saturación de buffer en el receptor que congela la transferencia.
+- **Reseteos Anómalos (RST Spikes):** Cierres abruptos de conexión por firewall o descarte de puertos.
+- **Agujeros Negros de Path MTU:** Notificaciones ICMP de fragmentación requerida que bloquean paquetes grandes.
+- **Fallos de Resolución DNS:** Errores NXDOMAIN o SERVFAIL generados por registros erróneos o fallos de upstream.
+
+El diagnóstico se presenta en un visor Markdown interactivo que detalla la tasa de paquetes por segundo (pps), rendimiento en ancho de banda (Kbps), desglose porcentual de protocolos y sugerencias de remediación inmediata.
+
+### 12.3. Exportación e Importación Libpcap (.pcap)
+- **Guardar Captura (s):** Exporta los paquetes capturados a un archivo .pcap binario estándar compatible con Wireshark y tcpdump.
+- **Cargar Captura (o):** Ingiere trazas .pcap existentes para su análisis forense fuera de línea en la consola de terminal.
+- **Filtro Dinámico:** Campo de búsqueda por texto o protocolo para aislar rápidamente flujos de interés.
+
+### 12.4. Generación de Captura Remota para Routers
+Packet Lab incluye generadores de secuencias de captura de tráfico en routers remotos:
+- **Cisco IOS/IOS-XE:** Embedded Packet Capture (EPC) con monitor capture buffer y monitor capture point.
+- **Juniper Junos:** monitor traffic interface <interfaz> matching <filtro> write-file <archivo>.
+- **MikroTik RouterOS:** /tool sniffer set file-name=capture.pcap; /tool sniffer start.
+
+## 13. Guardarraíles de Seguridad y Blast Radius
 
 ### 12.1. Protección Activa de Interfaces de Gestión y WAN
 [`BlastRadiusGuard`](../src/networking_agent/guardrails/blast_radius.py) descubre dinámicamente qué interfaz sostiene la IP de administración SSH del router mediante `discover_active_management_interfaces()`. Queda prohibido incondicionalmente ejecutar `shutdown` o reinicios sobre dichas interfaces, previniendo aislamiento accidental.
@@ -358,7 +391,7 @@ Rechaza cualquier comando que intente:
 
 ---
 
-## 13. Preguntas Frecuentes (FAQ)
+## 14. Preguntas Frecuentes (FAQ)
 
 ### P: ¿Qué ocurre si un despliegue en lote falla en uno de diez switches?
 **R:** `BatchDeployer` opera con aislamiento por dispositivo. Si el switch #4 experimenta un error de sintaxis o desconexión, el agente ejecuta el rollback exclusivo sobre el switch #4 restaurando su snapshot previo, mientras que los switches restantes mantienen su configuración aplicada exitosamente.

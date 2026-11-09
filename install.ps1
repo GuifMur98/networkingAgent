@@ -44,7 +44,7 @@ function Write-WarningMsg {
 function Write-Banner {
     Write-Host ""
     Write-Host " =================================================================" -ForegroundColor Cyan
-    Write-Host "    NetworkingAgent Enterprise v2.1.1 - Automated Windows Setup   " -ForegroundColor Yellow
+    Write-Host "    NetworkingAgent Enterprise v2.2.0 - Automated Windows Setup   " -ForegroundColor Yellow
     Write-Host "    Autonomous & Closed-Loop Network Assistant (Textual TUI)      " -ForegroundColor White
     Write-Host " =================================================================" -ForegroundColor Cyan
     Write-Host ""
@@ -70,7 +70,7 @@ function Register-WindowsApp {
         }
         
         Set-ItemProperty -Path $RegPath -Name "DisplayName" -Value "NetworkingAgent Enterprise"
-        Set-ItemProperty -Path $RegPath -Name "DisplayVersion" -Value "2.1.1"
+        Set-ItemProperty -Path $RegPath -Name "DisplayVersion" -Value "2.2.0"
         Set-ItemProperty -Path $RegPath -Name "Publisher" -Value "NetworkingAgent Enterprise Team"
         Set-ItemProperty -Path $RegPath -Name "InstallLocation" -Value "$InstallDir"
         if (Test-Path $AppIconPath) {
@@ -109,6 +109,8 @@ if ($StandaloneExe) {
     
     $DestExe = Join-Path $BinDir "networking-agent.exe"
     Write-Step "Instalando ejecutable en $DestExe..."
+    Get-Process -Name "networking-agent" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Milliseconds 300
     Copy-Item -Path $StandaloneExe -Destination $DestExe -Force
 
     # Copy docs and assets if present
@@ -205,7 +207,7 @@ Write-Host '[+] NetworkingAgent desinstalado completamente.' -ForegroundColor Gr
 
     Write-Host ""
     Write-Host " =================================================================" -ForegroundColor Green
-    Write-Host " [EXITO] NetworkingAgent Enterprise v2.1.1 instalado con éxito!    " -ForegroundColor Green
+    Write-Host " [EXITO] NetworkingAgent Enterprise v2.2.0 instalado con éxito!    " -ForegroundColor Green
     Write-Host " =================================================================" -ForegroundColor Green
     Write-Host " Para iniciar el agente, abre una nueva terminal y simplemente escribe:" -ForegroundColor White
     Write-Host "    networking-agent" -ForegroundColor Yellow
@@ -435,7 +437,7 @@ Register-WindowsApp -InstallDir $InstallDir -AppIconPath $AppIconPath -Uninstall
 
 Write-Host ""
 Write-Host " =================================================================" -ForegroundColor Green
-Write-Host " [SUCCESS] NetworkingAgent Enterprise v2.1.1 installed!           " -ForegroundColor Green
+Write-Host " [SUCCESS] NetworkingAgent Enterprise v2.2.0 installed!           " -ForegroundColor Green
 Write-Host " =================================================================" -ForegroundColor Green
 Write-Host " To start the agent, open a new terminal and simply type:" -ForegroundColor White
 Write-Host "    networking-agent" -ForegroundColor Yellow

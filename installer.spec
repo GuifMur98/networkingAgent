@@ -51,7 +51,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name="NetworkingAgent-v2.1.1-Setup",
+    name="NetworkingAgent-v2.2.0-Setup",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

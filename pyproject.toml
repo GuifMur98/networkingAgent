@@ -1,6 +1,6 @@
 [project]
 name = "networking-agent"
-version = "2.1.1"
+version = "2.2.0"
 description = "Enterprise Autonomous & Closed-Loop AI Network Engineering Assistant"
 readme = "README.md"
 requires-python = ">=3.14"
@@ -20,6 +20,7 @@ dependencies = [
     "textual>=1.0.0",
     "pyyaml>=6.0.2",
     "jinja2>=3.1.0",
+    "scapy>=2.5.0",
 ]
 
 [project.optional-dependencies]

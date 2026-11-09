@@ -19,7 +19,7 @@ try:
 except ImportError:
     winreg = None
 
-VERSION = "2.1.1"
+VERSION = "2.2.0"
 APP_NAME = "NetworkingAgent Enterprise"
 DEFAULT_INSTALL_DIR = os.path.expandvars(r"%LOCALAPPDATA%\NetworkingAgent")
 
@@ -215,6 +215,17 @@ def perform_installation(
 
     # 1. Locate and copy application executable
     update(20, "Instalando binario ejecutable (networking-agent.exe)...")
+    if is_windows():
+        try:
+            subprocess.run(
+                ["taskkill.exe", "/F", "/IM", "networking-agent.exe"],
+                capture_output=True,
+                creationflags=subprocess.CREATE_NO_WINDOW if is_windows() else 0,
+            )
+            time.sleep(0.3)
+        except Exception:
+            pass
+
     candidate_exes = [
         bundle_dir / "networking-agent.exe",
         bundle_dir / "bin" / "networking-agent.exe",
@@ -229,7 +240,16 @@ def perform_installation(
 
     dest_exe = bin_dir / "networking-agent.exe"
     if app_exe_src:
-        shutil.copy2(app_exe_src, dest_exe)
+        copied = False
+        for _ in range(5):
+            try:
+                shutil.copy2(app_exe_src, dest_exe)
+                copied = True
+                break
+            except PermissionError:
+                time.sleep(0.4)
+        if not copied:
+            shutil.copy2(app_exe_src, dest_exe)
     else:
         # Source fallback launcher if binary not bundled directly
         launcher_cmd = bin_dir / "networking-agent.cmd"

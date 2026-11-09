@@ -56,11 +56,11 @@ jobs:
           echo "Listing release-artifacts:"
           ls -la release-artifacts/
           if [ "${{ runner.os }}" = "Windows" ]; then
-            if [ ! -f release-artifacts/NetworkingAgent-v2.1.1-Setup.exe ]; then
-              echo "Error: NetworkingAgent-v2.1.1-Setup.exe was not created in release-artifacts!"
+            if [ ! -f release-artifacts/NetworkingAgent-v2.2.0-Setup.exe ]; then
+              echo "Error: NetworkingAgent-v2.2.0-Setup.exe was not created in release-artifacts!"
               exit 1
             fi
-            echo "[SUCCESS] NetworkingAgent-v2.1.1-Setup.exe is present and verified."
+            echo "[SUCCESS] NetworkingAgent-v2.2.0-Setup.exe is present and verified."
           fi
 
       - name: Upload Build Artifacts to GitHub Actions

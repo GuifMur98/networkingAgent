@@ -1,13 +1,13 @@
-# 🌐 NetworkingAgent Enterprise v2.1.1
+# 🌐 NetworkingAgent Enterprise v2.2.0
 
 <div align="center">
 
 [![Python 3.14](https://img.shields.io/badge/python-3.14-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org/)
-[![UI: Textual TUI](https://img.shields.io/badge/ui-Textual%20TUI%20v2.1-00e5ff.svg?style=flat&logo=gnometerminal)](https://textual.textualize.io/)
-[![Tests](https://img.shields.io/badge/tests-194%20passed-brightgreen.svg?style=flat&logo=pytest&logoColor=white)]()
+[![UI: Textual TUI](https://img.shields.io/badge/ui-Textual%20TUI%20v2.2-00e5ff.svg?style=flat&logo=gnometerminal)](https://textual.textualize.io/)
+[![Tests](https://img.shields.io/badge/tests-209%20passed-brightgreen.svg?style=flat&logo=pytest&logoColor=white)]()
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg?style=flat&logo=ruff&logoColor=white)](https://github.com/astral-sh/ruff)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=flat)](LICENSE)
-[![Security: Hardened](https://img.shields.io/badge/security-hardened%20defense--in--depth%20v2.1.1-red.svg?style=flat&logo=shield)]()
+[![Security: Hardened](https://img.shields.io/badge/security-hardened%20defense--in--depth%20v2.2.0-red.svg?style=flat&logo=shield)]()
 [![Architecture: Hexagonal](https://img.shields.io/badge/architecture-closed--loop%20hexagonal-orange.svg?style=flat)]()
 
 **Asistente Autónomo de Ingeniería de Redes en Bucle Cerrado (*Closed-Loop Automation*) con IA Multi-Cerebro**
@@ -22,9 +22,9 @@
 
 ---
 
-## 🚀 Pilares Operacionales de la Versión 2.1.1
+## 🚀 Pilares Operacionales de la Versión 2.2.0
 
-NetworkingAgent Enterprise estructura las operaciones de ingeniería de redes en **cinco módulos especializados**, coordinados desde una consola de terminal reactiva (`Textual TUI`) con estética *Cyberpunk NOC Mission Control*:
+NetworkingAgent Enterprise estructura las operaciones de ingeniería de redes en **seis módulos especializados**, coordinados desde una consola de terminal reactiva (`Textual TUI`) con estética *Cyberpunk NOC Mission Control*:
 
 ### 1. 🔍 Modo Troubleshooting (Diagnóstico Autónomo en Lenguaje Natural)
 - **Interrogación Autónoma Multi-Capa (L1-L7):** El operador describe el síntoma operacional (*"Vecindad OSPF en Gi0/1 estancada en EXSTART"* o *"Pérdida intermitente de paquetes en troncal"*).
@@ -48,6 +48,17 @@ NetworkingAgent Enterprise estructura las operaciones de ingeniería de redes en
 - **Prueba de Ping ICMP:** Medición de alcance IP y latencia de ida y vuelta en tiempo real sin salir de la TUI.
 - **Prueba de Servicio SSH (TCP 22):** Comprobación no invasiva de socket de red para verificar la disponibilidad del demonio SSH antes de intentar operaciones de configuración.
 - **Diagnóstico Integral:** Ejecución combinada de Ping y SSH con retroalimentación inmediata sobre la tabla de inventario.
+
+### 6. 🔬 Modo Packet Lab (Sniffer, Disección Estilo Wireshark y AI Packet Doctor)
+- **Visor de 3 Paneles Sincronizado en Terminal:**
+  - *Panel 1 (Lista de Paquetes):* Tabla reactiva con índice, timestamp, IP origen/destino, protocolo coloreado (TCP, UDP, DNS, ICMP, ARP, BGP, OSPF, DHCP, HTTP), tamaño y resumen analítico.
+  - *Panel 2 (Árbol de Protocolos):* Desglose jerárquico expandible con decodificación campo a campo de cada cabecera.
+  - *Panel 3 (Hex Dump Sincronizado):* Volcado dual hexadecimal y ASCII de 16 bytes que resalta en cian brillante exactamente los bytes de la capa o campo seleccionado en el árbol.
+- **AI Packet Doctor (Diagnóstico de Anomalías y Causa Raíz):**
+  - Motor de detección estadística de retransmisiones TCP, caídas de ventana Zero-Window, picos de RST, caídas de MTU (ICMP Fragmentation Needed) y errores DNS (NXDOMAIN/SERVFAIL).
+  - Emisión de informe forense estructurado en Markdown con evidencia y remediaciones sugeridas para el operador o el bucle cerrado.
+- **Lector y Escritor Nativo Libpcap (.pcap):** Exportación e importación directa sin dependencias nativas complejas, 100% compatible con Wireshark, tcpdump y Zeek.
+- **Captura Local y Generador Remoto para Routers:** Soporte de sniffing local asíncrono y generador de comandos de captura para Cisco EPC, Juniper monitor traffic y MikroTik /tool sniffer.
 
 ### 5. 🛡️ Modo Auditoría y Trazabilidad Forense
 - **Bitácora Inmutable SHA-256:** Registro forense criptográfico de cada acción, síntesis CLI, comandos inyectados, respuesta del router y snapshots de reversión.
@@ -207,7 +218,7 @@ networkingAgent/
 │       │       ├── template_modal.py       # Creador/Editor Jinja2 con chips de variables
 │       │       └── vault_modal.py          # Ajustes de IA dinámicos con escaneo de modelos
 │       └── cli/                # Modo consola clásico interactivo y por lotes
-└── tests/                      # Suite de 194 pruebas automatizadas (100% passing)
+└── tests/                      # Suite de 209 pruebas automatizadas (100% passing)
 ```
 
 ---
@@ -224,9 +235,9 @@ networkingAgent/
 > Para instrucciones detalladas paso a paso sobre cada sistema operativo y resolución de incidencias, consulta la **[📘 Guía Definitiva de Instalación (`docs/INSTALLATION_GUIDE.md`)](docs/INSTALLATION_GUIDE.md)**.
 
 #### Opción A: Asistente de Instalación Standalone (Recomendado para Windows - Sin Python)
-Descarga el ejecutable desde los [Releases de GitHub](https://github.com/GuifMur98/networkingAgent/releases/tag/v2.1.1):
-- **Instalador Oficial Standalone:** Descarga **`NetworkingAgent-v2.1.1-Setup.exe`** y haz doble clic para iniciar el asistente gráfico de instalación. Configura automáticamente el binario, iconos oficiales en el Escritorio y Menú Inicio, variable `PATH` y registro en Aplicaciones Instaladas de Windows.
-- **Modo Portable (sin instalación):** Descarga el archivo `.zip` **`networking-agent-v2.1.1-windows-x64.zip`**, descomprímelo y ejecuta directamente `iniciar.bat` o `networking-agent.exe`.
+Descarga el ejecutable desde los [Releases de GitHub](https://github.com/GuifMur98/networkingAgent/releases/tag/v2.2.0):
+- **Instalador Oficial Standalone:** Descarga **`NetworkingAgent-v2.2.0-Setup.exe`** y haz doble clic para iniciar el asistente gráfico de instalación. Configura automáticamente el binario, iconos oficiales en el Escritorio y Menú Inicio, variable `PATH` y registro en Aplicaciones Instaladas de Windows.
+- **Modo Portable (sin instalación):** Descarga el archivo `.zip` **`networking-agent-v2.2.0-windows-x64.zip`**, descomprímelo y ejecuta directamente `iniciar.bat` o `networking-agent.exe`.
 
 #### Opción B: Instalador Automatizado One-Click por Terminal
 - **Windows (PowerShell):**
@@ -275,7 +286,7 @@ La interfaz responde a atajos ergonómicos contextuales:
 
 ## 🧪 Pruebas Automatizadas y Calidad
 
-El proyecto cuenta con **194 pruebas automatizadas** que cubren el 100% de los subsistemas:
+El proyecto cuenta con **209 pruebas automatizadas** que cubren el 100% de los subsistemas:
 - **Seguridad y Pentest Hardening:** Verificación de las 8 remediaciones de ciberseguridad (SSTI en Jinja2, mitigación de MitM SSH, blindaje de listas negras, permisos NTFS icacls, CWD isolation, enmascaramiento de credenciales, hash chaining continuo SHA-256 e instaladores seguros).
 - **Validación Sintáctica Pre-Flight:** Prevención de comandos destructivos, balance de llaves y sintaxis multi-vendor.
 - **Guardarraíles y Blast Radius:** Blindaje estricto de interfaces WAN y protección contra inyecciones CLI.

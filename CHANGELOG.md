@@ -7,6 +7,37 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [2.2.0] - 2026-11-08
+
+### 🔬 Módulo 6: Packet Lab - Sniffer y Disección Estilo Wireshark (Added)
+- **Visor TUI de 3 Paneles Sincronizado en Terminal:**
+  - **Panel Superior (Lista de Paquetes):** DataTable reactivo con visualización en tiempo real de índice, timestamp relativo, direcciones IP/MAC de origen y destino, protocolo con distintivos de color de alto contraste, longitud y resumen analítico contextual.
+  - **Panel Medio (Árbol de Disección de Protocolos):** Widget Tree jerárquico expandible que desglosa capa por capa (Capa 2 Enlace, Capa 3 Red, Capa 4 Transporte y Capa 7 Aplicación) con nombres amigables y valores decodificados.
+  - **Panel Inferior (Hex Dump Sincronizado):** Widget especializado HexDumpWidget de 16 columnas con volcado hexadecimal y caracteres ASCII correspondientes; resalta en cian brillante los límites exactos de bytes (byte_start, byte_end) correspondientes a la capa o campo seleccionado en el árbol.
+- **Motor Multi-Protocolo de Disección a Nivel de Cable:**
+  - Decodificación pura y sin dependencias nativas de Ethernet II, 802.1Q VLAN Tagging, ARP, IPv4, IPv6, ICMP (Echo Request/Reply, Destination Unreachable, TTL Exceeded), TCP (con banderas SYN, ACK, RST, FIN, PSH, URG, cálculo de longitud de payload y tamaño de ventana), UDP, DNS (decodificación de etiquetas de consulta y códigos de respuesta RCODE), DHCP/BOOTP, BGP (Keepalive, Update, Notification) y OSPF v2 (Hello, DBD).
+- **Lector y Escritor Binario Libpcap Nativo (.pcap):**
+  - Implementación pura en Python de PcapReader y PcapWriter compatible con especificación Libpcap 2.4 (marcas de tiempo en microsegundos y nanosegundos, detección automática de endianness little/big-endian y cabeceras globales/de paquete).
+  - Interoperabilidad 100% nativa con Wireshark, tcpdump y Zeek.
+- **AI Packet Doctor (Motor Estadístico de Diagnóstico Forense y Detección de Anomalías):**
+  - Análisis estadístico automático de flujos TCP que identifica retransmisiones por duplicación de secuencia y payload, caídas de ventana a cero (Zero-Window Starvation), picos anómalos de banderas de reseteo (RST Spikes), caídas de MTU (Path MTU Blackholes) y fallos de resolución de nombres DNS (NXDOMAIN / SERVFAIL).
+  - Modal interactivo a pantalla completa PacketDoctorModal con informe forense detallado en Markdown, métricas pps/Kbps, distribución porcentual de protocolos y remediaciones sugeridas para operadores humanos o modelos cognitivos.
+- **Captura Local y Generador de Captura Remota para Routers:**
+  - Soporte de captura local asíncrona mediante Scapy AsyncSniffer con filtros BPF (tcp, udp, port 80, host 10.0.0.1).
+  - Generador automatizado de comandos de captura remota en router: Cisco IOS/IOS-XE (Embedded Packet Capture / EPC), Juniper Junos (monitor traffic interface ...) y MikroTik RouterOS (/tool sniffer start/stop/save).
+
+### 📦 Instalador Standalone Oficial para Windows (Added & Improved)
+- **Instalador Único Autosuficiente (.exe):** Generación de NetworkingAgent-v2.2.0-Setup.exe que contiene embebidos el ejecutable de la aplicación, recursos de marca y documentación.
+- **Iconos PE de Alta Fidelidad en 10 Resoluciones:**
+  - Icono del Instalador (flecha de descarga sobre red) embebido directamente en las cabeceras Win32 PE del archivo de instalación.
+  - Icono de la Aplicación (nodo 'N' de red) embebido en networking-agent.exe, accesos directos del Escritorio, Menú Inicio y en el registro de programas instalados de Windows.
+- **Registro en Aplicaciones Instaladas de Windows:** Entrada formal en el Registro (HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\NetworkingAgent) con soporte de desinstalación limpia y tamaño estimado.
+
+### 🧪 Suite de Pruebas Automatizadas (Changed)
+- Suite ampliada a **209 pruebas automatizadas** (pytest tests/) cubriendo el 100% de subsistemas y garantizando 0 regresiones.
+
+---
+
 ## [2.1.1] - 2026-11-08
 
 ### 🛡️ Ciberseguridad y Remediación de Auditoría de Penetración (Security)
