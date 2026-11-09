@@ -3251,7 +3251,7 @@ CommandPalette OptionList > .option-list--option.-highlighted {
 #packet-lab-container {
     height: 100%;
     width: 100%;
-    padding: 0 1;
+    padding: 1 2 1 1;
     background: $background;
     overflow-y: auto;
     overflow-x: hidden;
@@ -3319,7 +3319,7 @@ CommandPalette OptionList > .option-list--option.-highlighted {
 }
 
 #packet-tree-panel {
-    width: 50%;
+    width: 1fr;
     border: solid $secondary;
     margin-right: 1;
     padding: 0 1;
@@ -3327,7 +3327,7 @@ CommandPalette OptionList > .option-list--option.-highlighted {
 }
 
 #packet-hex-panel {
-    width: 50%;
+    width: 1fr;
     border: solid $secondary;
     padding: 0 1;
     background: $surface;
