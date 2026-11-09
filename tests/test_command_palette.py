@@ -56,7 +56,9 @@ async def test_command_provider_discover_and_search(tmp_path, monkeypatch):
         assert "Navegar: Inicio (Dashboard Principal)" in names
         assert "Sistema: Registrar Nuevo Dispositivo en Catalogo" in names
         assert "Sistema: Alternar Modo Guardarrailes (HITL / Auto-Aprobacion)" in names
-        assert "Tema: Cambiar Tema Visual..." in names
+        assert "Sistema: Cambiar Tema Visual de la Interfaz..." in names
+        assert "Consola: Limpiar Pantalla y Registros de Consola" in names
+        assert "Terminal: Capturar Pantalla (Guardar Screenshot SVG)" in names
 
         # 2. Test search by direct title match
         tema_hits = [hit async for hit in provider.search("tema")]
